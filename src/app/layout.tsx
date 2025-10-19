@@ -27,7 +27,7 @@ export default function RootLayout({
     <html lang="en" className="h-full overflow-hidden">
       <body className={`${geistSans.variable} ${geistMono.variable} h-full overflow-hidden`}>
             <Wrapper>
-                <main>{children}</main>
+                {children}
             </Wrapper>
       </body>
     </html>
