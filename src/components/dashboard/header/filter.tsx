@@ -33,7 +33,7 @@ const countries = [
     "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
 ];
 
-export default function DashboardFooterFilter() {
+export default function DashboardHeaderFilter() {
     const [open, setOpen] = useState(false);
     const [selectedCountry, setSelectedCountry] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
