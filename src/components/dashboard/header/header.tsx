@@ -1,10 +1,10 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import DashboardFooterFilter from "../footer/filter";
+import DashboardHeaderFilter from "./filter";
 
 export default function DashboardHeader() {
     return (
         <div className="dashboard-header w-full rounded-[var(--radius)] overflow-hidden flex gap-3 h-35">
-            <DashboardFooterFilter />
+            <DashboardHeaderFilter />
             <Card className="flex-1">
                 <CardHeader>
                     <CardTitle>
