@@ -4,7 +4,7 @@ import { MapPin } from "lucide-react";
 
 export default function DashboardContentMap() {
     return (
-        <div className="dashboard-map w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden rounded-lg">
+        <div className="dashboard-map w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden rounded-[var(--radius)]">
             <div className="absolute inset-0 opacity-10">
                 <div className="grid grid-cols-8 grid-rows-8 h-full w-full">
                     {Array.from({ length: 64 }).map((_, i) => (
