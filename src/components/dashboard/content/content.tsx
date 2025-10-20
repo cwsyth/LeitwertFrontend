@@ -1,11 +1,21 @@
-import { Card } from "@/components/ui/card";
+import DashboardContentMap from "./map/map";
+import DashboardContentHierarchy from "./hierarchy/hierarchy";
+import DashboardContentTimeline from "./timeline/timeline";
+import { DashboardViewMode } from "@/types/dashboard";
+import { Card, CardContent } from "@/components/ui/card";
 
-export default function DashboardContent() {
+interface DashboardContentProps {
+    mode: DashboardViewMode;
+}
+
+export default function DashboardContent({ mode }: DashboardContentProps) {
     return (
-        <div className="dashboard-content w-full flex-1">
-            <Card className="h-full">
-                content
-            </Card>
-        </div>
+        <Card className="dashboard-content w-full flex-1 bg-background">
+            <CardContent className="h-full w-full">
+                {mode === "street" && <DashboardContentMap />}
+                {mode === "hierarchy" && <DashboardContentHierarchy />}
+                {mode === "grid" && <DashboardContentTimeline />}
+            </CardContent>
+        </Card>
     );
 }
