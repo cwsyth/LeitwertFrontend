@@ -1,6 +1,6 @@
-import DashboardContentMap from "./map/map";
-import DashboardContentHierarchy from "./hierarchy/hierarchy";
-import DashboardContentTimeline from "./timeline/timeline";
+import DashboardContentMap from "./components/map";
+import DashboardContentHierarchy from "./components/hierarchy";
+import DashboardContentTimeline from "./components/timeline";
 import { DashboardViewMode } from "@/types/dashboard";
 import { Card, CardContent } from "@/components/ui/card";
 
