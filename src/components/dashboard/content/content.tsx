@@ -10,12 +10,14 @@ interface DashboardContentProps {
 
 export default function DashboardContent({ mode }: DashboardContentProps) {
     return (
-        <Card className="dashboard-content w-full flex-1 bg-background">
+        <div className="h-180 w-full">
+            <Card className="dashboard-content w-full h-full flex-1 bg-background">
             <CardContent className="h-full w-full">
-                {mode === "street" && <DashboardContentMap />}
-                {mode === "hierarchy" && <DashboardContentHierarchy />}
-                {mode === "grid" && <DashboardContentTimeline />}
-            </CardContent>
-        </Card>
+                    {mode === "street" && <DashboardContentMap />}
+                    {mode === "hierarchy" && <DashboardContentHierarchy />}
+                    {mode === "grid" && <DashboardContentTimeline />}
+                </CardContent>
+            </Card>
+        </div>
     );
 }

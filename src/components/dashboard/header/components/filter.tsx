@@ -71,7 +71,7 @@ export default function DashboardHeaderFilter() {
                                     />
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-68 p-0" align="start">
+                            <PopoverContent className="w-68 p-0 overflow-hidden" align="start">
                                 <div className="flex flex-col">
                                     {/* Search Input */}
                                     <div className="border-b p-2 bg-popover">
@@ -80,7 +80,7 @@ export default function DashboardHeaderFilter() {
                                             placeholder="Search countries..."
                                             value={searchQuery}
                                             onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="w-full px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0"
+                                            className="w-full px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0 bg-transparent"
                                         />
                                     </div>
                                     {/* Country List */}

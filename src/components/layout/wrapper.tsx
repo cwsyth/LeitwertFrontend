@@ -7,14 +7,16 @@ interface WrapperProps {
 
 export default function Wrapper({ children }: WrapperProps) {
   return (
-    <div className="h-full flex flex-col bg-stone-900">
-      <Header />
-      <main className="flex-1 flex items-center justify-center overflow-auto">
-        <div className="h-full w-full max-w-[var(--content-max-width)]">
-            {children}
-        </div>
-      </main>
-      <Footer />
+    <div className="flex flex-col bg-stone-900 h-full ">
+      <div className="overflow-auto">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+            <div className="w-full max-w-[var(--content-max-width)]">
+                {children}
+            </div>
+        </main>
+        <Footer />
+      </div>
     </div>
   );
 }
