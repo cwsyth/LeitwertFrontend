@@ -1,6 +1,6 @@
 import DashboardHeaderFilter from "./components/filter";
 import DashboardHeaderOverview from "./components/overview";
-import DashboardHeaderResults from "./components/results";
+import DashboardHeaderViews from "./components/views";
 import { DashboardViewVisibility } from "@/types/dashboard";
 
 interface DashboardHeaderProps {
@@ -13,7 +13,7 @@ export default function DashboardHeader({ viewVisibility, toggleView }: Dashboar
         <div className="dashboard-header w-full rounded-[var(--radius)] overflow-hidden flex gap-3 h-50">
             <DashboardHeaderOverview />
             <DashboardHeaderFilter />
-            <DashboardHeaderResults viewVisibility={viewVisibility} toggleView={toggleView} />
+            <DashboardHeaderViews viewVisibility={viewVisibility} toggleView={toggleView} />
         </div>
     );
 }

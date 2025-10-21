@@ -8,9 +8,17 @@ interface DashboardFooterProps {
 
 export default function DashboardFooter({ viewVisibility }: DashboardFooterProps) {
     return (
-        <div className="dashboard-footer w-full rounded-[var(--radius)] flex gap-3">
-            {viewVisibility.searchResults && <DashboardFooterSearch />}
-            {viewVisibility.globalStats && <DashboardFooterStatistics />}
+        <div className="dashboard-footer w-full rounded-[var(--radius)] flex gap-3 h-50">
+            {viewVisibility.searchResults ? (
+                <DashboardFooterSearch />
+            ) : (
+                <div className="flex-7" />
+            )}
+            {viewVisibility.globalStats ? (
+                <DashboardFooterStatistics />
+            ) : (
+                <div className="flex-4" />
+            )}
         </div>
     );
 }

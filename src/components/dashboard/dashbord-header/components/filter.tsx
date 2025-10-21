@@ -5,7 +5,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Check, ChevronUp, Search } from "lucide-react";
+import { Check, ChevronUp } from "lucide-react";
 
 const countries = [
     "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia",
@@ -43,7 +43,6 @@ export default function DashboardHeaderFilter() {
         tier2: true,
         tier3: true,
     });
-    const [searchText, setSearchText] = useState("");
 
     const filteredCountries = countries.filter(country =>
         country.toLowerCase().includes(searchQuery.toLowerCase())
@@ -140,18 +139,6 @@ export default function DashboardHeaderFilter() {
                                     </label>
                                 </div>
                             ))}
-                        </div>
-
-                        {/* Search Field */}
-                        <div className="relative w-68 mt-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <input
-                                type="text"
-                                placeholder="Router, Stadt, AS..."
-                                value={searchText}
-                                onChange={(e) => setSearchText(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2 border border-input bg-background rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                            />
                         </div>
                     </div>
                 </CardDescription>

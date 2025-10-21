@@ -18,7 +18,7 @@ const componentItems: ComponentItem[] = [
     { key: 'globalStats', label: 'Globale Statistiken' },
 ];
 
-export default function DashboardHeaderResults({ viewVisibility, toggleView }: DashboardHeaderResultsProps) {
+export default function DashboardHeaderViews({ viewVisibility, toggleView }: DashboardHeaderResultsProps) {
     return (
         <Card className="flex-1">
             <CardHeader>

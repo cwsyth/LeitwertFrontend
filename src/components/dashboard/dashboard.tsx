@@ -4,7 +4,7 @@ import { useState } from "react";
 import DashboardHeader from "./dashbord-header/header";
 import DashboardNav from "./dashbord-nav/nav";
 import DashboardContent from "./dashbord-content/content";
-import DashboardTimeline from "./timeline/timeline";
+import DashboardTimeline from "./dashbord-timeline/timeline";
 import DashboardFooter from "./dashbord-footer/footer";
 import { DashboardContentMode, DashboardViewVisibility } from "@/types/dashboard";
 
