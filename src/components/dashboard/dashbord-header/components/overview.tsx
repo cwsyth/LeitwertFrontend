@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 interface StatusItem {
@@ -9,8 +9,8 @@ interface StatusItem {
 }
 
 const statusItems: StatusItem[] = [
-    { label: "gesund", count: 1400, variant: "default", color: "bg-green-500 hover:bg-green-700" },
-    { label: "Warnung", count: 240, variant: "secondary", color: "bg-yellow-500 hover:bg-yellow-950" },
+    { label: "gesund", count: 1400, variant: "default", color: "bg-green-500" },
+    { label: "Warnung", count: 240, variant: "secondary", color: "bg-yellow-500" },
     { label: "kritisch", count: 60, variant: "destructive" },
 ];
 
