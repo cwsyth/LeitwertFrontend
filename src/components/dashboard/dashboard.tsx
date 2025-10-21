@@ -1,22 +1,36 @@
 'use client';
 
 import { useState } from "react";
-import DashboardHeader from "./header/header";
-import DashboardNav from "./nav/nav";
-import DashboardContent from "./content/content";
-import DashboardFooter from "./footer/footer";
-import { DashboardViewMode } from "@/types/dashboard";
+import DashboardHeader from "./dashbord-header/header";
+import DashboardNav from "./dashbord-nav/nav";
+import DashboardContent from "./dashbord-content/content";
+import DashboardTimeline from "./timeline/timeline";
+import DashboardFooter from "./dashbord-footer/footer";
+import { DashboardContentMode, DashboardViewVisibility } from "@/types/dashboard";
 
 export default function Dashboard() {
-    const [mode, setMode] = useState<DashboardViewMode>("street");
+    const [mode, setMode] = useState<DashboardContentMode>("street");
+    const [viewVisibility, setViewVisibility] = useState<DashboardViewVisibility>({
+        timeline: true,
+        searchResults: true,
+        globalStats: true,
+    });
+
+    const toggleView = (view: keyof DashboardViewVisibility) => {
+        setViewVisibility(prev => ({
+            ...prev,
+            [view]: !prev[view]
+        }));
+    };
 
     return (
         <div className="dashboard-wrapper h-full flex flex-col items-center justify-center p8">
             <div className="dashboard w-full h-full flex flex-col items-center gap-3">
-                <DashboardHeader />
+                <DashboardHeader viewVisibility={viewVisibility} toggleView={toggleView} />
                 <DashboardNav mode={mode} setMode={setMode} />
                 <DashboardContent mode={mode} />
-                {/* <DashboardFooter /> currently not needed */}
+                {viewVisibility.timeline && <DashboardTimeline />}
+                <DashboardFooter viewVisibility={viewVisibility} />
             </div>
         </div>
     );

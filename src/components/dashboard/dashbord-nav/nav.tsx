@@ -1,10 +1,10 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type { DashboardViewMode } from "@/types/dashboard";
+import type { DashboardContentMode } from "@/types/dashboard";
 import { Map, Network, Calendar } from "lucide-react";
 
 interface DashboardNavProps {
-    mode: DashboardViewMode;
-    setMode: (mode: DashboardViewMode) => void;
+    mode: DashboardContentMode;
+    setMode: (mode: DashboardContentMode) => void;
 }
 
 export default function DashboardNav({ mode, setMode }: DashboardNavProps) {
@@ -14,7 +14,7 @@ export default function DashboardNav({ mode, setMode }: DashboardNavProps) {
         <ToggleGroup
             type="single"
             value={mode}
-            onValueChange={(v) => v && setMode(v as DashboardViewMode)}
+            onValueChange={(v) => setMode(v as DashboardContentMode)}
             className="flex w-full items-center rounded-lg border bg-muted p-1 bg-accent"
         >
             <ToggleGroupItem
@@ -33,13 +33,13 @@ export default function DashboardNav({ mode, setMode }: DashboardNavProps) {
                 Hierarchie
             </ToggleGroupItem>
 
-            <ToggleGroupItem
+            { /* <ToggleGroupItem
                 value="grid"
                 className="flex-1 px-3 rounded-[var(--radius)] data-[state=on]:bg-background data-[state=on]:shadow"
             >
                 <Calendar className="mr-1 h-4 w-4" />
                 Zeitleiste
-            </ToggleGroupItem>
+            </ToggleGroupItem> */ }
 
         </ToggleGroup>
     </div>

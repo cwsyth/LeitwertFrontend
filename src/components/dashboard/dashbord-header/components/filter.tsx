@@ -38,14 +38,23 @@ export default function DashboardHeaderFilter() {
     const [open, setOpen] = useState(false);
     const [selectedCountry, setSelectedCountry] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
-    const [tier1, setTier1] = useState(true);
-    const [tier2, setTier2] = useState(true);
-    const [tier3, setTier3] = useState(true);
+    const [tiers, setTiers] = useState({
+        tier1: true,
+        tier2: true,
+        tier3: true,
+    });
     const [searchText, setSearchText] = useState("");
 
     const filteredCountries = countries.filter(country =>
         country.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const handleTierChange = (tier: keyof typeof tiers) => {
+        setTiers(prev => ({
+            ...prev,
+            [tier]: !prev[tier]
+        }));
+    };
 
     return (
         <Card className="flex-1">
@@ -116,45 +125,21 @@ export default function DashboardHeaderFilter() {
 
                         {/* Tier Checkboxes */}
                         <div className="ml-1 mt-1 flex gap-4">
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="tier1"
-                                    checked={tier1}
-                                    onCheckedChange={(checked) => setTier1(checked as boolean)}
-                                />
-                                <label
-                                    htmlFor="tier1"
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                >
-                                    Tier 1
-                                </label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="tier2"
-                                    checked={tier2}
-                                    onCheckedChange={(checked) => setTier2(checked as boolean)}
-                                />
-                                <label
-                                    htmlFor="tier2"
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                >
-                                    Tier 2
-                                </label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="tier3"
-                                    checked={tier3}
-                                    onCheckedChange={(checked) => setTier3(checked as boolean)}
-                                />
-                                <label
-                                    htmlFor="tier3"
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                >
-                                    Tier 3
-                                </label>
-                            </div>
+                            {(Object.keys(tiers) as (keyof typeof tiers)[]).map((tier) => (
+                                <div key={tier} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={tier}
+                                        checked={tiers[tier]}
+                                        onCheckedChange={() => handleTierChange(tier)}
+                                    />
+                                    <label
+                                        htmlFor={tier}
+                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                    >
+                                        {`Tier ${tier.charAt(tier.length - 1)}`}
+                                    </label>
+                                </div>
+                            ))}
                         </div>
 
                         {/* Search Field */}
