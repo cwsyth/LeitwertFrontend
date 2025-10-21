@@ -2,12 +2,15 @@ import { Router } from "lucide-react";
 
 export default function Header() {
   return (
-    <header className="main-header flex items-center justify-center p-5">
-      <div className="max-w-[var(--content-max-width)] w-full">
-        <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3 shadow-xl">
+    <header className="main-header sticky top-0 z-50 flex items-center justify-center
+                p-5 bg-stone-900/80 backdrop-blur-md border border-white/10 rounded-xl px-5 py-4 shadow-xl">
+      <div className="max-w-[var(--content-max-width)] w-full pl-7">
+        <div className="flex items-center gap-3">
+          { /* Logo */ }
           <div className="w-10 h-10 rounded-[var(--radius)] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
             <Router className="w-6 h-6 text-white" />
           </div>
+
           <h1 className="text-2xl font-bold text-white tracking-tight">
             Lagebild Dashboard
           </h1>
