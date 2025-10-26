@@ -27,10 +27,10 @@ interface RouterData {
     ipv4_cidrs: string[];
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_FRONTEND_API_URL;
 
 async function fetchRouterData(routerId: string): Promise<RouterData> {
-    const response = await fetch(`${API_BASE_URL}/api/routers/${routerId}`);
+    const response = await fetch(`${API_BASE_URL}/api/v1/routers/${routerId}`);
 
     if (!response.ok) {
         throw new Error(`Failed to fetch router ${routerId}: ${response.statusText}`);
