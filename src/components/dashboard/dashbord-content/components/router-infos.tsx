@@ -6,32 +6,28 @@
  */
 
 import React from 'react';
-import { Activity, Globe, Network, Server, Clock, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
+import {
+    Activity,
+    Globe,
+    Network,
+    Server,
+    Clock,
+    AlertCircle,
+    CheckCircle,
+    AlertTriangle,
+    Loader2
+} from 'lucide-react';
+import { useRouterData } from "@/hooks/useRouterData";
 
-const mockRouterData = {
-    "timestamp": "2025-10-20T14:35:42Z",
-    "id": "rid-42835843790269319330715382585",
-    "name": "Test Router Name",
-    "ipv4": "102.135.13.5",
-    "ptr": "rt-f3l2fk209fkp.apple.com",
-    "tier": 1,
-    "latency": 14,
-    "status": "critical",
-    "asn": {
-        "id": 216183,
-        "name": "Apple",
-        "organization": "Apple Network, LLC",
-        "country_code": "US"
-    },
-    "ipv4_cidrs": [
-        "102.135.13.0/24",
-        "62.3.54.0/24",
-        "45.146.163.0/24"
-    ]
-};
+interface StatusConfig {
+    icon: React.ComponentType<{ className?: string }>;
+    color: string;
+    bg: string;
+    label: string;
+}
 
-const getStatusConfig = (status: string) => {
-    const configs = {
+const getStatusConfig = (status: string): StatusConfig => {
+    const configs: Record<string, StatusConfig> = {
         critical: {
             icon: AlertCircle,
             color: 'text-red-500',
@@ -51,8 +47,8 @@ const getStatusConfig = (status: string) => {
             label: 'Healthy'
         }
     };
-    // @ts-ignore
-    return configs[status];
+    // TODO: add status 'unknown'
+    return configs[status] || configs['unknown'];
 };
 
 const formatTimestamp = (timestamp: string) => {
@@ -67,7 +63,33 @@ const formatTimestamp = (timestamp: string) => {
 };
 
 export default function RouterInfos({ routerId }: { routerId: string }) {
-    const data = mockRouterData;
+    const { data, isLoading, isError, error } = useRouterData(routerId);
+
+    if (isLoading) {
+        return (
+            <div className="w-80 p-8 flex flex-col items-center justify-center gap-3">
+                <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                <p className="text-sm text-gray-500">Lade...</p>
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="w-80 p-4">
+                <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                        <p className="text-sm font-medium text-red-800">Fehler beim Laden</p>
+                        <p className="text-xs text-red-600 mt-1">{error?.message || 'Unbekannter Fehler'}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!data) return null;
+
     const statusConfig = getStatusConfig(data.status);
     const StatusIcon = statusConfig.icon;
 
