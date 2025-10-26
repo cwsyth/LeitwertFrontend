@@ -30,7 +30,13 @@ interface RouterData {
 const API_BASE_URL = process.env.NEXT_PUBLIC_FRONTEND_API_URL;
 
 async function fetchRouterData(routerId: string): Promise<RouterData> {
-    const response = await fetch(`${API_BASE_URL}/api/v1/routers/${routerId}`);
+    const response = await fetch(`${API_BASE_URL}/api/v1/detail_view`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: routerId })
+    });
 
     if (!response.ok) {
         throw new Error(`Failed to fetch router ${routerId}: ${response.statusText}`);
