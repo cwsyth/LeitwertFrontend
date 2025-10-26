@@ -1,6 +1,9 @@
 'use client';
 
+import React from 'react';
+import { useState } from 'react';
 import { MapPin } from "lucide-react";
+import RouterPin from '@/components/dashboard/dashbord-content/components/router-pin';
 
 export default function DashboardContentMap() {
     return (
@@ -14,13 +17,13 @@ export default function DashboardContentMap() {
             </div>
 
             <div className="absolute top-1/4 left-1/3 transform -translate-x-1/2 -translate-y-1/2">
-                <MapPin className="w-8 h-8 text-red-500 fill-red-500 drop-shadow-lg animate-pulse" />
+                <RouterPin routerId={"rid-42835843790269319330715382585"} />
             </div>
             <div className="absolute top-1/2 left-2/3 transform -translate-x-1/2 -translate-y-1/2">
-                <MapPin className="w-6 h-6 text-blue-500 fill-blue-500 drop-shadow-lg" />
+                <RouterPin routerId={"rid-95827364019283746501928374650"} />
             </div>
             <div className="absolute top-2/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                <MapPin className="w-6 h-6 text-green-500 fill-green-500 drop-shadow-lg" />
+                <RouterPin routerId={"rid-34829105738291057382910573829"} />
             </div>
 
             <div className="absolute top-4 right-4 flex flex-col gap-2">
