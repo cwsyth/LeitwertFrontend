@@ -1,8 +1,6 @@
 'use client';
 
 import React from 'react';
-import { useState } from 'react';
-import { MapPin } from "lucide-react";
 import RouterPin from '@/components/dashboard/dashbord-content/components/router-pin';
 
 export default function DashboardContentMap() {
