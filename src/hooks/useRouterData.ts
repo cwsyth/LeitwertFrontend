@@ -17,7 +17,7 @@ interface RouterData {
     ptr: string;
     tier: number;
     latency: number;
-    status: 'critical' | 'warning' | 'healthy';
+    status: 'critical' | 'warning' | 'healthy' | 'unknown';
     asn: {
         id: number;
         name: string;

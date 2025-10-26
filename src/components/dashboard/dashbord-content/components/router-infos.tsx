@@ -15,7 +15,7 @@ import {
     AlertCircle,
     CheckCircle,
     AlertTriangle,
-    Loader2
+    Loader2, CircleDashed
 } from 'lucide-react';
 import { useRouterData } from "@/hooks/useRouterData";
 
@@ -45,9 +45,14 @@ const getStatusConfig = (status: string): StatusConfig => {
             color: 'text-green-500',
             bg: 'bg-green-50',
             label: 'Healthy'
+        },
+        unknown: {
+            icon: CircleDashed,
+            color: 'text-gray-500',
+            bg: 'bg-gray-50',
+            label: 'Unknown'
         }
     };
-    // TODO: add status 'unknown'
     return configs[status] || configs['unknown'];
 };
 
