@@ -42,3 +42,9 @@ next-env.d.ts
 
 # pnpm
 .pnpm-store
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
