@@ -7,6 +7,10 @@ interface DashboardFooterProps {
 }
 
 export default function DashboardFooter({ viewVisibility }: DashboardFooterProps) {
+    if (!viewVisibility.searchResults && !viewVisibility.globalStats) {
+        return null;
+    }
+
     return (
         <div className="dashboard-footer w-full rounded-[var(--radius)] flex gap-3 h-90">
             {viewVisibility.searchResults ? (
