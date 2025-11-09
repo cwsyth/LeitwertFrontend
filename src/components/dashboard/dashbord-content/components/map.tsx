@@ -33,7 +33,7 @@ export default function DashboardContentMap() {
                     longitude: -103.59,
                     zoom: 3
                 }}
-                mapStyle="http://localhost:8080/styles/dark-basic/style.json"
+                mapStyle="https://demotiles.maplibre.org/style.json"
                 interactiveLayerIds={[clusterLayer.id!]}
                 onClick={onClick}
                 ref={mapRef}
