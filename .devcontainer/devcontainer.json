@@ -1,0 +1,66 @@
+{
+    "name": "Next.js Frontend Development",
+    "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {
+            "version": "latest",
+            "ppa": true
+        },
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "installZsh": true,
+            "configureZshAsDefaultShell": true,
+            "installOhMyZsh": true,
+            "upgradePackages": true,
+            "username": "node",
+            "userUid": "automatic",
+            "userGid": "automatic"
+        }
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "eamodio.gitlens",
+                "ms-vscode.vscode-typescript-next",
+                "visualstudioexptteam.vscodeintellicode",
+                "streetsidesoftware.code-spell-checker-german",
+                "streetsidesoftware.code-spell-checker",
+                "editorconfig.editorconfig",
+                "crystal-spider.jsdoc-generator",
+                "bradlc.vscode-tailwindcss",
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode"
+            ],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "editor.formatOnSave": true,
+                "editor.defaultFormatter": "esbenp.prettier-vscode",
+                "editor.codeActionsOnSave": {
+                    "source.fixAll.eslint": "explicit"
+                },
+                "typescript.tsdk": "node_modules/typescript/lib",
+                "tailwindCSS.experimental.classRegex": [
+                    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+                ]
+            }
+        }
+    },
+
+    "postCreateCommand": "corepack enable && corepack prepare pnpm@latest --activate && pnpm install",
+
+    "forwardPorts": [3000],
+
+    "portsAttributes": {
+        "3000": {
+            "label": "Next.js Dev Server",
+            "onAutoForward": "notify"
+        }
+    },
+
+    "remoteUser": "node",
+
+    "mounts": [
+        "source=${localWorkspaceFolder}/.vscode,target=${containerWorkspaceFolder}/.vscode,type=bind,consistency=cached"
+    ]
+}

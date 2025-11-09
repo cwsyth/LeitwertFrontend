@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# pnpm
+.pnpm-store
+
 # IntelliJ
 .idea/
 *.iml
