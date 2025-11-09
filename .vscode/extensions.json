@@ -1,0 +1,11 @@
+{
+    "recommendations": [   
+        "eamodio.gitlens",
+        "ms-vscode.vscode-typescript-next",
+        "visualstudioexptteam.vscodeintellicode",
+        "streetsidesoftware.code-spell-checker-german",
+        "streetsidesoftware.code-spell-checker",
+        "editorconfig.editorconfig",
+        "crystal-spider.jsdoc-generator",
+    ]
+}
