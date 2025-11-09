@@ -29,7 +29,7 @@ export default function Dashboard() {
                 <DashboardHeader viewVisibility={viewVisibility} toggleView={toggleView} />
                 <DashboardNav mode={mode} setMode={setMode} />
                 <DashboardContent mode={mode} />
-                {/* {viewVisibility.timeline && <DashboardTimeline />} */}
+                {viewVisibility.timeline && <DashboardTimeline />}
                 <DashboardFooter viewVisibility={viewVisibility} />
             </div>
         </div>
