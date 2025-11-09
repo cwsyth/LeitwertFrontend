@@ -6,37 +6,22 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Check, ChevronUp } from "lucide-react";
+import { countries as countriesData } from "countries-list";
+import { CircleFlag } from "react-circle-flags";
 
-const countries = [
-    "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia",
-    "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium",
-    "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "Brunei",
-    "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Canada", "Cape Verde",
-    "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica",
-    "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic",
-    "East Timor", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia",
-    "Fiji", "Finland", "France", "Gabon", "Gambia", "Georgia", "Germany", "Ghana", "Greece", "Grenada",
-    "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "India",
-    "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan",
-    "Kenya", "Kiribati", "North Korea", "South Korea", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon",
-    "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macedonia", "Madagascar",
-    "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius",
-    "Mexico", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique",
-    "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria",
-    "Norway", "Oman", "Pakistan", "Palau", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines",
-    "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia",
-    "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia",
-    "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands",
-    "Somalia", "South Africa", "South Sudan", "Spain", "Sri Lanka", "Sudan", "Suriname", "Swaziland",
-    "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Togo", "Tonga",
-    "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine",
-    "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Vanuatu",
-    "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"
-];
+interface Country {
+    code: string;
+    name: string;
+}
+
+const countries: Country[] = Object.entries(countriesData).map(([code, data]) => ({
+    code: code.toLowerCase(),
+    name: data.name
+})).sort((a, b) => a.name.localeCompare(b.name));
 
 export default function DashboardHeaderFilter() {
     const [open, setOpen] = useState(false);
-    const [selectedCountry, setSelectedCountry] = useState("");
+    const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [tiers, setTiers] = useState({
         tier1: true,
@@ -45,7 +30,7 @@ export default function DashboardHeaderFilter() {
     });
 
     const filteredCountries = countries.filter(country =>
-        country.toLowerCase().includes(searchQuery.toLowerCase())
+        country.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const handleTierChange = (tier: keyof typeof tiers) => {
@@ -71,7 +56,14 @@ export default function DashboardHeaderFilter() {
                                     aria-expanded={open}
                                     className="w-68 justify-between"
                                 >
-                                    {selectedCountry || "Select country..."}
+                                    <div className="flex items-center gap-2">
+                                        {selectedCountry && (
+                                            <div className="flex items-center justify-center w-5 h-5 rounded-full">
+                                                <CircleFlag countryCode={selectedCountry.code} height={16} />
+                                            </div>
+                                        )}
+                                        <span>{selectedCountry?.name || "Select country..."}</span>
+                                    </div>
                                     <ChevronUp
                                         className={`ml-2 h-4 w-4 shrink-0 transition-transform duration-300 ${
                                             open ? "rotate-180" : ""
@@ -100,7 +92,7 @@ export default function DashboardHeaderFilter() {
                                         ) : (
                                             filteredCountries.map((country) => (
                                                 <div
-                                                    key={country}
+                                                    key={country.code}
                                                     onClick={() => {
                                                         setSelectedCountry(country);
                                                         setOpen(false);
@@ -110,10 +102,13 @@ export default function DashboardHeaderFilter() {
                                                 >
                                                     <Check
                                                         className={`mr-2 h-4 w-4 ${
-                                                            selectedCountry === country ? "opacity-100" : "opacity-0"
+                                                            selectedCountry?.code === country.code ? "opacity-100" : "opacity-0"
                                                         }`}
                                                     />
-                                                    {country}
+                                                    <div className="flex items-center justify-center w-5 h-5 rounded-full">
+                                                        <CircleFlag countryCode={country.code} height={16} className="mr-3" />
+                                                    </div>
+                                                    {country.name}
                                                 </div>
                                             ))
                                         )}
