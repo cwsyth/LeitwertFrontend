@@ -13,7 +13,7 @@ build:
   script:
     - |
       docker build \
-        --tag $DOCKER_IMAGE:$CI_COMMIT_REF_SLUG \
+        --tag $DOCKER_IMAGE:$CI_COMMIT_SHA \
         --tag $DOCKER_IMAGE:latest \
         .
     - docker push --all-tags $DOCKER_IMAGE
