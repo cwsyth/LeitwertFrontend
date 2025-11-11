@@ -17,3 +17,6 @@ build:
         --tag $DOCKER_IMAGE:latest \
         .
     - docker push --all-tags $DOCKER_IMAGE
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_COMMIT_BRANCH == "main"
