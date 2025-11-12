@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: dashboard
-          image: registry.univ.leitwert.net/lagebild/t4-frontend/dashboard:latest
+          image: docker.io/lup7043/dashboard:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -49,4 +49,4 @@ spec:
 #            initialDelaySeconds: 10
 #            periodSeconds: 5
       imagePullSecrets:
-        - name: gitlab-registry
+        - name: docker-registry
