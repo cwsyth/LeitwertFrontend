@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: dashboard
-          image: docker.io/lup7043/dashboard:latest
+          image: docker.io/lup7043/dashboard
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
