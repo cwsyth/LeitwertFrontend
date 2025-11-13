@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: dashboard
   namespace: frontend-dev
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 172.17.179.204
   labels:
     app: dashboard
 spec:
