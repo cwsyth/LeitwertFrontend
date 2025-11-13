@@ -9,7 +9,8 @@ build:
   services:
     - docker:24.0.5-dind
   before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    # - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - echo "$CONTAINER_REGISTRY_PASSWORD" | docker login $CONTAINER_REGISTRY -u $CONTAINER_REGISTRY_USER --password-stdin
   script:
     - |
       docker build \
