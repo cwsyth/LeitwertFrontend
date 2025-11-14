@@ -1,6 +1,9 @@
 stages:
   - build
 
+variables:
+  CONTAINER_IMAGE: $CI_REGISTRY_IMAGE/dashboard
+
 build:
   stage: build
   tags:
@@ -9,15 +12,14 @@ build:
   services:
     - docker:24.0.5-dind
   before_script:
-    # - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - echo "$CONTAINER_REGISTRY_PASSWORD" | docker login $CONTAINER_REGISTRY -u $CONTAINER_REGISTRY_USER --password-stdin
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
   script:
     - |
       docker build \
-        --tag $DOCKER_IMAGE:$CI_COMMIT_SHA \
-        --tag $DOCKER_IMAGE:latest \
+        --tag $CONTAINER_IMAGE:$CI_COMMIT_SHA \
+        --tag $CONTAINER_IMAGE:latest \
         .
-    - docker push --all-tags $DOCKER_IMAGE
+    - docker push --all-tags $CONTAINER_IMAGE
 #  rules:
 #    - if: $CI_COMMIT_BRANCH == "dev"
 #    - if: $CI_COMMIT_BRANCH == "main"
