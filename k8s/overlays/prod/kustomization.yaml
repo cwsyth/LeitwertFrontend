@@ -2,7 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
-  - service.yaml
+patches:
+  - path: service.yaml
 namespace: frontend-prod
 images:
   - name: docker.io/lup7043/dashboard
