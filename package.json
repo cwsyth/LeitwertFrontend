@@ -23,10 +23,12 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "countries-list": "^3.2.0",
     "lucide-react": "^0.546.0",
     "maplibre-gl": "^5.9.0",
     "next": "15.5.5",
     "react": "19.1.0",
+    "react-circle-flags": "^0.0.24",
     "react-dom": "19.1.0",
     "react-map-gl": "^8.1.0",
     "tailwind-merge": "^3.3.1"

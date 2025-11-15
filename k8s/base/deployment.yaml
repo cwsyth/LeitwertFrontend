@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+  namespace: frontend-dev
+  labels:
+    app: dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+    spec:
+      containers:
+        - name: dashboard
+          image: docker.io/lup7043/dashboard
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+          envFrom:
+            - configMapRef:
+                name: dashboard-config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+#          TODO: Enable probes when health endpoint is implemented
+#          livenessProbe:
+#            httpGet:
+#              path: /api/health
+#              port: 3000
+#            initialDelaySeconds: 30
+#            periodSeconds: 10
+#          readinessProbe:
+#            httpGet:
+#              path: /api/health
+#              port: 3000
+#            initialDelaySeconds: 10
+#            periodSeconds: 5
+      imagePullSecrets:
+        - name: docker-registry

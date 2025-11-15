@@ -1,26 +1,49 @@
-# You can override the included template(s) by including variable overrides
-# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
-# Secret Detection customization: https://docs.gitlab.com/user/application_security/secret_detection/pipeline/configure
-# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
-# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
-# Note that environment variables can be set in several places
-# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
 stages:
-- build
-- test
-- deploy
-- review
-- dast
-- staging
-- canary
-- production
-- incremental rollout 10%
-- incremental rollout 25%
-- incremental rollout 50%
-- incremental rollout 100%
-- performance
-- cleanup
-sast:
-  stage: test
-include:
-- template: Auto-DevOps.gitlab-ci.yml
+  - build
+
+default:
+  tags:
+    - dev-runner
+  image:
+    name: docker:24.0.5-cli
+#    pull_policy: if-not-present
+
+  services:
+    - name: docker:24.0.5-dind
+#      pull_policy: if-not-present
+
+.registry_login: &registry_login
+  before_script:
+    # - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
+    - echo "$CONTAINER_REGISTRY_PASSWORD" | docker login $CONTAINER_REGISTRY -u $CONTAINER_REGISTRY_USER --password-stdin
+
+build:dev:
+  stage: build
+  <<: *registry_login
+  script:
+    - |
+      docker build \
+        --tag $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA \
+        --tag $DOCKER_IMAGE:latest \
+        .
+    - docker push --all-tags $DOCKER_IMAGE
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+  environment:
+    name: development
+    url: https://dev.univ.leitwert.net
+
+build:prod:
+  stage: build
+  <<: *registry_login
+  script:
+    - |
+      docker build \
+        --tag $DOCKER_IMAGE:$CI_COMMIT_TAG \
+        .
+    - docker push $DOCKER_IMAGE:$CI_COMMIT_TAG
+  rules:
+    - if: $CI_COMMIT_TAG && $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+  environment:
+    name: production
+    url: https://frontend.univ.leitwert.net
