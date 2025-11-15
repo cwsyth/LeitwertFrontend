@@ -1,16 +1,21 @@
 stages:
   - build
 
-build:dev:
-  stage: build
+default:
   tags:
     - dev-runner
   image: docker:24.0.5-cli
   services:
     - docker:24.0.5-dind
+
+.registry_login: &registry_login
   before_script:
     # - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
     - echo "$CONTAINER_REGISTRY_PASSWORD" | docker login $CONTAINER_REGISTRY -u $CONTAINER_REGISTRY_USER --password-stdin
+
+build:dev:
+  stage: build
+  <<: *registry_login
   script:
     - |
       docker build \
@@ -27,14 +32,7 @@ build:dev:
 
 build:prod:
   stage: build
-  tags:
-    - dev-runner
-  image: docker:24.0.5-cli
-  services:
-    - docker:24.0.5-dind
-  before_script:
-    # - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - echo "$CONTAINER_REGISTRY_PASSWORD" | docker login $CONTAINER_REGISTRY -u $CONTAINER_REGISTRY_USER --password-stdin
+  <<: *registry_login
   script:
     - |
       docker build \
