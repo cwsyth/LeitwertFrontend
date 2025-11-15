@@ -7,4 +7,4 @@ patches:
 namespace: frontend-prod
 images:
   - name: docker.io/lup7043/dashboard
-    newTag: v1.0.0
+    newTag: v1.0.0-rc1
