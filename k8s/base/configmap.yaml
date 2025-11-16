@@ -1,8 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: dashboard-config
-  namespace: frontend-dev
+  name: dashboard
 data:
   # TODO: add connection to backend service and set the correct URL
   NEXT_PUBLIC_API_URL: ""
