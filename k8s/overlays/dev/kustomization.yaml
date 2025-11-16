@@ -1,10 +1,22 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
+
+namespace: frontend-dev
+
+metadata:
+  labels:
+    app.kubernetes.io/instance: dashboard-dev
+    environment: development
+
+commonAnnotations:
+  description: "Dashboard (DEV)"
+
 resources:
   - ../../base
+
 patches:
   - path: service.yaml
-namespace: frontend-dev
+
 images:
   - name: docker.io/lup7043/dashboard
     newTag: latest
