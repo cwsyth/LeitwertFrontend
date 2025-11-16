@@ -2,18 +2,15 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dashboard
-  namespace: frontend-dev
-  labels:
-    app: dashboard
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: dashboard
+      app.kubernetes.io/name: dashboard
   template:
     metadata:
       labels:
-        app: dashboard
+        app.kubernetes.io/name: dashboard
     spec:
       containers:
         - name: dashboard
@@ -27,7 +24,7 @@ spec:
               value: "production"
           envFrom:
             - configMapRef:
-                name: dashboard-config
+                name: dashboard
           resources:
             requests:
               memory: "256Mi"
@@ -35,13 +32,15 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "500m"
-#          TODO: Enable probes when health endpoint is implemented
-#          livenessProbe:
-#            httpGet:
-#              path: /api/health
-#              port: 3000
-#            initialDelaySeconds: 30
-#            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/healthz
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            # TODO: Enable readiness probe
 #          readinessProbe:
 #            httpGet:
 #              path: /api/health
