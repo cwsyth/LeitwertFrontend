@@ -4,3 +4,9 @@ metadata:
   name: dashboard
   annotations:
     metallb.universe.tf/loadBalancerIPs: 172.17.179.204
+spec:
+  ports:
+    - port: 8100
+      targetPort: http
+      protocol: TCP
+      name: http
