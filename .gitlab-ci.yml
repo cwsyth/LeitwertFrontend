@@ -6,11 +6,11 @@ default:
     - dev-runner
   image:
     name: docker:24.0.5-cli
-#    pull_policy: if-not-present
+    pull_policy: if-not-present
 
   services:
     - name: docker:24.0.5-dind
-#      pull_policy: if-not-present
+      pull_policy: if-not-present
 
 .registry_login: &registry_login
   before_script:
