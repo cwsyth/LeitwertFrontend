@@ -3,5 +3,4 @@ kind: ConfigMap
 metadata:
   name: dashboard
 data:
-  # TODO: add connection to backend service and set the correct URL
-  NEXT_PUBLIC_API_URL: ""
+  NEXT_PUBLIC_FRONTEND_API_URL: "http://frontendapi:5000"
