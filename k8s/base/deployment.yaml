@@ -15,7 +15,7 @@ spec:
       containers:
         - name: dashboard
           image: docker.io/lup7043/dashboard
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 3000
