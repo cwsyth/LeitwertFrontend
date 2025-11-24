@@ -15,7 +15,7 @@ resources:
   - ../../base
 
 patches:
-  - path: service.yaml
+  - path: service-frontend.yaml
 
 images:
   - name: docker.io/lup7043/dashboard
