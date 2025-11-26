@@ -14,8 +14,7 @@ default:
 
 .registry_login: &registry_login
   before_script:
-    # - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - echo "$CONTAINER_REGISTRY_PASSWORD" | docker login $CONTAINER_REGISTRY -u $CONTAINER_REGISTRY_USER --password-stdin
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
 
 build:dev:
   stage: build
@@ -24,12 +23,12 @@ build:dev:
     - |
       docker build \
         --build-arg BUILDKIT_INLINE_CACHE=1 \
-        --cache-from $DOCKER_IMAGE:latest \
-        --tag $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA \
-        --tag $DOCKER_IMAGE:latest \
+        --cache-from $CI_REGISTRY_IMAGE:latest \
+        --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
+        --tag $CI_REGISTRY_IMAGE:latest \
         .
-    - docker push $DOCKER_IMAGE:$CI_COMMIT_SHORT_SHA
-    - docker push $DOCKER_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
 #  rules:
 #    - if: $CI_COMMIT_BRANCH == "dev"
   environment:
