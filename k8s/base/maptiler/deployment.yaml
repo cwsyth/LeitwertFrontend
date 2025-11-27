@@ -4,6 +4,9 @@ metadata:
   name: maptiler
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: maptiler
   template:
     metadata:
       labels:
