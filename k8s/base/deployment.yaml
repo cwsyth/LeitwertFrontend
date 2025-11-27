@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: dashboard
-          image: docker.io/lup7043/dashboard
+          image: registry.univ.leitwert.net/lagebild/t4-frontend/frontend
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
