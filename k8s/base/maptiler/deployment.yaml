@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: maptiler
-          image: docker.io/maptiler/maptiler-server:latest
+          image: maptiler/tileserver-gl:next
           imagePullPolicy: Always
           ports:
             - name: http
