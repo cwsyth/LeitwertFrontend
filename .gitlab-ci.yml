@@ -50,4 +50,4 @@ build:prod:
     - if: $CI_COMMIT_TAG
   environment:
     name: production
-    url: https://frontend.univ.leitwert.net
+    url: https://dashboard.univ.leitwert.net
