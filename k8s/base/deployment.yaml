@@ -48,4 +48,4 @@ spec:
 #            initialDelaySeconds: 10
 #            periodSeconds: 5
       imagePullSecrets:
-        - name: docker-registry
+        - name: leitwert-container-registry
