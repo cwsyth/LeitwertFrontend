@@ -29,8 +29,8 @@ build:dev:
         .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
     - docker push $CI_REGISTRY_IMAGE:latest
-#  rules:
-#    - if: $CI_COMMIT_BRANCH == "dev"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
   environment:
     name: development
     url: https://dev.univ.leitwert.net
