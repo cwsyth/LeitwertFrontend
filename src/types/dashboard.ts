@@ -4,4 +4,5 @@ export interface DashboardViewVisibility {
     timeline: boolean;
     searchResults: boolean;
     globalStats: boolean;
+    bgpAnnouncements: boolean;
 }

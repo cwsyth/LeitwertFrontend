@@ -132,13 +132,14 @@ const CustomBoxPlot = (props: CustomBoxPlotProps) => {
     );
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
         const data = payload[0].payload as BoxPlotData;
         return (
             <div className="bg-background border rounded-lg p-3 shadow-lg text-sm">
                 <p className="font-medium mb-2">
-                    {new Date(data.timestamp).toLocaleDateString()}
+                    {new Date(data.timestamp).toLocaleString()}
                 </p>
                 <div className="space-y-1">
                     <p className="text-muted-foreground">
@@ -209,7 +210,7 @@ export function BoxPlotChart({ data }: { data: BoxPlotData[] }) {
                             entry.p099,
                         ]}
                         shape={<CustomBoxPlot />}
-                        isAnimationActive={false}
+                        isAnimationActive={true}
                     />
                 </BarChart>
             </ResponsiveContainer>
