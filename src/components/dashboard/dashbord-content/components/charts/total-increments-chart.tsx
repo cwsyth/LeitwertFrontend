@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
     Line,
     LineChart,
@@ -15,13 +16,13 @@ interface TotalIncrementsChartProps {
     data: BoxPlotData[];
 }
 
-export function TotalIncrementsChart({ data }: TotalIncrementsChartProps) {
+const TotalIncrementsChartComponent = ({ data }: TotalIncrementsChartProps) => {
     return (
         <div className="w-full h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                     data={data}
-                    margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
+                    margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
                 >
                     <CartesianGrid
                         strokeDasharray="3 3"
@@ -38,8 +39,12 @@ export function TotalIncrementsChart({ data }: TotalIncrementsChartProps) {
                         }}
                         className="text-xs text-muted-foreground"
                     />
-                    <YAxis className="text-xs text-muted-foreground" />
+                    <YAxis
+                        className="text-xs text-muted-foreground"
+                        width={50}
+                    />
                     <Tooltip
+                        isAnimationActive={false}
                         content={({ active, payload, label }) => {
                             if (active && payload && payload.length) {
                                 return (
@@ -77,9 +82,12 @@ export function TotalIncrementsChart({ data }: TotalIncrementsChartProps) {
                         strokeWidth={2}
                         dot={false}
                         activeDot={{ r: 4, strokeWidth: 0 }}
+                        isAnimationActive={false}
                     />
                 </LineChart>
             </ResponsiveContainer>
         </div>
     );
-}
+};
+
+export const TotalIncrementsChart = memo(TotalIncrementsChartComponent);

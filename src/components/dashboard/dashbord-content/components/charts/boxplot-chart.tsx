@@ -11,6 +11,7 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
+import { memo } from "react";
 
 export interface BoxPlotData {
     as_path_entry: string;
@@ -179,13 +180,13 @@ const CustomTooltip = ({ active, payload }: any) => {
     return null;
 };
 
-export function BoxPlotChart({ data }: { data: BoxPlotData[] }) {
+const BoxPlotChartComponent = ({ data }: { data: BoxPlotData[] }) => {
     return (
         <div className="w-full h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     data={data}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
                 >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis
@@ -201,8 +202,11 @@ export function BoxPlotChart({ data }: { data: BoxPlotData[] }) {
                         }
                         tick={{ fontSize: 12 }}
                     />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip content={<CustomTooltip />} />
+                    <YAxis tick={{ fontSize: 12 }} width={50} />
+                    <Tooltip
+                        content={<CustomTooltip />}
+                        isAnimationActive={false}
+                    />
                     {/* Using Bar with custom shape, passing array [min, max] to dataKey */}
                     <Bar
                         dataKey={(entry: BoxPlotData) => [
@@ -210,10 +214,12 @@ export function BoxPlotChart({ data }: { data: BoxPlotData[] }) {
                             entry.p099,
                         ]}
                         shape={<CustomBoxPlot />}
-                        isAnimationActive={true}
+                        isAnimationActive={false}
                     />
                 </BarChart>
             </ResponsiveContainer>
         </div>
     );
-}
+};
+
+export const BoxPlotChart = memo(BoxPlotChartComponent);
