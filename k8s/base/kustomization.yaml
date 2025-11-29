@@ -8,6 +8,8 @@ metadata:
         app.kubernetes.io/managed-by: argocd
 
 resources:
-  - deployment.yaml
-  - service.yaml
-  - configmap.yaml
+  - frontend/deployment.yaml
+  - frontend/service.yaml
+  - frontend/configmap.yaml
+  - maptiler/deployment.yaml
+  - maptiler/service.yaml

@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
         - name: dashboard
-          image: docker.io/lup7043/dashboard
-          imagePullPolicy: IfNotPresent
+          image: registry.univ.leitwert.net/lagebild/t4-frontend/frontend
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 3000
@@ -48,4 +48,4 @@ spec:
 #            initialDelaySeconds: 10
 #            periodSeconds: 5
       imagePullSecrets:
-        - name: docker-registry
+        - name: leitwert-container-registry
