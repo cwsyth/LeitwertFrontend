@@ -46,14 +46,14 @@ type QueryMode = "as" | "cc";
 async function fetchBoxPlotData(
     range: TimeRange,
     mode: QueryMode,
-    identifier: string
+    identifier: string,
+    endDate: string
 ): Promise<BoxPlotData[]> {
     const config = CONFIG[range];
-    const to = new Date();
+    // Temporary workaround: Use provided end date until continuous data is available
+    const to = endDate ? new Date(endDate) : new Date();
     to.setUTCHours(0, 0, 0, 0);
-    // const to = new Date();
-    // to.setUTCFullYear(2025, 9, 7);
-    // to.setUTCHours(0, 0, 0, 0);
+
     const from = new Date(to.getTime() - config.days * 24 * 60 * 60 * 1000);
 
     const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_API_URL || "";
@@ -148,6 +148,10 @@ export function BgpAnnounceChart() {
     const [mode, setMode] = useState<QueryMode>("as");
     const [identifier, setIdentifier] = useState("");
     const [debouncedIdentifier, setDebouncedIdentifier] = useState(identifier);
+    // Temporary workaround: Custom end date state
+    const [customEndDate, setCustomEndDate] = useState(
+        new Date().toISOString().split("T")[0]
+    );
 
     // Timeline state
     const [currentTimePercent, setCurrentTimePercent] = useState(100); // 0-100% of the VIEW range
@@ -170,8 +174,15 @@ export function BgpAnnounceChart() {
     }, [identifier]);
 
     const { data, isLoading, error, isFetching } = useQuery({
-        queryKey: ["bgp-announce-data", range, mode, debouncedIdentifier],
-        queryFn: () => fetchBoxPlotData(range, mode, debouncedIdentifier),
+        queryKey: [
+            "bgp-announce-data",
+            range,
+            mode,
+            debouncedIdentifier,
+            customEndDate,
+        ],
+        queryFn: () =>
+            fetchBoxPlotData(range, mode, debouncedIdentifier, customEndDate),
         enabled: debouncedIdentifier.length > 0,
     });
 
@@ -187,12 +198,13 @@ export function BgpAnnounceChart() {
     // Calculate dates
     const { from, to } = useMemo(() => {
         const config = CONFIG[range];
-        const t = new Date();
-        t.setUTCFullYear(2025, 9, 7); // Hardcoded as in original
+        // Temporary workaround: Use provided end date until continuous data is available
+        const t = customEndDate ? new Date(customEndDate) : new Date();
+        // t.setUTCFullYear(2025, 9, 7); // Hardcoded as in original
         t.setUTCHours(0, 0, 0, 0);
         const f = new Date(t.getTime() - config.days * 24 * 60 * 60 * 1000);
         return { from: f, to: t };
-    }, [range]);
+    }, [range, customEndDate]);
 
     const totalDuration = to.getTime() - from.getTime();
 
@@ -332,29 +344,46 @@ export function BgpAnnounceChart() {
                         />
                     </div>
 
-                    <Select
-                        value={range}
-                        onValueChange={(val) => {
-                            setRange(val as TimeRange);
-                            setViewRange([0, 100]); // Reset view range on range change
-                            setCurrentTimePercent(100); // Reset current time
-                        }}
-                    >
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Zeitraum wählen" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="small">
-                                {formatLabel(CONFIG.small.days)}
-                            </SelectItem>
-                            <SelectItem value="medium">
-                                {formatLabel(CONFIG.medium.days)}
-                            </SelectItem>
-                            <SelectItem value="large">
-                                {formatLabel(CONFIG.large.days)}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <div className="flex items-center gap-2">
+                        {/* Temporary workaround: Date input for end date */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                End-Datum:
+                            </span>
+                            <input
+                                type="date"
+                                value={customEndDate}
+                                onChange={(e) =>
+                                    setCustomEndDate(e.target.value)
+                                }
+                                className="flex h-10 w-min rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                        </div>
+
+                        <Select
+                            value={range}
+                            onValueChange={(val) => {
+                                setRange(val as TimeRange);
+                                setViewRange([0, 100]); // Reset view range on range change
+                                setCurrentTimePercent(100); // Reset current time
+                            }}
+                        >
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Zeitraum wählen" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="small">
+                                    {formatLabel(CONFIG.small.days)}
+                                </SelectItem>
+                                <SelectItem value="medium">
+                                    {formatLabel(CONFIG.medium.days)}
+                                </SelectItem>
+                                <SelectItem value="large">
+                                    {formatLabel(CONFIG.large.days)}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
             </CardHeader>
             <CardContent className="relative min-h-[400px] flex flex-col gap-4">
