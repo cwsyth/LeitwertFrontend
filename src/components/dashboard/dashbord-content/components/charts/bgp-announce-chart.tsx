@@ -56,7 +56,7 @@ async function fetchBoxPlotData(
 
     const from = new Date(to.getTime() - config.days * 24 * 60 * 60 * 1000);
 
-    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_API_URL || "";
+    const baseUrl = process.env.INTERNAL_FRONTEND_API_URL || "";
     let url = "";
 
     if (mode === "as") {
@@ -78,6 +78,7 @@ function ChartTooltip({
     type: "boxplot" | "line";
 }) {
     if (type === "line") {
+        // Line chart
         return (
             <div className="rounded-lg border bg-background p-2 shadow-sm text-xs w-48">
                 <div className="flex flex-col gap-2">
@@ -101,7 +102,7 @@ function ChartTooltip({
             </div>
         );
     }
-    // Boxplot
+    // Boxplot chart
     return (
         <div className="bg-background border rounded-lg p-3 shadow-lg text-xs w-48">
             <p className="font-medium mb-2">
