@@ -144,6 +144,7 @@ function ChartTooltip({
 }
 
 export function BgpAnnounceChart() {
+    const DEBOUNCE_TIME = 500;
     const [range, setRange] = useState<TimeRange>("small");
     const [mode, setMode] = useState<QueryMode>("as");
     const [identifier, setIdentifier] = useState("");
@@ -152,6 +153,7 @@ export function BgpAnnounceChart() {
     const [customEndDate, setCustomEndDate] = useState(
         new Date().toISOString().split("T")[0]
     );
+    const [debouncedEndDate, setDebouncedEndDate] = useState(customEndDate);
 
     // Timeline state
     const [currentTimePercent, setCurrentTimePercent] = useState(100); // 0-100% of the VIEW range
@@ -166,12 +168,22 @@ export function BgpAnnounceChart() {
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedIdentifier(identifier);
-        }, 500);
+        }, DEBOUNCE_TIME);
 
         return () => {
             clearTimeout(handler);
         };
     }, [identifier]);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedEndDate(customEndDate);
+        }, DEBOUNCE_TIME);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [customEndDate]);
 
     const { data, isLoading, error, isFetching } = useQuery({
         queryKey: [
@@ -179,10 +191,15 @@ export function BgpAnnounceChart() {
             range,
             mode,
             debouncedIdentifier,
-            customEndDate,
+            debouncedEndDate,
         ],
         queryFn: () =>
-            fetchBoxPlotData(range, mode, debouncedIdentifier, customEndDate),
+            fetchBoxPlotData(
+                range,
+                mode,
+                debouncedIdentifier,
+                debouncedEndDate
+            ),
         enabled: debouncedIdentifier.length > 0,
     });
 
@@ -199,12 +216,12 @@ export function BgpAnnounceChart() {
     const { from, to } = useMemo(() => {
         const config = CONFIG[range];
         // Temporary workaround: Use provided end date until continuous data is available
-        const t = customEndDate ? new Date(customEndDate) : new Date();
+        const t = debouncedEndDate ? new Date(debouncedEndDate) : new Date();
         // t.setUTCFullYear(2025, 9, 7); // Hardcoded as in original
         t.setUTCHours(0, 0, 0, 0);
         const f = new Date(t.getTime() - config.days * 24 * 60 * 60 * 1000);
         return { from: f, to: t };
-    }, [range, customEndDate]);
+    }, [range, debouncedEndDate]);
 
     const totalDuration = to.getTime() - from.getTime();
 
