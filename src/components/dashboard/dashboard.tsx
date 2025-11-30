@@ -11,6 +11,7 @@ import {
     DashboardViewVisibility,
 } from "@/types/dashboard";
 import { BgpAnnounceChart } from "./dashbord-content/components/charts/bgp-announce-chart";
+import { AnomalyChart } from "./dashbord-content/components/charts/anomaly-chart";
 
 export default function Dashboard() {
     const [mode, setMode] = useState<DashboardContentMode>("street");
@@ -20,6 +21,7 @@ export default function Dashboard() {
             searchResults: true,
             globalStats: true,
             bgpAnnouncements: false,
+            anomalies: false,
         });
 
     const toggleView = (view: keyof DashboardViewVisibility) => {
@@ -39,6 +41,7 @@ export default function Dashboard() {
                 <DashboardNav mode={mode} setMode={setMode} />
                 <DashboardContent mode={mode} />
                 {viewVisibility.bgpAnnouncements && <BgpAnnounceChart />}
+                {viewVisibility.anomalies && <AnomalyChart />}
                 {viewVisibility.timeline && <DashboardTimeline />}
                 <DashboardFooter viewVisibility={viewVisibility} />
             </div>
