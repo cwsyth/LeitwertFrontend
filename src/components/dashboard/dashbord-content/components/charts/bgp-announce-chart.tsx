@@ -56,7 +56,7 @@ async function fetchBoxPlotData(
 
     const from = new Date(to.getTime() - config.days * 24 * 60 * 60 * 1000);
 
-    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_API_URL || "";
+    const baseUrl = process.env.INTERNAL_FRONTEND_API_URL || "";
     let url = "";
 
     if (mode === "as") {

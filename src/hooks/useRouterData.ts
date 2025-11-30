@@ -27,7 +27,7 @@ interface RouterData {
     ipv4_cidrs: string[];
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_FRONTEND_API_URL;
+const API_BASE_URL = process.env.INTERNAL_FRONTEND_API_URL;
 
 async function fetchRouterData(routerId: string): Promise<RouterData> {
     const response = await fetch(`${API_BASE_URL}/api/v1/detail_view`, {
