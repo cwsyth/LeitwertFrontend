@@ -16,6 +16,7 @@ resources:
 
 patches:
   - path: service.yaml
+  - path: ingress.yaml
 
 images:
   - name: registry.univ.leitwert.net/lagebild/t4-frontend/frontend

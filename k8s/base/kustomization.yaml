@@ -11,5 +11,6 @@ resources:
   - frontend/deployment.yaml
   - frontend/service.yaml
   - frontend/configmap.yaml
+  - frontend/ingress.yaml
   - maptiler/deployment.yaml
   - maptiler/service.yaml
