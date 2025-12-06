@@ -2,15 +2,17 @@
 
 import { CountriesTreeMap } from "@/components/network/CountriesTreeMap";
 import { AsTreeMap } from "@/components/network/AsTreeMap";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
 export default function DashboardContentHierarchy() {
     const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
     const [showCountryView, setShowCountryView] = useState(false);
+    const [limit, setLimit] = useState(50);
 
     const handleCountryClick = (countryCode: string) => {
         setSelectedCountry(countryCode);
@@ -19,6 +21,13 @@ export default function DashboardContentHierarchy() {
 
     const handleBackToWorld = () => {
         setShowCountryView(false);
+    };
+
+    const handleLimitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(e.target.value);
+        if (!isNaN(value) && value > 0) {
+            setLimit(value);
+        }
     };
 
     return (
@@ -55,17 +64,36 @@ export default function DashboardContentHierarchy() {
                 </div>
             </div>
 
+            {/* Customization Options */}
+            <div className="mb-6 p-4 border rounded-lg bg-card">
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2">
+                        <Label htmlFor="limit-input" className="whitespace-nowrap">
+                            Anzahl:
+                        </Label>
+                        <Input
+                            id="limit-input"
+                            type="number"
+                            min="1"
+                            value={limit}
+                            onChange={handleLimitChange}
+                            className="w-15"
+                        />
+                    </div>
+                </div>
+            </div>
+
             {/* TreeMap Content */}
             {!showCountryView ? (
                 <CountriesTreeMap
-                    limit={50}
+                    limit={limit}
                     onCountryClick={handleCountryClick}
                 />
             ) : (
                 selectedCountry && (
                     <AsTreeMap
                         countryCode={selectedCountry}
-                        limit={50}
+                        limit={limit}
                     />
                 )
             )}
