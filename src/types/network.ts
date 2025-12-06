@@ -5,6 +5,8 @@
  * For a copy, see LICENSE.txt in the project root.
  */
 
+import { ReactNode } from "react";
+
 export interface CountryData {
     code: string;
     name: string;
@@ -71,4 +73,25 @@ export interface TreeMapOthersData {
     count: number;
     totalAnomalyCount: number;
     items: Array<{ id: string; name: string }>;
+}
+
+export interface TreeMapProps {
+    data: TreeMapDataItem[];
+    others?: TreeMapOthersData;
+    title: string;
+    onStatusFilter: (status: NetworkStatus | 'all') => void;
+    currentStatus: NetworkStatus | 'all';
+    renderTooltip: (data: TreeMapDataItem | TreeMapOthersData) => ReactNode;
+    othersDisplaySize?: number;
+    onItemClick?: (item: TreeMapDataItem) => void;
+}
+
+export interface AsTreeMapProps {
+    countryCode: string;
+    limit?: number;
+}
+
+export interface CountriesTreeMapProps {
+    limit?: number;
+    onCountryClick?: (countryCode: string) => void;
 }
