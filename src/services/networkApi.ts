@@ -14,17 +14,39 @@ export const networkApi = {
         const params = new URLSearchParams({ limit: limit.toString() });
         if (status) params.append('status', status);
 
-        const response = await fetch(`${API_BASE_URL}/api/v1/network/countries/summary?${params}`);
-        if (!response.ok) throw new Error('Failed to fetch countries summary');
-        return response.json();
+        console.log('Fetching countries summary with params:', params.toString());
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/v1/network/countries/summary?${params}`);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to fetch countries summary: ${response.status} ${errorText}`);
+            }
+
+            return response.json();
+        } catch (error) {
+            console.error('Error fetching countries summary:', error);
+            throw error;
+        }
     },
 
     async getCountryAs(countryCode: string, limit: number = 10, status?: NetworkStatus): Promise<CountryAsResponse> {
         const params = new URLSearchParams({ limit: limit.toString() });
         if (status) params.append('status', status);
 
-        const response = await fetch(`${API_BASE_URL}/api/v1/network/countries/summary/${countryCode}?${params}`);
-        if (!response.ok) throw new Error(`Failed to fetch AS data for ${countryCode}`);
-        return response.json();
+        try {
+            const response = await fetch(`${API_BASE_URL}/v1/network/countries/summary/${countryCode}?${params}`);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to fetch AS data for ${countryCode}: ${response.status} ${errorText}`);
+            }
+
+            return response.json();
+        } catch (error) {
+            console.error(`Error fetching AS data for ${countryCode}:`, error);
+            throw error;
+        }
     }
 };
