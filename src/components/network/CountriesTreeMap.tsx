@@ -66,8 +66,12 @@ export function CountriesTreeMap({ limit = 50, onCountryClick }: CountriesTreeMa
     };
 
     const renderTooltip = (item: TreeMapDataItem | TreeMapOthersData) => {
-        if ('metadata' in item && item.metadata?.isOthers) {
-            const othersData = item.metadata as TreeMapOthersData;
+        const isOthersData = (item: TreeMapDataItem | TreeMapOthersData): boolean => {
+            return 'metadata' in item && item.metadata?.isOthers === true;
+        };
+
+        if (isOthersData(item)) {
+            const othersData = (item as TreeMapDataItem).metadata as TreeMapOthersData;
             return (
                 <div className="space-y-2">
                     <p className="font-bold">Other Countries</p>
@@ -85,14 +89,15 @@ export function CountriesTreeMap({ limit = 50, onCountryClick }: CountriesTreeMa
             );
         }
 
+        const dataItem = item as TreeMapDataItem;
         return (
             <div className="space-y-1">
-                <p className="font-bold">{item.name}</p>
-                <p>AS Count: {item.value}</p>
-                <p>Anomalies: {item.anomalyCount}</p>
-                <p className="capitalize">Status: {item.status}</p>
-                {item.metadata?.ipCount && (
-                    <p>IP Count: {item.metadata.ipCount.toLocaleString()}</p>
+                <p className="font-bold">{dataItem.name}</p>
+                <p>AS Count: {dataItem.value}</p>
+                <p>Anomalies: {dataItem.anomalyCount}</p>
+                <p className="capitalize">Status: {dataItem.status}</p>
+                {dataItem.metadata?.ipCount && (
+                    <p>IP Count: {dataItem.metadata.ipCount.toLocaleString()}</p>
                 )}
             </div>
         );
