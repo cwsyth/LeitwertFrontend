@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TreeMap } from '@/components/network/TreeMap';
 import {
     TreeMapDataItem, TreeMapOthersData, NetworkStatus,
@@ -15,7 +15,7 @@ import {
 } from '@/types/network';
 import { networkApi } from '@/services/networkApi';
 
-export function CountriesTreeMap({ limit = 50, onCountryClick, showLabels }: CountriesTreeMapProps) {
+export function CountriesTreeMap({ limit = 50, onCountryClick, showLabels, useGradient}: CountriesTreeMapProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
     const [statusFilter, setStatusFilter] = useState<NetworkStatus | 'all'>('all');
@@ -23,7 +23,7 @@ export function CountriesTreeMap({ limit = 50, onCountryClick, showLabels }: Cou
 
     const handleItemClick = (item: TreeMapDataItem) => {
         if (onCountryClick) {
-            onCountryClick(item.id); // item.id ist der Country Code
+            onCountryClick(item.id);
         }
     };
 
@@ -64,6 +64,25 @@ export function CountriesTreeMap({ limit = 50, onCountryClick, showLabels }: Cou
             setIsLoading(false);
         }
     };
+
+    const anomalyRanges = React.useMemo(() => {
+        if (!useGradient || data.length === 0) return undefined;
+
+        // Group anomaly counts by status
+        const byStatus = data.reduce((acc, item) => {
+            (acc[item.status] ||= []).push(item.anomalyCount);
+            return acc;
+        }, {} as Record<NetworkStatus, number[]>);
+
+        // Calculate min and max for each status
+        return Object.entries(byStatus).reduce((acc, [status, counts]) => {
+            acc[status as NetworkStatus] = {
+                min: Math.min(...counts),
+                max: Math.max(...counts)
+            };
+            return acc;
+        }, {} as Record<NetworkStatus, { min: number; max: number }>);
+    }, [data, useGradient]);
 
     const renderTooltip = (item: TreeMapDataItem | TreeMapOthersData) => {
         const isOthersData = (item: TreeMapDataItem | TreeMapOthersData): boolean => {
@@ -115,6 +134,8 @@ export function CountriesTreeMap({ limit = 50, onCountryClick, showLabels }: Cou
             renderTooltip={renderTooltip}
             onItemClick={handleItemClick}
             showLabels={showLabels}
+            useGradient={useGradient}
+            anomalyRanges={anomalyRanges}
         />
     );
 }

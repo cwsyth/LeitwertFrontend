@@ -84,7 +84,12 @@ export interface TreeMapProps {
     renderTooltip: (data: TreeMapDataItem | TreeMapOthersData) => ReactNode,
     othersDisplaySize?: number,
     onItemClick?: (item: TreeMapDataItem) => void,
-    showLabels?: boolean
+    showLabels?: boolean,
+    useGradient?: boolean,
+    anomalyRanges?: Record<NetworkStatus, {
+        min: number;
+        max: number
+    }>
 }
 
 export interface AsTreeMapProps {
@@ -96,5 +101,6 @@ export interface AsTreeMapProps {
 export interface CountriesTreeMapProps {
     limit?: number,
     onCountryClick?: (countryCode: string) => void,
-    showLabels?: boolean
+    showLabels?: boolean,
+    useGradient?: boolean
 }

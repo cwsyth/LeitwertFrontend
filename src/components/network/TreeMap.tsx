@@ -13,7 +13,11 @@ import {
     TreeMapDataItem,
     TreeMapOthersData, TreeMapProps
 } from '@/types/network';
-import { getStatusColor, OTHERS_COLOR } from '@/lib/statusColors';
+import {
+    getGradientColor,
+    getStatusColor,
+    OTHERS_COLOR
+} from '@/lib/statusColors';
 import {
     Select,
     SelectContent,
@@ -32,7 +36,9 @@ export function TreeMap({
                             renderTooltip,
                             othersDisplaySize = 0.5,
                             onItemClick,
-                            showLabels
+                            showLabels,
+                            useGradient,
+                            anomalyRanges
                         }: TreeMapProps) {
     // Berechne den kleinsten Wert aus den Haupt-Daten
     const minDataValue = data.length > 0 ? Math.min(...data.map(d => d.value)) : 0;
@@ -59,7 +65,23 @@ export function TreeMap({
     const CustomizedContent = (props: any) => {
         const { x, y, width, height, name, id, root } = props;
 
-        const fillColor = id === 'others' ? OTHERS_COLOR : getStatusColor(props.status);
+        let fillColor: string;
+
+        if (id === 'others') {
+            fillColor = OTHERS_COLOR;
+        } else if (useGradient && anomalyRanges) {
+            const status = props.status as NetworkStatus;
+            const anomalyCount = props.anomalyCount;
+            const range = anomalyRanges[status];
+
+            if (range && range.min !== undefined && range.max !== undefined) {
+                fillColor = getGradientColor(status, anomalyCount, range.min, range.max);
+            } else {
+                fillColor = getStatusColor(status); // Fallback
+            }
+        } else {
+            fillColor = getStatusColor(props.status);
+        }
 
         const handleClick = () => {
             // Nicht klickbar für "Others"

@@ -14,6 +14,7 @@ export default function DashboardContentHierarchy() {
     const [showCountryView, setShowCountryView] = useState(false);
     const [limit, setLimit] = useState(50);
     const [showLabels, setShowLabels] = useState(true);
+    const [useGradient, setUseGradient] = useState(true);
 
     const handleCountryClick = (countryCode: string) => {
         setSelectedCountry(countryCode);
@@ -92,6 +93,17 @@ export default function DashboardContentHierarchy() {
                             onCheckedChange={setShowLabels}
                         />
                     </div>
+                    {/* Gradient Toggle */}
+                    <div className="flex items-center gap-2">
+                        <Label htmlFor="use-gradient" className="whitespace-nowrap">
+                            Farbverlauf
+                        </Label>
+                        <Switch
+                            id="use-gradient"
+                            checked={useGradient}
+                            onCheckedChange={setUseGradient}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -100,6 +112,7 @@ export default function DashboardContentHierarchy() {
                 <CountriesTreeMap
                     limit={limit}
                     showLabels={showLabels}
+                    useGradient={useGradient}
                     onCountryClick={handleCountryClick}
                 />
             ) : (
