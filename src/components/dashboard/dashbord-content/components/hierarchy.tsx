@@ -70,7 +70,7 @@ export default function DashboardContentHierarchy() {
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2">
                         <Label htmlFor="limit-input" className="whitespace-nowrap">
-                            Anzahl:
+                            Anzahl
                         </Label>
                         <Input
                             id="limit-input"
@@ -78,13 +78,13 @@ export default function DashboardContentHierarchy() {
                             min="1"
                             value={limit}
                             onChange={handleLimitChange}
-                            className="w-15"
+                            className="w-18"
                         />
                     </div>
                     {/* Label Toggle */}
                     <div className="flex items-center gap-2">
                         <Label htmlFor="show-labels" className="whitespace-nowrap">
-                            Labels anzeigen:
+                            Labels
                         </Label>
                         <Switch
                             id="show-labels"
