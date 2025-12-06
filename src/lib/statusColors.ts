@@ -7,14 +7,11 @@
 
 import { NetworkStatus } from '@/types/network';
 
-export const STATUS_COLORS: {
-    healthy: string;
-    warning: string;
-    critical: string
-} = {
+export const STATUS_COLORS: Record<NetworkStatus, string> = {
     healthy: '#22c55e',   // green-500
     warning: '#f59e0b',   // amber-500
-    critical: '#ef4444'   // red-500
+    critical: '#ef4444',   // red-500
+    unknown: '#6b7280'    // gray-500
 };
 
 export const OTHERS_COLOR = '#9ca3af'; // gray-400
