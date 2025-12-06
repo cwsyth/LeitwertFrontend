@@ -15,7 +15,7 @@ import {
 } from '@/types/network';
 import { networkApi } from '@/services/networkApi';
 
-export function CountriesTreeMap({ limit = 50, onCountryClick }: CountriesTreeMapProps) {
+export function CountriesTreeMap({ limit = 50, onCountryClick, showLabels }: CountriesTreeMapProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
     const [statusFilter, setStatusFilter] = useState<NetworkStatus | 'all'>('all');
@@ -114,6 +114,7 @@ export function CountriesTreeMap({ limit = 50, onCountryClick }: CountriesTreeMa
             currentStatus={statusFilter}
             renderTooltip={renderTooltip}
             onItemClick={handleItemClick}
+            showLabels={showLabels}
         />
     );
 }

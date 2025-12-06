@@ -76,22 +76,25 @@ export interface TreeMapOthersData {
 }
 
 export interface TreeMapProps {
-    data: TreeMapDataItem[];
-    others?: TreeMapOthersData;
-    title: string;
-    onStatusFilter: (status: NetworkStatus | 'all') => void;
-    currentStatus: NetworkStatus | 'all';
-    renderTooltip: (data: TreeMapDataItem | TreeMapOthersData) => ReactNode;
-    othersDisplaySize?: number;
-    onItemClick?: (item: TreeMapDataItem) => void;
+    data: TreeMapDataItem[],
+    others?: TreeMapOthersData,
+    title: string,
+    onStatusFilter: (status: NetworkStatus | 'all') => void,
+    currentStatus: NetworkStatus | 'all',
+    renderTooltip: (data: TreeMapDataItem | TreeMapOthersData) => ReactNode,
+    othersDisplaySize?: number,
+    onItemClick?: (item: TreeMapDataItem) => void,
+    showLabels?: boolean
 }
 
 export interface AsTreeMapProps {
-    countryCode: string;
-    limit?: number;
+    countryCode: string,
+    limit?: number,
+    showLabels?: boolean
 }
 
 export interface CountriesTreeMapProps {
-    limit?: number;
-    onCountryClick?: (countryCode: string) => void;
+    limit?: number,
+    onCountryClick?: (countryCode: string) => void,
+    showLabels?: boolean
 }

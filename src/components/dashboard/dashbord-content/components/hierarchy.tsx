@@ -13,6 +13,7 @@ export default function DashboardContentHierarchy() {
     const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
     const [showCountryView, setShowCountryView] = useState(false);
     const [limit, setLimit] = useState(50);
+    const [showLabels, setShowLabels] = useState(true);
 
     const handleCountryClick = (countryCode: string) => {
         setSelectedCountry(countryCode);
@@ -80,6 +81,17 @@ export default function DashboardContentHierarchy() {
                             className="w-15"
                         />
                     </div>
+                    {/* Label Toggle */}
+                    <div className="flex items-center gap-2">
+                        <Label htmlFor="show-labels" className="whitespace-nowrap">
+                            Labels anzeigen:
+                        </Label>
+                        <Switch
+                            id="show-labels"
+                            checked={showLabels}
+                            onCheckedChange={setShowLabels}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -87,6 +99,7 @@ export default function DashboardContentHierarchy() {
             {!showCountryView ? (
                 <CountriesTreeMap
                     limit={limit}
+                    showLabels={showLabels}
                     onCountryClick={handleCountryClick}
                 />
             ) : (
@@ -94,6 +107,7 @@ export default function DashboardContentHierarchy() {
                     <AsTreeMap
                         countryCode={selectedCountry}
                         limit={limit}
+                        showLabels={showLabels}
                     />
                 )
             )}

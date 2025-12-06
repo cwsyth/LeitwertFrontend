@@ -17,7 +17,7 @@ import {
 } from '@/types/network';
 import { networkApi } from '@/services/networkApi';
 
-export function AsTreeMap({ countryCode, limit = 10 }: AsTreeMapProps) {
+export function AsTreeMap({ countryCode, limit = 10, showLabels }: AsTreeMapProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
     const [statusFilter, setStatusFilter] = useState<NetworkStatus | 'all'>('all');
@@ -114,6 +114,7 @@ export function AsTreeMap({ countryCode, limit = 10 }: AsTreeMapProps) {
             onStatusFilter={setStatusFilter}
             currentStatus={statusFilter}
             renderTooltip={renderTooltip}
+            showLabels={showLabels}
         />
     );
 }

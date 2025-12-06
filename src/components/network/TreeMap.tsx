@@ -24,15 +24,16 @@ import {
 import React, { ReactNode } from "react";
 
 export function TreeMap({
-                                   data,
-                                   others,
-                                   title,
-                                   onStatusFilter,
-                                   currentStatus,
-                                   renderTooltip,
-                                   othersDisplaySize = 0.5,
-                                   onItemClick
-                               }: TreeMapProps) {
+                            data,
+                            others,
+                            title,
+                            onStatusFilter,
+                            currentStatus,
+                            renderTooltip,
+                            othersDisplaySize = 0.5,
+                            onItemClick,
+                            showLabels
+                        }: TreeMapProps) {
     // Berechne den kleinsten Wert aus den Haupt-Daten
     const minDataValue = data.length > 0 ? Math.min(...data.map(d => d.value)) : 0;
 
@@ -88,7 +89,7 @@ export function TreeMap({
                         strokeOpacity: 1,
                     }}
                 />
-                {width > 50 && height > 30 && (
+                {showLabels && width > 50 && height > 30 && (
                     <text
                         x={x + width / 2}
                         y={y + height / 2}
