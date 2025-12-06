@@ -10,7 +10,7 @@ import { CountriesSummaryResponse, CountryAsResponse, NetworkStatus } from '@/ty
 const API_BASE_URL = process.env.NEXT_PUBLIC_FRONTEND_API_URL;
 
 export const networkApi = {
-    async getCountriesSummary(limit: number = 10, status?: NetworkStatus): Promise<CountriesSummaryResponse> {
+    async getCountriesSummary(limit: number = 50, status?: NetworkStatus): Promise<CountriesSummaryResponse> {
         const params = new URLSearchParams({ limit: limit.toString() });
         if (status) params.append('status', status);
 
@@ -31,7 +31,7 @@ export const networkApi = {
         }
     },
 
-    async getCountryAs(countryCode: string, limit: number = 10, status?: NetworkStatus): Promise<CountryAsResponse> {
+    async getCountryAs(countryCode: string, limit: number = 50, status?: NetworkStatus): Promise<CountryAsResponse> {
         const params = new URLSearchParams({ limit: limit.toString() });
         if (status) params.append('status', status);
 
