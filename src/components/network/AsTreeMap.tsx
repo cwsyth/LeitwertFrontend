@@ -69,8 +69,12 @@ export function AsTreeMap({ countryCode, limit = 10 }: AsTreeMapProps) {
     };
 
     const renderTooltip = (item: TreeMapDataItem | TreeMapOthersData) => {
-        if ('metadata' in item && item.metadata?.isOthers) {
-            const othersData = item.metadata as TreeMapOthersData;
+        const isOthersData = (item: TreeMapDataItem | TreeMapOthersData): boolean => {
+            return 'metadata' in item && item.metadata?.isOthers === true;
+        };
+
+        if (isOthersData(item)) {
+            const othersData = (item as TreeMapDataItem).metadata as TreeMapOthersData;
             return (
                 <div className="space-y-2">
                     <p className="font-bold">Other AS Networks</p>
@@ -88,13 +92,14 @@ export function AsTreeMap({ countryCode, limit = 10 }: AsTreeMapProps) {
             );
         }
 
+        const dataItem = item as TreeMapDataItem;
         return (
             <div className="space-y-1">
-                <p className="font-bold">{item.name}</p>
-                {item.metadata?.asNumber && <p>AS{item.metadata.asNumber}</p>}
-                <p>IP Count: {item.value.toLocaleString()}</p>
-                <p>Anomalies: {item.anomalyCount}</p>
-                <p className="capitalize">Status: {item.status}</p>
+                <p className="font-bold">{dataItem.name}</p>
+                {dataItem.metadata?.asNumber && <p>AS{dataItem.metadata.asNumber}</p>}
+                <p>IP Count: {dataItem.value.toLocaleString()}</p>
+                <p>Anomalies: {dataItem.anomalyCount}</p>
+                <p className="capitalize">Status: {dataItem.status}</p>
             </div>
         );
     };
