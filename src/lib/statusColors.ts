@@ -24,8 +24,42 @@ export const STATUS_GRADIENTS: Record<NetworkStatus, [string, string]> = {
 
 export const OTHERS_COLOR = '#9ca3af'; // gray-400
 
+/**
+ * Returns the color associated with a specific network status.
+ * 
+ * @param status - The network status to get the color for
+ * @returns The hex color code for the given status
+ * 
+ * @example
+ * ```typescript
+ * const color = getStatusColor('healthy'); // returns '#22c55e'
+ * ```
+ */
 export const getStatusColor = (status: NetworkStatus): string => {
     return STATUS_COLORS[status];
+};
+
+/**
+ * Calculates a gradient color based on the anomaly count using CSS color-mix.
+ * The color intensity increases proportionally with the anomaly count within the given range.
+ * 
+ * @param status - The network status determining the color gradient range
+ * @param anomalyCount - The current anomaly count to calculate the color for
+ * @param minAnomalies - The minimum anomaly count in the dataset
+ * @param maxAnomalies - The maximum anomaly count in the dataset
+ * @returns A CSS color-mix string representing the calculated gradient color
+ * 
+ * @remarks
+ * - If minAnomalies equals maxAnomalies, returns the default status color
+ * - Uses linear interpolation between light and dark colors based on the anomaly percentage
+ * - The result is a CSS color-mix() expression that can be used directly in styles
+ * 
+ * @example
+ * ```typescript
+ * const color = getGradientColor('warning', 50, 0, 100);
+ * // returns 'color-mix(in srgb, #c2410c 50%, #fbbf24)'
+ * ```
+ */
 export const getGradientColor = (
     status: NetworkStatus,
     anomalyCount: number,
