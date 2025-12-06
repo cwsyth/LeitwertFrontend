@@ -95,7 +95,8 @@ export interface TreeMapProps {
 export interface AsTreeMapProps {
     countryCode: string,
     limit?: number,
-    showLabels?: boolean
+    showLabels?: boolean,
+    useGradient?: boolean
 }
 
 export interface CountriesTreeMapProps {

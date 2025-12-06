@@ -121,6 +121,7 @@ export default function DashboardContentHierarchy() {
                         countryCode={selectedCountry}
                         limit={limit}
                         showLabels={showLabels}
+                        useGradient={useGradient}
                     />
                 )
             )}

@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { TreeMap } from '@/components/network/TreeMap';
 import {
     AsTreeMapProps,
@@ -17,7 +17,7 @@ import {
 } from '@/types/network';
 import { networkApi } from '@/services/networkApi';
 
-export function AsTreeMap({ countryCode, limit = 10, showLabels }: AsTreeMapProps) {
+export function AsTreeMap({ countryCode, limit = 10, showLabels, useGradient }: AsTreeMapProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
     const [statusFilter, setStatusFilter] = useState<NetworkStatus | 'all'>('all');
@@ -68,6 +68,25 @@ export function AsTreeMap({ countryCode, limit = 10, showLabels }: AsTreeMapProp
         }
     };
 
+    const anomalyRanges = React.useMemo(() => {
+        if (!useGradient || data.length === 0) return undefined;
+
+        // Group anomaly counts by status
+        const byStatus = data.reduce((acc, item) => {
+            (acc[item.status] ||= []).push(item.anomalyCount);
+            return acc;
+        }, {} as Record<NetworkStatus, number[]>);
+
+        // Calculate min and max for each status
+        return Object.entries(byStatus).reduce((acc, [status, counts]) => {
+            acc[status as NetworkStatus] = {
+                min: Math.min(...counts),
+                max: Math.max(...counts)
+            };
+            return acc;
+        }, {} as Record<NetworkStatus, { min: number; max: number }>);
+    }, [data, useGradient]);
+
     const renderTooltip = (item: TreeMapDataItem | TreeMapOthersData) => {
         const isOthersData = (item: TreeMapDataItem | TreeMapOthersData): boolean => {
             return 'metadata' in item && item.metadata?.isOthers === true;
@@ -115,6 +134,8 @@ export function AsTreeMap({ countryCode, limit = 10, showLabels }: AsTreeMapProp
             currentStatus={statusFilter}
             renderTooltip={renderTooltip}
             showLabels={showLabels}
+            useGradient={useGradient}
+            anomalyRanges={anomalyRanges}
         />
     );
 }
