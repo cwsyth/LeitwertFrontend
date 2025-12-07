@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TreeMap } from '@/components/network/TreeMap';
 import {
     TreeMapDataItem, TreeMapOthersData, NetworkStatus,
@@ -36,11 +36,7 @@ export function CountriesTreeMap({
         }
     };
 
-    useEffect(() => {
-        loadData();
-    }, [limit, statusFilter, sizeMetric]);
-
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await networkApi.getCountriesSummary(limit);
@@ -110,7 +106,11 @@ export function CountriesTreeMap({
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [limit, statusFilter, sizeMetric]);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
 
     const anomalyRanges = React.useMemo(() => {
         if (!useGradient || data.length === 0) return undefined;
