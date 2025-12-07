@@ -5,16 +5,13 @@
  * For a copy, see LICENSE.txt in the project root.
  */
 
-import { CountriesSummaryResponse, CountryAsResponse, NetworkStatus } from '@/types/network';
+import { CountriesSummaryResponse, CountryAsResponse } from '@/types/network';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_FRONTEND_API_URL;
 
 export const networkApi = {
-    async getCountriesSummary(limit: number = 50, status?: NetworkStatus): Promise<CountriesSummaryResponse> {
+    async getCountriesSummary(limit: number = 50): Promise<CountriesSummaryResponse> {
         const params = new URLSearchParams({ limit: limit.toString() });
-        if (status) params.append('status', status);
-
-        console.log('Fetching countries summary with params:', params.toString());
 
         try {
             const response = await fetch(`${API_BASE_URL}/v1/network/countries/summary?${params}`);
@@ -31,9 +28,8 @@ export const networkApi = {
         }
     },
 
-    async getCountryAs(countryCode: string, limit: number = 50, status?: NetworkStatus): Promise<CountryAsResponse> {
+    async getCountryAs(countryCode: string, limit: number = 50): Promise<CountryAsResponse> {
         const params = new URLSearchParams({ limit: limit.toString() });
-        if (status) params.append('status', status);
 
         try {
             const response = await fetch(`${API_BASE_URL}/v1/network/countries/summary/${countryCode}?${params}`);
