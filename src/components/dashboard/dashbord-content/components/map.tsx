@@ -1,7 +1,8 @@
-import {useRef} from 'react';
-import {Map, Source, Layer} from 'react-map-gl/maplibre';
-import {clusterLayer, clusterCountLayer, unclusteredPointLayer} from './layers';
+import {useRef, useState, useCallback} from 'react';
+import {Map as ReactMapGL, Source, Layer} from 'react-map-gl/maplibre';
+import {unclusteredPointLayer} from './layers';
 import { useQuery } from '@tanstack/react-query';
+import PieChartMarker from './pie-chart-marker';
 
 import type { MapRef, MapMouseEvent } from 'react-map-gl/maplibre';
 import type { GeoJSONSource } from 'maplibre-gl';
@@ -9,12 +10,24 @@ import type { GeoJSONSource } from 'maplibre-gl';
 import { Country } from '@/types/dashboard';
 import { RouterFeatureCollection } from '@/types/geojson';
 
+interface ClusterData {
+    id: number;
+    longitude: number;
+    latitude: number;
+    online: number;
+    degraded: number;
+    down: number;
+    unknown: number;
+    total: number;
+}
+
 interface DashboardContentMapProps {
     selectedCountry: Country | null;
 }
 
 export default function DashboardContentMap({ selectedCountry }: DashboardContentMapProps) {
     const mapRef = useRef<MapRef>(null);
+    const [clusters, setClusters] = useState<ClusterData[]>([]);
 
     const isWorld = !selectedCountry || selectedCountry.code === 'world';
     const geoJsonUrl = isWorld
@@ -32,18 +45,59 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
         }
     });
 
+    const updateClusters = useCallback(() => {
+        const map = mapRef.current?.getMap();
+        if (!map) return;
+
+        const source = map.getSource('routers') as GeoJSONSource;
+        if (!source) return;
+
+        const features = map.querySourceFeatures('routers');
+        const clusterMap = new Map<number, ClusterData>();
+
+        features.forEach((feature) => {
+            const props = feature.properties;
+            if (props?.cluster) {
+                const clusterId = props.cluster_id;
+                if (!clusterMap.has(clusterId)) {
+                    const coords = (feature.geometry as GeoJSON.Point).coordinates;
+                    clusterMap.set(clusterId, {
+                        id: clusterId,
+                        longitude: coords[0],
+                        latitude: coords[1],
+                        online: props.online || 0,
+                        degraded: props.degraded || 0,
+                        down: props.down || 0,
+                        unknown: props.unknown || 0,
+                        total: props.point_count || 0,
+                    });
+                }
+            }
+        });
+
+        setClusters(Array.from(clusterMap.values()));
+    }, []);
+
+    const onClusterClick = useCallback(async (clusterId: number, longitude: number, latitude: number) => {
+        const source = mapRef.current?.getSource('routers') as GeoJSONSource;
+        if (!source) return;
+        
+        const zoom = await source.getClusterExpansionZoom(clusterId);
+        mapRef.current?.easeTo({
+            center: [longitude, latitude],
+            zoom,
+            duration: 500
+        });
+    }, []);
+
     const onClick = async (event: MapMouseEvent) => {
         const feature = event?.features?.[0];
-        const clusterId = feature?.properties.cluster_id;
-        const geojsonSource = mapRef?.current?.getSource('earthquakes') as GeoJSONSource;
-        const zoom = await geojsonSource.getClusterExpansionZoom(clusterId);
-
-        if (feature?.geometry && 'coordinates' in feature.geometry) {
-            mapRef?.current?.easeTo({
-                center: feature.geometry.coordinates as [number, number],
-                zoom,
-                duration: 500
-            });
+        if (!feature) return;
+        
+        // Handle unclustered point clicks if needed
+        if (!feature.properties?.cluster) {
+            // Handle single point click
+            return;
         }
     };
 
@@ -58,30 +112,55 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
 
     return (
         <div className="dashboard-map w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden rounded-[var(--radius)]">
-           <Map
+           <ReactMapGL
                 initialViewState={{
                     latitude: 51.1657,
                     longitude: 10.4515,
                     zoom: 5.5
                 }}
                 mapStyle="https://demotiles.maplibre.org/style.json"
-                interactiveLayerIds={[clusterLayer.id!]}
+                interactiveLayerIds={[unclusteredPointLayer.id!]}
                 onClick={onClick}
+                onMoveEnd={updateClusters}
+                onSourceData={(e: { sourceId: string; isSourceLoaded: boolean }) => {
+                    if (e.sourceId === 'routers' && e.isSourceLoaded) {
+                        updateClusters();
+                    }
+                }}
                 ref={mapRef}
             >
                 <Source
-                    id="earthquakes"
+                    id="routers"
                     type="geojson"
                     data={filteredMapData}
                     cluster={true}
                     clusterMaxZoom={14}
                     clusterRadius={50}
+                    clusterProperties={{
+                        online: ['+', ['case', ['==', ['get', 'router_status'], 'online'], 1, 0]],
+                        degraded: ['+', ['case', ['==', ['get', 'router_status'], 'degraded'], 1, 0]],
+                        down: ['+', ['case', ['==', ['get', 'router_status'], 'down'], 1, 0]],
+                        unknown: ['+', ['case', ['==', ['get', 'router_status'], 'unknown'], 1, 0]],
+                    }}
                 >
-                <Layer {...clusterLayer} />
-                <Layer {...clusterCountLayer} />
                 <Layer {...unclusteredPointLayer} />
                 </Source>
-            </Map>
+                
+                {/* Render pie chart markers for clusters */}
+                {clusters.map((cluster) => (
+                    <PieChartMarker
+                        key={cluster.id}
+                        longitude={cluster.longitude}
+                        latitude={cluster.latitude}
+                        online={cluster.online}
+                        degraded={cluster.degraded}
+                        down={cluster.down}
+                        unknown={cluster.unknown}
+                        total={cluster.total}
+                        onClick={() => onClusterClick(cluster.id, cluster.longitude, cluster.latitude)}
+                    />
+                ))}
+            </ReactMapGL>
         </div>
     );
 }
