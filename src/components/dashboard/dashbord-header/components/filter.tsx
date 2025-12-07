@@ -1,27 +1,31 @@
 'use client';
 
 import { useState } from "react";
+
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+
 import { Check, ChevronUp } from "lucide-react";
+
 import { countries as countriesData } from "countries-list";
 import { CircleFlag } from "react-circle-flags";
 
-interface Country {
-    code: string;
-    name: string;
-}
+import { Country } from "@/types/dashboard";
 
 const countries: Country[] = Object.entries(countriesData).map(([code, data]) => ({
     code: code.toLowerCase(),
     name: data.name
 })).sort((a, b) => a.name.localeCompare(b.name));
 
-export default function DashboardHeaderFilter() {
+interface DashboardHeaderFilterProps {
+    selectedCountry: Country | null;
+    setSelectedCountry: React.Dispatch<React.SetStateAction<Country | null>>;
+}
+
+export default function DashboardHeaderFilter({ selectedCountry, setSelectedCountry }: DashboardHeaderFilterProps) {
     const [open, setOpen] = useState(false);
-    const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [tiers, setTiers] = useState({
         tier1: true,
@@ -65,7 +69,7 @@ export default function DashboardHeaderFilter() {
                                         <span>{selectedCountry?.name || "Select country..."}</span>
                                     </div>
                                     <ChevronUp
-                                        className={`ml-2 h-4 w-4 shrink-0 transition-transform duration-300 ${
+                                        className={`h-4 w-4 shrink-0 transition-transform duration-300 ${
                                             open ? "rotate-180" : ""
                                         }`}
                                     />
@@ -101,7 +105,7 @@ export default function DashboardHeaderFilter() {
                                                     className="relative flex cursor-pointer select-none items-center px-4 py-2 text-sm hover:bg-accent hover:text-popover-foreground"
                                                 >
                                                     <Check
-                                                        className={`mr-2 h-4 w-4 ${
+                                                        className={`mr-4 h-4 w-4 ${
                                                             selectedCountry?.code === country.code ? "opacity-100" : "opacity-0"
                                                         }`}
                                                     />

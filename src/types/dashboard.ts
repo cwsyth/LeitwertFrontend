@@ -7,3 +7,8 @@ export interface DashboardViewVisibility {
     bgpAnnouncements: boolean;
     anomalies: boolean;
 }
+
+export interface Country {
+    code: string;
+    name: string;
+}
