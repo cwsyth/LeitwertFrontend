@@ -41,7 +41,7 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
         }
     };
 
-    const filteredMapData = selectedCountry && mapData
+    const filteredMapData = selectedCountry && selectedCountry.code !== 'world' && mapData
         ? {
             ...mapData,
             features: mapData?.features.filter((feature: {properties: {country_code: string}}) =>
@@ -54,9 +54,9 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
         <div className="dashboard-map w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden rounded-[var(--radius)]">
            <Map
                 initialViewState={{
-                    latitude: 40.67,
-                    longitude: -103.59,
-                    zoom: 3
+                    latitude: 51.1657,
+                    longitude: 10.4515,
+                    zoom: 5.5
                 }}
                 mapStyle="https://demotiles.maplibre.org/style.json"
                 interactiveLayerIds={[clusterLayer.id!]}

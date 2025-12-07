@@ -21,8 +21,8 @@ export default function Dashboard() {
             timeline: true,
             searchResults: true,
             globalStats: true,
-            bgpAnnouncements: false,
-            anomalies: false,
+            bgpAnnouncements: true,
+            anomalies: true,
         });
 
     const toggleView = (view: keyof DashboardViewVisibility) => {
@@ -32,7 +32,10 @@ export default function Dashboard() {
         }));
     };
 
-    const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+    const [selectedCountry, setSelectedCountry] = useState<Country | null>({
+        code: 'world',
+        name: 'World'
+    });
 
     return (
         <div className="dashboard-wrapper h-full flex flex-col items-center justify-center p8">

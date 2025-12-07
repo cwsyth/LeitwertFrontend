@@ -14,10 +14,17 @@ import { CircleFlag } from "react-circle-flags";
 
 import { Country } from "@/types/dashboard";
 
-const countries: Country[] = Object.entries(countriesData).map(([code, data]) => ({
+const worldCountry: Country = {
+    code: 'world',
+    name: 'World'
+};
+
+const sortedCountries: Country[] = Object.entries(countriesData).map(([code, data]) => ({
     code: code.toLowerCase(),
     name: data.name
 })).sort((a, b) => a.name.localeCompare(b.name));
+
+const countries: Country[] = [worldCountry, ...sortedCountries];
 
 interface DashboardHeaderFilterProps {
     selectedCountry: Country | null;
@@ -33,9 +40,11 @@ export default function DashboardHeaderFilter({ selectedCountry, setSelectedCoun
         tier3: true,
     });
 
-    const filteredCountries = countries.filter(country =>
-        country.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredCountries = searchQuery
+        ? countries.filter(country =>
+            country.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        : countries;
 
     const handleTierChange = (tier: keyof typeof tiers) => {
         setTiers(prev => ({
@@ -63,7 +72,11 @@ export default function DashboardHeaderFilter({ selectedCountry, setSelectedCoun
                                     <div className="flex items-center gap-2">
                                         {selectedCountry && (
                                             <div className="flex items-center justify-center w-5 h-5 rounded-full">
-                                                <CircleFlag countryCode={selectedCountry.code} height={16} />
+                                                {selectedCountry.code === 'world' ? (
+                                                    <span className="text-lg">🌍</span>
+                                                ) : (
+                                                    <CircleFlag countryCode={selectedCountry.code} height={16} />
+                                                )}
                                             </div>
                                         )}
                                         <span>{selectedCountry?.name || "Select country..."}</span>
@@ -110,7 +123,11 @@ export default function DashboardHeaderFilter({ selectedCountry, setSelectedCoun
                                                         }`}
                                                     />
                                                     <div className="flex items-center justify-center w-5 h-5 rounded-full">
-                                                        <CircleFlag countryCode={country.code} height={16} className="mr-3" />
+                                                        {country.code === 'world' ? (
+                                                            <span className="text-lg mr-3">🌍</span>
+                                                        ) : (
+                                                            <CircleFlag countryCode={country.code} height={16} className="mr-3" />
+                                                        )}
                                                     </div>
                                                     {country.name}
                                                 </div>
