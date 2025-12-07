@@ -60,7 +60,7 @@ async function proxyRequest(
     if (method !== 'GET' && method !== 'DELETE') {
         try {
             body = await request.text();
-        } catch (e) {
+        } catch {
             // Kein Body
         }
     }
