@@ -24,6 +24,17 @@ export interface BoxPlotData {
     p50: number;
     timestamp: string;
     total_increments: number;
+    // Optional analysis fields (integrated from backend)
+    mean?: number;
+    std?: number;
+    is_anomaly?: boolean;
+    anomaly_score?: number;
+    // Computed fields for charting
+    timestampMs?: number;
+    conf_lower?: number;
+    conf_upper?: number;
+    band?: number;
+    anomaly_point?: number | null;
 }
 
 interface CustomBoxPlotProps {
