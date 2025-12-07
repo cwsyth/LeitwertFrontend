@@ -96,12 +96,28 @@ export interface AsTreeMapProps {
     countryCode: string,
     limit?: number,
     showLabels?: boolean,
-    useGradient?: boolean
+    useGradient?: boolean,
+    sizeMetric?: AsSizeMetric
 }
 
 export interface CountriesTreeMapProps {
     limit?: number,
     onCountryClick?: (countryCode: string) => void,
     showLabels?: boolean,
-    useGradient?: boolean
+    useGradient?: boolean,
+    sizeMetric?: CountrySizeMetric
 }
+
+export type CountrySizeMetric = 'asCount' | 'anomalyCount' | 'ipCount';
+export type AsSizeMetric = 'ipCount' | 'anomalyCount';
+
+export const COUNTRY_SIZE_METRIC_LABELS: Record<CountrySizeMetric, string> = {
+    asCount: 'AS Count',
+    anomalyCount: 'Anomalien',
+    ipCount: 'IP Count'
+};
+
+export const AS_SIZE_METRIC_LABELS: Record<AsSizeMetric, string> = {
+    ipCount: 'IP Count',
+    anomalyCount: 'Anomalien'
+};

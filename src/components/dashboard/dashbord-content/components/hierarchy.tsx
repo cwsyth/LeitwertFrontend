@@ -8,6 +8,19 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import {
+    AS_SIZE_METRIC_LABELS,
+    AsSizeMetric,
+    COUNTRY_SIZE_METRIC_LABELS,
+    CountrySizeMetric
+} from "@/types/network";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from "@/components/ui/select";
 
 export default function DashboardContentHierarchy() {
     const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
@@ -15,6 +28,8 @@ export default function DashboardContentHierarchy() {
     const [limit, setLimit] = useState(50);
     const [showLabels, setShowLabels] = useState(true);
     const [useGradient, setUseGradient] = useState(true);
+    const [countrySizeMetric, setCountrySizeMetric] = useState<CountrySizeMetric>('asCount');
+    const [asSizeMetric, setAsSizeMetric] = useState<AsSizeMetric>('ipCount');
 
     const handleCountryClick = (countryCode: string) => {
         setSelectedCountry(countryCode);
@@ -104,6 +119,45 @@ export default function DashboardContentHierarchy() {
                             onCheckedChange={setUseGradient}
                         />
                     </div>
+                    {/* Size Metric Select */}
+                    <div className="flex items-center gap-2">
+                        <Label htmlFor="size-metric" className="whitespace-nowrap">
+                            Größe nach
+                        </Label>
+                        {!showCountryView ? (
+                            <Select
+                                value={countrySizeMetric}
+                                onValueChange={(value) => setCountrySizeMetric(value as CountrySizeMetric)}
+                            >
+                                <SelectTrigger id="size-metric" className="w-[140px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Object.entries(COUNTRY_SIZE_METRIC_LABELS).map(([value, label]) => (
+                                        <SelectItem key={value} value={value}>
+                                            {label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        ) : (
+                            <Select
+                                value={asSizeMetric}
+                                onValueChange={(value) => setAsSizeMetric(value as AsSizeMetric)}
+                            >
+                                <SelectTrigger id="size-metric" className="w-[140px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Object.entries(AS_SIZE_METRIC_LABELS).map(([value, label]) => (
+                                        <SelectItem key={value} value={value}>
+                                            {label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -113,6 +167,7 @@ export default function DashboardContentHierarchy() {
                     limit={limit}
                     showLabels={showLabels}
                     useGradient={useGradient}
+                    sizeMetric={countrySizeMetric}
                     onCountryClick={handleCountryClick}
                 />
             ) : (
@@ -122,6 +177,7 @@ export default function DashboardContentHierarchy() {
                         limit={limit}
                         showLabels={showLabels}
                         useGradient={useGradient}
+                        sizeMetric={asSizeMetric}
                     />
                 )
             )}
