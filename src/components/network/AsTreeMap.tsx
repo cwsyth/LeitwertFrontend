@@ -42,12 +42,15 @@ export function AsTreeMap({
             const response = await networkApi.getCountryAs(
                 countryCode,
                 limit,
-                statusFilter === 'all' ? undefined : statusFilter
             );
 
             setCountryName(response.country.name);
 
-            const transformedData: TreeMapDataItem[] = response.country.asNetworks.map(as => {
+            const filteredAsNetworks = statusFilter === 'all'
+                ? response.country.asNetworks
+                : response.country.asNetworks.filter(as => as.status === statusFilter);
+
+            const transformedData: TreeMapDataItem[] = filteredAsNetworks.map(as => {
                 let value: number;
                 switch (sizeMetric) {
                     case 'ipCount':
@@ -154,7 +157,7 @@ export function AsTreeMap({
                 <p className="font-bold">{dataItem.name}</p>
                 {dataItem.metadata?.asNumber && <p>AS{dataItem.metadata.asNumber}</p>}
                 <p>IP Count: {dataItem.value.toLocaleString()}</p>
-                <p>Anomalies: {dataItem.anomalyCount.toLocaleString()}</p>
+                <p>Anomalies: {dataItem.anomalyCount?.toLocaleString()}</p>
                 <p className="capitalize">Status: {dataItem.status}</p>
             </div>
         );

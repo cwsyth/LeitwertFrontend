@@ -42,12 +42,13 @@ export function CountriesTreeMap({
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const response = await networkApi.getCountriesSummary(
-                limit,
-                statusFilter === 'all' ? undefined : statusFilter
-            );
+            const response = await networkApi.getCountriesSummary(limit);
 
-            const transformedData: TreeMapDataItem[] = response.countries.map(country => {
+            const filteredCountries = statusFilter === 'all'
+                ? response.countries
+                : response.countries.filter(country => country.status === statusFilter);
+
+            const transformedData: TreeMapDataItem[] = filteredCountries.map(country => {
                 let value: number;
                 switch (sizeMetric) {
                     case 'asCount':
