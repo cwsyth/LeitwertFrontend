@@ -1,6 +1,6 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { DashboardContentMode } from "@/types/dashboard";
-import { Map, Network, Calendar } from "lucide-react";
+import { Map, Network } from "lucide-react";
 
 interface DashboardNavProps {
     mode: DashboardContentMode;
