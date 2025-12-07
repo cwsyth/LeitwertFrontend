@@ -64,12 +64,17 @@ export function CountriesTreeMap({
                         value = country.asCount;
                 }
 
+                // Log warning if anomalyCount is missing
+                if (country.anomalyCount === undefined) {
+                    console.warn(`Missing anomalyCount for country: ${country.name} (${country.code}), defaulting to 0`);
+                }
+
                 return {
                     id: country.code,
                     name: country.name,
                     value: value,
                     status: country.status,
-                    anomalyCount: country.anomalyCount,
+                    anomalyCount: country.anomalyCount ?? 0,
                     metadata: { ipCount: country.ipCount }
                 }
             });

@@ -63,12 +63,17 @@ export function AsTreeMap({
                         value = as.ipCount;
                 }
 
+                // Log warning if anomalyCount is missing
+                if (as.anomalyCount === undefined) {
+                    console.warn(`Missing anomalyCount for AS: ${as.name} (AS${as.asNumber}), defaulting to 0`);
+                }
+
                 return {
                     id: as.asNumber.toString(),
                     name: as.name,
                     value: value,
                     status: as.status,
-                    anomalyCount: as.anomalyCount,
+                    anomalyCount: as.anomalyCount ?? 0,
                     metadata: {
                         asNumber: as.asNumber,
                         ipCount: as.ipCount

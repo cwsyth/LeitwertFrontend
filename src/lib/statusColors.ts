@@ -75,5 +75,11 @@ export const getGradientColor = (
 
     const percent = ((anomalyCount - minAnomalies) / (maxAnomalies - minAnomalies)) * 100;
 
+    // if calculation fails, use default color
+    if (!isFinite(percent)) {
+        console.log('NaN detected in getGradientColor, returning default color');
+        return STATUS_COLORS[status];
+    }
+
     return `color-mix(in srgb, ${darkColor} ${percent}%, ${lightColor})`;
 };
