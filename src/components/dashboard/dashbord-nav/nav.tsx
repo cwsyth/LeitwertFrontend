@@ -15,7 +15,7 @@ export default function DashboardNav({ mode, setMode }: DashboardNavProps) {
             type="single"
             value={mode}
             onValueChange={(v) => setMode(v as DashboardContentMode)}
-            className="flex w-full items-center rounded-lg border bg-muted p-1 bg-accent"
+            className="flex w-full items-center rounded-lg border p-1 bg-accent"
         >
             <ToggleGroupItem
                 value="street"
