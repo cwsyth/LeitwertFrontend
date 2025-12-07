@@ -293,10 +293,11 @@ def main():
             "type": "Feature",
             "geometry": {"type": "Point", "coordinates": [lonc, latc]},
             "properties": {
+                "type": "router",
+                "router_count": 1,
                 "geohash": gh,
                 "country_code": country_code,
                 "router_status": pick_router_status(),
-                "city_hint": city,
                 "region": region
             }
         })
