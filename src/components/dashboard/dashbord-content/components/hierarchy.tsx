@@ -6,8 +6,6 @@ import React, { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import {
     AS_SIZE_METRIC_LABELS,
     AsSizeMetric,

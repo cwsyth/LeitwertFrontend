@@ -58,13 +58,13 @@ export interface CountryAsResponse {
 
 export type NetworkStatus = 'healthy' | 'warning' | 'critical' | 'unknown';
 
-export interface TreeMapDataItem {
-    id: string;
-    name: string;
-    value: number;
-    status: NetworkStatus;
-    anomalyCount: number;
-    metadata?: Record<string, any>;
+interface CountryMetadata {
+    ipCount: number;
+}
+
+interface AsMetadata {
+    asNumber: number;
+    ipCount: number;
 }
 
 export interface TreeMapOthersData {
@@ -73,6 +73,21 @@ export interface TreeMapOthersData {
     count: number;
     totalAnomalyCount: number;
     items: Array<{ id: string; name: string }>;
+}
+
+export interface OthersMetadata extends TreeMapOthersData {
+    isOthers: true;
+    actualValue: number;
+}
+
+export interface TreeMapDataItem {
+    id: string;
+    name: string;
+    value: number;
+    status: NetworkStatus;
+    anomalyCount: number;
+    metadata?: CountryMetadata | AsMetadata | OthersMetadata;
+    [key: string]: unknown;
 }
 
 export interface TreeMapProps {

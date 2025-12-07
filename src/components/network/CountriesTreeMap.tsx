@@ -7,11 +7,11 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TreeMap } from '@/components/network/TreeMap';
 import {
     TreeMapDataItem, TreeMapOthersData, NetworkStatus,
-    CountriesTreeMapProps
+    CountriesTreeMapProps, OthersMetadata
 } from '@/types/network';
 import { networkApi } from '@/services/networkApi';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,11 +36,7 @@ export function CountriesTreeMap({
         }
     };
 
-    useEffect(() => {
-        loadData();
-    }, [limit, statusFilter, sizeMetric]);
-
-    const loadData = async () => {
+    const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await networkApi.getCountriesSummary(limit);
@@ -88,9 +84,6 @@ export function CountriesTreeMap({
                 case 'anomalyCount':
                     othersValue = response.others.totalAnomalyCount;
                     break;
-                // case 'ipCount':
-                //     othersValue = response.others.totalIpCount;
-                //     break;
                 default:
                     othersValue = response.others.totalAsCount;
             }
@@ -110,7 +103,11 @@ export function CountriesTreeMap({
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [limit, statusFilter, sizeMetric]);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
 
     const anomalyRanges = React.useMemo(() => {
         if (!useGradient || data.length === 0) return undefined;
@@ -132,12 +129,16 @@ export function CountriesTreeMap({
     }, [data, useGradient]);
 
     const renderTooltip = (item: TreeMapDataItem | TreeMapOthersData) => {
-        const isOthersData = (item: TreeMapDataItem | TreeMapOthersData): boolean => {
-            return 'metadata' in item && item.metadata?.isOthers === true;
+        const isOthersData = (
+            item: TreeMapDataItem | TreeMapOthersData
+        ): item is TreeMapDataItem & { metadata: OthersMetadata } => {
+            return ('metadata' in item &&
+                item.metadata !== undefined &&
+                'isOthers' in item.metadata && item.metadata.isOthers);
         };
 
         if (isOthersData(item)) {
-            const othersData = (item as TreeMapDataItem).metadata as TreeMapOthersData;
+            const othersData = item.metadata;
             return (
                 <div className="space-y-3">
                     <div className="flex items-center gap-2 border-b pb-2">
@@ -176,7 +177,6 @@ export function CountriesTreeMap({
 
         const dataItem = item as TreeMapDataItem;
 
-        // Status Badge Component
         const statusColor = {
             healthy: 'bg-green-100 text-green-700 border-green-200',
             warning: 'bg-amber-100 text-amber-700 border-amber-200',
@@ -208,7 +208,7 @@ export function CountriesTreeMap({
                         </div>
                     )}
 
-                    {dataItem.metadata?.ipCount && (
+                    {dataItem.metadata && 'ipCount' in dataItem.metadata && (
                         <div className="flex items-center gap-2">
                             <Globe className="h-3.5 w-3.5 text-blue-500" />
                             <span className="text-muted-foreground">IP Count:</span>
@@ -224,9 +224,9 @@ export function CountriesTreeMap({
         return (
             <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                    <Skeleton className="h-8 w-48" /> {/* Titel */}
+                    <Skeleton className="h-8 w-48" />
                 </div>
-                <Skeleton className="h-96 w-full" /> {/* TreeMap */}
+                <Skeleton className="h-96 w-full" />
             </div>
         );
     }

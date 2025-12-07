@@ -8,7 +8,7 @@
 'use client';
 
 import { ResponsiveContainer, Tooltip, Treemap } from 'recharts';
-import { NetworkStatus, TreeMapProps } from '@/types/network';
+import { NetworkStatus, TreeMapDataItem, TreeMapProps } from '@/types/network';
 import {
     getGradientColor,
     getStatusColor,
@@ -52,16 +52,32 @@ export function TreeMap({
         }] : [])
     ];
 
-    const CustomizedContent = (props: any) => {
-        const { x, y, width, height, name, id, root } = props;
+    // Recharts passes props dynamically at runtime
+    interface CustomContentProps {
+        x?: number;
+        y?: number;
+        width?: number;
+        height?: number;
+        name?: string;
+        id?: string;
+        status?: NetworkStatus;
+        anomalyCount?: number;
+    }
+
+    const CustomizedContent = (props: CustomContentProps) => {
+        const { x, y, width, height, name, id, status, anomalyCount } = props;
+
+        // Type guards for required props
+        if (x === undefined || y === undefined || width === undefined ||
+            height === undefined || !name || !id) {
+            return null;
+        }
 
         let fillColor: string;
 
         if (id === 'others') {
             fillColor = OTHERS_COLOR;
-        } else if (useGradient && anomalyRanges) {
-            const status = props.status as NetworkStatus;
-            const anomalyCount = props.anomalyCount;
+        } else if (useGradient && anomalyRanges && status && anomalyCount !== undefined) {
             const range = anomalyRanges[status];
 
             if (range && range.min !== undefined && range.max !== undefined) {
@@ -69,8 +85,10 @@ export function TreeMap({
             } else {
                 fillColor = getStatusColor(status); // Fallback
             }
+        } else if (status) {
+            fillColor = getStatusColor(status);
         } else {
-            fillColor = getStatusColor(props.status);
+            fillColor = getStatusColor('unknown' as NetworkStatus);
         }
 
         const handleClick = () => {
@@ -87,7 +105,7 @@ export function TreeMap({
         return (
             <g
                 onClick={handleClick}
-                style={{ cursor: id === 'others' ? 'default' : 'pointer' }} // ← Cursor ändern
+                style={{ cursor: id === 'others' ? 'default' : 'pointer' }}
             >
                 <rect
                     x={x}
@@ -116,7 +134,14 @@ export function TreeMap({
         );
     };
 
-    const CustomTooltip = ({ active, payload }: any) => {
+    interface TooltipProps {
+        active?: boolean;
+        payload?: Array<{
+            payload: TreeMapDataItem;
+        }>;
+    }
+
+    const CustomTooltip = ({ active, payload }: TooltipProps) => {
         if (active && payload && payload.length) {
             const data = payload[0].payload;
             return (
@@ -148,11 +173,11 @@ export function TreeMap({
             <div className="h-96">
                 <ResponsiveContainer width="100%" height="100%">
                     <Treemap
-                        data={treeMapData as any}
+                        data={treeMapData}
                         dataKey="value"
                         stroke="#fff"
                         fill="#8884d8"
-                        content={<CustomizedContent/>}
+                        content={<CustomizedContent />}
                         isAnimationActive={false}
                     >
                         <Tooltip content={<CustomTooltip/>}/>
