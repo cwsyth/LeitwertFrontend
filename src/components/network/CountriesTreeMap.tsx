@@ -15,6 +15,7 @@ import {
 } from '@/types/network';
 import { networkApi } from '@/services/networkApi';
 import { Skeleton } from "@/components/ui/skeleton";
+import { AlertTriangle, Building2, Globe } from "lucide-react";
 
 export function CountriesTreeMap({
                                      limit = 50,
@@ -138,15 +139,34 @@ export function CountriesTreeMap({
         if (isOthersData(item)) {
             const othersData = (item as TreeMapDataItem).metadata as TreeMapOthersData;
             return (
-                <div className="space-y-2">
-                    <p className="font-bold">Other Countries</p>
-                    <p>Countries: {othersData.count}</p>
-                    <p>Total Anomalies: {othersData.totalAnomalyCount}</p>
-                    <div className="mt-2 max-h-40 overflow-y-auto">
-                        <p className="text-sm font-semibold mb-1">Countries:</p>
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2 border-b pb-2">
+                        <Globe className="h-4 w-4 text-muted-foreground" />
+                        <p className="font-bold text-base">Other Countries</p>
+                    </div>
+
+                    <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                            <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-muted-foreground">Countries:</span>
+                            <span className="font-semibold ml-auto">{othersData.count}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                            <span className="text-muted-foreground">Total Anomalies:</span>
+                            <span className="font-semibold ml-auto">{othersData.totalAnomalyCount.toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <div className="mt-3 pt-2 border-t max-h-40 overflow-y-auto">
+                        <p className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wide">
+                            Included Countries
+                        </p>
                         <ul className="text-sm space-y-1">
                             {othersData.items.map(country => (
-                                <li key={country.id}>{country.name}</li>
+                                <li key={country.id} className="text-muted-foreground">
+                                    {country.name}
+                                </li>
                             ))}
                         </ul>
                     </div>
@@ -155,15 +175,47 @@ export function CountriesTreeMap({
         }
 
         const dataItem = item as TreeMapDataItem;
+
+        // Status Badge Component
+        const statusColor = {
+            healthy: 'bg-green-100 text-green-700 border-green-200',
+            warning: 'bg-amber-100 text-amber-700 border-amber-200',
+            critical: 'bg-red-100 text-red-700 border-red-200',
+            unknown: 'bg-gray-100 text-gray-700 border-gray-200'
+        }[dataItem.status];
+
         return (
-            <div className="space-y-1">
-                <p className="font-bold">{dataItem.name}</p>
-                <p>AS Count: {dataItem.value.toLocaleString()}</p>
-                <p>Anomalies: {dataItem.anomalyCount.toLocaleString()}</p>
-                <p className="capitalize">Status: {dataItem.status}</p>
-                {dataItem.metadata?.ipCount && (
-                    <p>IP Count: {dataItem.metadata.ipCount.toLocaleString()}</p>
-                )}
+            <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3 border-b pb-2">
+                    <p className="font-bold text-base">{dataItem.name}</p>
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium border ${statusColor}`}>
+                    {dataItem.status}
+                </span>
+                </div>
+
+                <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                        <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-muted-foreground">AS Count:</span>
+                        <span className="font-semibold ml-auto">{dataItem.value.toLocaleString()}</span>
+                    </div>
+
+                    {dataItem.anomalyCount !== undefined && (
+                        <div className="flex items-center gap-2">
+                            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                            <span className="text-muted-foreground">Anomalies:</span>
+                            <span className="font-semibold ml-auto">{dataItem.anomalyCount.toLocaleString()}</span>
+                        </div>
+                    )}
+
+                    {dataItem.metadata?.ipCount && (
+                        <div className="flex items-center gap-2">
+                            <Globe className="h-3.5 w-3.5 text-blue-500" />
+                            <span className="text-muted-foreground">IP Count:</span>
+                            <span className="font-semibold ml-auto">{dataItem.metadata.ipCount.toLocaleString()}</span>
+                        </div>
+                    )}
+                </div>
             </div>
         );
     };
