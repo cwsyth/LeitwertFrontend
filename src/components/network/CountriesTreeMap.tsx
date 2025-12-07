@@ -152,8 +152,8 @@ export function CountriesTreeMap({
         return (
             <div className="space-y-1">
                 <p className="font-bold">{dataItem.name}</p>
-                <p>AS Count: {dataItem.value}</p>
-                <p>Anomalies: {dataItem.anomalyCount}</p>
+                <p>AS Count: {dataItem.value.toLocaleString()}</p>
+                <p>Anomalies: {dataItem.anomalyCount.toLocaleString()}</p>
                 <p className="capitalize">Status: {dataItem.status}</p>
                 {dataItem.metadata?.ipCount && (
                     <p>IP Count: {dataItem.metadata.ipCount.toLocaleString()}</p>

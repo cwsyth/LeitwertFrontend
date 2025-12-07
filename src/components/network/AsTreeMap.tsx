@@ -154,7 +154,7 @@ export function AsTreeMap({
                 <p className="font-bold">{dataItem.name}</p>
                 {dataItem.metadata?.asNumber && <p>AS{dataItem.metadata.asNumber}</p>}
                 <p>IP Count: {dataItem.value.toLocaleString()}</p>
-                <p>Anomalies: {dataItem.anomalyCount}</p>
+                <p>Anomalies: {dataItem.anomalyCount.toLocaleString()}</p>
                 <p className="capitalize">Status: {dataItem.status}</p>
             </div>
         );
