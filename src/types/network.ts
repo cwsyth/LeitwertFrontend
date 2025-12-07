@@ -64,7 +64,8 @@ export interface TreeMapDataItem {
     value: number;
     status: NetworkStatus;
     anomalyCount: number;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
+    [key: string]: unknown; // Index signature for Recharts TreemapDataType compatibility
 }
 
 export interface TreeMapOthersData {
