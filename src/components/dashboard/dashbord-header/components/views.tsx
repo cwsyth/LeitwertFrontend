@@ -45,7 +45,7 @@ export default function DashboardHeaderViews({
                             variant="outline"
                             className="cursor-not-allowed bg-muted text-muted-foreground border-primary"
                         >
-                            Hierarchie
+                            Netzwerkübersicht
                         </Badge>
                         {componentItems.map((item) => (
                             <Badge
