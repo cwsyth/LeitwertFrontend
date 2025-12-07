@@ -9,6 +9,7 @@ import DashboardFooter from "./dashbord-footer/footer";
 import {
     DashboardContentMode,
     DashboardViewVisibility,
+    Country
 } from "@/types/dashboard";
 import { BgpAnnounceChart } from "./dashbord-content/components/charts/bgp-announce-chart";
 import { AnomalyChart } from "./dashbord-content/components/charts/anomaly-chart";
@@ -20,8 +21,8 @@ export default function Dashboard() {
             timeline: true,
             searchResults: true,
             globalStats: true,
-            bgpAnnouncements: false,
-            anomalies: false,
+            bgpAnnouncements: true,
+            anomalies: true,
         });
 
     const toggleView = (view: keyof DashboardViewVisibility) => {
@@ -31,15 +32,22 @@ export default function Dashboard() {
         }));
     };
 
+    const [selectedCountry, setSelectedCountry] = useState<Country | null>({
+        code: 'world',
+        name: 'World'
+    });
+
     return (
         <div className="dashboard-wrapper h-full flex flex-col items-center justify-center p8">
             <div className="dashboard w-full h-full flex flex-col items-center gap-3">
                 <DashboardHeader
                     viewVisibility={viewVisibility}
                     toggleView={toggleView}
+                    selectedCountry={selectedCountry}
+                    setSelectedCountry={setSelectedCountry}
                 />
                 <DashboardNav mode={mode} setMode={setMode} />
-                <DashboardContent mode={mode} />
+                <DashboardContent mode={mode} selectedCountry={selectedCountry} />
                 {viewVisibility.bgpAnnouncements && <BgpAnnounceChart />}
                 {viewVisibility.anomalies && <AnomalyChart />}
                 {viewVisibility.timeline && <DashboardTimeline />}

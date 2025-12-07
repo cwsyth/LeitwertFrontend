@@ -1,18 +1,19 @@
 import DashboardContentMap from "./components/map";
 import DashboardContentHierarchy from "./components/hierarchy";
-import { DashboardContentMode } from "@/types/dashboard";
+import { Country, DashboardContentMode } from "@/types/dashboard";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface DashboardContentProps {
     mode: DashboardContentMode;
+    selectedCountry: Country | null;
 }
 
-export default function DashboardContent({ mode }: DashboardContentProps) {
+export default function DashboardContent({ mode, selectedCountry }: DashboardContentProps) {
     return (
         <div className="h-180 w-full">
             <Card className="dashboard-content w-full h-full flex-1 bg-background">
                 <CardContent className="h-full w-full">
-                    {mode === "street" && <DashboardContentMap />}
+                    {mode === "street" && <DashboardContentMap selectedCountry={selectedCountry} />}
                     {mode === "hierarchy" && <DashboardContentHierarchy />}
                 </CardContent>
             </Card>
