@@ -50,41 +50,38 @@ export default function DashboardContentHierarchy() {
 
     return (
         <div className="dashboard-hierarchy container mx-auto p-6">
-            {/* Header with Toggle */}
-            <div className="flex items-center justify-between mb-6">
-                <h1 className="text-3xl font-bold">
-                    Network Hierarchy
-                </h1>
-
-                <div className="flex items-center gap-4">
-                    {showCountryView && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleBackToWorld}
-                            className="gap-2"
-                        >
-                            <ArrowLeft className="h-4 w-4" />
-                            Back
-                        </Button>
-                    )}
-
-                    <div className="flex items-center space-x-2">
-                        <Label htmlFor="view-mode">World View</Label>
-                        <Switch
-                            id="view-mode"
-                            checked={showCountryView}
-                            onCheckedChange={setShowCountryView}
-                            disabled={!selectedCountry}
-                        />
-                        <Label htmlFor="view-mode">Country View</Label>
-                    </div>
-                </div>
-            </div>
-
             {/* Customization Options */}
             <div className="mb-6 p-4 border rounded-lg bg-card">
                 <div className="flex items-center gap-6">
+                    {/* View Select */}
+                    <div className="flex items-center gap-2">
+                        <Label htmlFor="view-select" className="whitespace-nowrap">
+                            Ansicht
+                        </Label>
+                        <Select
+                            value={showCountryView ? "country" : "world"}
+                            onValueChange={(value) => {
+                                if (value === "world") {
+                                    setShowCountryView(false);
+                                } else if (selectedCountry) {
+                                    setShowCountryView(true);
+                                }
+                            }}
+                            disabled={!selectedCountry && !showCountryView}
+                        >
+                            <SelectTrigger id="view-select" className="w-[140px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="world">World View</SelectItem>
+                                <SelectItem value="country" disabled={!selectedCountry}>
+                                    Country View
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Limit Input */}
                     <div className="flex items-center gap-2">
                         <Label htmlFor="limit-input" className="whitespace-nowrap">
                             Anzahl
@@ -98,6 +95,7 @@ export default function DashboardContentHierarchy() {
                             className="w-18"
                         />
                     </div>
+
                     {/* Label Toggle */}
                     <div className="flex items-center gap-2">
                         <Label htmlFor="show-labels" className="whitespace-nowrap">
@@ -204,6 +202,7 @@ export default function DashboardContentHierarchy() {
                         sizeMetric={asSizeMetric}
                         statusFilter={statusFilter}
                         onStatusFilterChange={setStatusFilter}
+                        onBackClick={handleBackToWorld}
                     />
                 )
             )}

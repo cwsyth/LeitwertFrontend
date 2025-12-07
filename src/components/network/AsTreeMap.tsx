@@ -26,7 +26,8 @@ export function AsTreeMap({
                               useGradient,
                               sizeMetric = 'ipCount',
                               statusFilter = 'all',
-                              onStatusFilterChange
+                              onStatusFilterChange,
+                              onBackClick
                           }: AsTreeMapProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
@@ -240,6 +241,7 @@ export function AsTreeMap({
             showLabels={showLabels}
             useGradient={useGradient}
             anomalyRanges={anomalyRanges}
+            onBackClick={onBackClick}
         />
     );
 }

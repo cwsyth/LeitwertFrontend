@@ -89,7 +89,8 @@ export interface TreeMapProps {
     anomalyRanges?: Record<NetworkStatus, {
         min: number;
         max: number
-    }>
+    }>,
+    onBackClick?: () => void;
 }
 
 export interface AsTreeMapProps {
@@ -100,6 +101,7 @@ export interface AsTreeMapProps {
     sizeMetric?: AsSizeMetric,
     statusFilter?: NetworkStatus | 'all'
     onStatusFilterChange?: (status: NetworkStatus | 'all') => void;
+    onBackClick?: () => void;
 }
 
 export interface CountriesTreeMapProps {

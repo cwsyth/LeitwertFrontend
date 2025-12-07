@@ -15,6 +15,8 @@ import {
     OTHERS_COLOR
 } from '@/lib/statusColors';
 import React from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export function TreeMap({
                             data,
@@ -25,7 +27,8 @@ export function TreeMap({
                             onItemClick,
                             showLabels,
                             useGradient,
-                            anomalyRanges
+                            anomalyRanges,
+                            onBackClick,
                         }: TreeMapProps) {
     // Berechne den kleinsten Wert aus den Haupt-Daten
     const minDataValue = data.length > 0 ? Math.min(...data.map(d => d.value)) : 0;
@@ -128,7 +131,18 @@ export function TreeMap({
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">{title}</h2>
+                <h1 className="text-2xl font-bold">{title}</h1>
+                {onBackClick && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onBackClick}
+                        className="gap-2"
+                    >
+                        <ArrowLeft className="h-4 w-4" />
+                        Zurück
+                    </Button>
+                )}
             </div>
 
             <div className="h-96">
