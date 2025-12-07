@@ -11,7 +11,7 @@ def geohash_encode(lat, lon, precision=6):
     out = []
     bit = 0
     ch = 0
-    even = True  # starts with longitude
+    even = True
     while len(out) < precision:
         if even:
             mid = (lon_min + lon_max) / 2.0
@@ -62,13 +62,21 @@ def geohash_center(gh):
     lat_min, lat_max, lon_min, lon_max = geohash_bbox(gh)
     return (lat_min + lat_max) / 2.0, (lon_min + lon_max) / 2.0
 
+def pick_router_status():
+    # 85% online, 8% degraded, 5% down, 2% unknown
+    r = random.random()
+    if r < 0.85:
+        return "online"
+    elif r < 0.93:
+        return "degraded"
+    elif r < 0.98:
+        return "down"
+    else:
+        return "unknown"
+
 # (name, lat, lon, weight, region, country_code)
-# weights are just for sampling bias (bigger = more points)
 CITIES = [
-    # =========================
-    # EUROPE (focus)
-    # =========================
-    # UK / IE
+    # EUROPE
     ("London", 51.5074, -0.1278, 24, "EU", "GB"),
     ("Manchester", 53.4808, -2.2426, 10, "EU", "GB"),
     ("Birmingham", 52.4862, -1.8904, 9, "EU", "GB"),
@@ -80,7 +88,6 @@ CITIES = [
     ("Dublin", 53.3498, -6.2603, 8, "EU", "IE"),
     ("Cork", 51.8985, -8.4756, 3, "EU", "IE"),
 
-    # France
     ("Paris", 48.8566, 2.3522, 22, "EU", "FR"),
     ("Marseille", 43.2965, 5.3698, 8, "EU", "FR"),
     ("Lyon", 45.7640, 4.8357, 8, "EU", "FR"),
@@ -91,7 +98,6 @@ CITIES = [
     ("Nantes", 47.2184, -1.5536, 4, "EU", "FR"),
     ("Strasbourg", 48.5734, 7.7521, 4, "EU", "FR"),
 
-    # Germany
     ("Berlin", 52.5200, 13.4050, 18, "EU", "DE"),
     ("Hamburg", 53.5511, 9.9937, 10, "EU", "DE"),
     ("Munich", 48.1351, 11.5820, 10, "EU", "DE"),
@@ -105,7 +111,6 @@ CITIES = [
     ("Hannover", 52.3759, 9.7320, 3, "EU", "DE"),
     ("Bremen", 53.0793, 8.8017, 3, "EU", "DE"),
 
-    # Spain
     ("Madrid", 40.4168, -3.7038, 14, "EU", "ES"),
     ("Barcelona", 41.3851, 2.1734, 14, "EU", "ES"),
     ("Valencia", 39.4699, -0.3763, 6, "EU", "ES"),
@@ -114,7 +119,6 @@ CITIES = [
     ("Malaga", 36.7213, -4.4214, 4, "EU", "ES"),
     ("Bilbao", 43.2630, -2.9350, 3, "EU", "ES"),
 
-    # Italy
     ("Rome", 41.9028, 12.4964, 14, "EU", "IT"),
     ("Milan", 45.4642, 9.1900, 14, "EU", "IT"),
     ("Naples", 40.8518, 14.2681, 6, "EU", "IT"),
@@ -125,7 +129,6 @@ CITIES = [
     ("Genoa", 44.4056, 8.9463, 3, "EU", "IT"),
     ("Venice", 45.4408, 12.3155, 3, "EU", "IT"),
 
-    # Benelux
     ("Amsterdam", 52.3676, 4.9041, 10, "EU", "NL"),
     ("Rotterdam", 51.9244, 4.4777, 6, "EU", "NL"),
     ("The Hague", 52.0705, 4.3007, 4, "EU", "NL"),
@@ -136,7 +139,6 @@ CITIES = [
     ("Ghent", 51.0543, 3.7174, 3, "EU", "BE"),
     ("Luxembourg", 49.6116, 6.1319, 2, "EU", "LU"),
 
-    # Nordics
     ("Stockholm", 59.3293, 18.0686, 8, "EU", "SE"),
     ("Gothenburg", 57.7089, 11.9746, 4, "EU", "SE"),
     ("Malmo", 55.6050, 13.0038, 3, "EU", "SE"),
@@ -147,7 +149,6 @@ CITIES = [
     ("Helsinki", 60.1699, 24.9384, 6, "EU", "FI"),
     ("Tampere", 61.4978, 23.7610, 3, "EU", "FI"),
 
-    # Central / East
     ("Vienna", 48.2082, 16.3738, 8, "EU", "AT"),
     ("Graz", 47.0707, 15.4395, 3, "EU", "AT"),
     ("Salzburg", 47.8095, 13.0550, 2, "EU", "AT"),
@@ -173,7 +174,6 @@ CITIES = [
     ("Vilnius", 54.6872, 25.2797, 3, "EU", "LT"),
     ("Tallinn", 59.4370, 24.7536, 3, "EU", "EE"),
 
-    # South / Southeast
     ("Lisbon", 38.7223, -9.1393, 7, "EU", "PT"),
     ("Porto", 41.1579, -8.6291, 4, "EU", "PT"),
     ("Athens", 37.9838, 23.7275, 6, "EU", "GR"),
@@ -181,9 +181,7 @@ CITIES = [
     ("Istanbul", 41.0082, 28.9784, 10, "EU", "TR"),
     ("Ankara", 39.9334, 32.8597, 5, "EU", "TR"),
 
-    # =========================
-    # UNITED STATES (focus)
-    # =========================
+    # US
     ("New York", 40.7128, -74.0060, 24, "US", "US"),
     ("Los Angeles", 34.0522, -118.2437, 20, "US", "US"),
     ("Chicago", 41.8781, -87.6298, 16, "US", "US"),
@@ -223,7 +221,6 @@ CITIES = [
     ("Salt Lake City", 40.7608, -111.8910, 5, "US", "US"),
     ("New Orleans", 29.9511, -90.0715, 5, "US", "US"),
     ("Raleigh", 35.7796, -78.6382, 5, "US", "US"),
-    ("San Bernardino", 34.1083, -117.2898, 4, "US", "US"),
     ("Oakland", 37.8044, -122.2711, 5, "US", "US"),
     ("Baltimore", 39.2904, -76.6122, 6, "US", "US"),
     ("Milwaukee", 43.0389, -87.9065, 5, "US", "US"),
@@ -245,18 +242,16 @@ def pick_city(region):
     total = sum(c[3] for c in pool)
     r = random.uniform(0, total)
     acc = 0.0
-    for name, lat, lon, w, reg, cc in pool:
-        acc += w
+    for item in pool:
+        acc += item[3]
         if r <= acc:
-            return name, lat, lon, w, reg, cc
+            return item
     return pool[-1]
 
 def sample_point_around(lat0, lon0, region, weight):
-    # base spread in degrees (roughly: 0.10 lat ~ 11km)
     base_lat = 0.10 if region == "EU" else 0.14
     base_lon = 0.12 if region == "EU" else 0.16
 
-    # bigger city => a bit wider metro spread
     if weight >= 20:
         factor = 1.5
     elif weight >= 14:
@@ -272,20 +267,18 @@ def sample_point_around(lat0, lon0, region, weight):
     sd_lon = base_lon * factor
 
     lat = lat0 + random.gauss(0, sd_lat)
-    # adjust longitude degrees by latitude (avoid huge jumps near poles)
     lon = lon0 + (random.gauss(0, sd_lon) / max(0.2, math.cos(math.radians(lat0))))
 
-    # clamp / wrap
     lat = max(-89.999999, min(89.999999, lat))
     lon = ((lon + 180) % 360) - 180
     return lat, lon
 
 def main():
-    random.seed(42)  # reproducible; change/remove for different output
+    random.seed(42)  # reproducible; remove/change for different output
 
     N = 20000
     precision = 6
-    eu_share = 0.55  # Europe vs US mix
+    eu_share = 0.55
 
     features = []
     for _ in range(N):
@@ -302,6 +295,7 @@ def main():
             "properties": {
                 "geohash": gh,
                 "country_code": country_code,
+                "router_status": pick_router_status(),
                 "city_hint": city,
                 "region": region
             }

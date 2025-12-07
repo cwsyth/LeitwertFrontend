@@ -41,6 +41,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.90.5
         version: 5.90.5(react@19.1.0)
+      '@types/geojson':
+        specifier: ^7946.0.16
+        version: 7946.0.16
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1

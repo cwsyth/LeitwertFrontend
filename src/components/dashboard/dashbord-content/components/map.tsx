@@ -7,6 +7,7 @@ import type { MapRef, MapMouseEvent } from 'react-map-gl/maplibre';
 import type { GeoJSONSource } from 'maplibre-gl';
 
 import { Country } from '@/types/dashboard';
+import { RouterFeatureCollection } from '@/types/geojson';
 
 interface DashboardContentMapProps {
     selectedCountry: Country | null;
@@ -41,7 +42,7 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
         }
     };
 
-    const filteredMapData = selectedCountry && selectedCountry.code !== 'world' && mapData
+    const filteredMapData: RouterFeatureCollection = selectedCountry && selectedCountry.code !== 'world' && mapData
         ? {
             ...mapData,
             features: mapData?.features.filter((feature: {properties: {country_code: string}}) =>
