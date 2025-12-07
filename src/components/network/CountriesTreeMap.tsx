@@ -166,7 +166,7 @@ export function CountriesTreeMap({
         <TreeMap
             data={data}
             others={others}
-            title="Countries by AS Count"
+            title="Globale Übersicht"
             onStatusFilter={setStatusFilter}
             currentStatus={statusFilter}
             renderTooltip={renderTooltip}

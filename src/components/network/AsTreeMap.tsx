@@ -164,7 +164,7 @@ export function AsTreeMap({
         <TreeMap
             data={data}
             others={others}
-            title={`AS Networks in ${countryName}`}
+            title={`${countryName} - Autonome Systeme`}
             onStatusFilter={setStatusFilter}
             currentStatus={statusFilter}
             renderTooltip={renderTooltip}
