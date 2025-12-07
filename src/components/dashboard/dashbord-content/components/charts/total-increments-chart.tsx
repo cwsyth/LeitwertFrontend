@@ -5,7 +5,6 @@ import {
     Line,
     ComposedChart,
     Area,
-    LineChart,
     CartesianGrid,
     ResponsiveContainer,
     Tooltip,
@@ -16,6 +15,14 @@ import { BoxPlotData } from "./boxplot-chart";
 
 interface TotalIncrementsChartProps {
     data: BoxPlotData[];
+}
+
+interface CustomAnomalyDotProps {
+    cx?: number;
+    cy?: number;
+    payload?: BoxPlotData & {
+        is_anomaly?: boolean;
+    };
 }
 
 const TotalIncrementsChartComponent = ({ data }: TotalIncrementsChartProps) => {
@@ -38,7 +45,7 @@ const TotalIncrementsChartComponent = ({ data }: TotalIncrementsChartProps) => {
         };
     });
 
-    const CustomAnomalyDot = (props: any) => {
+    const CustomAnomalyDot = (props: CustomAnomalyDotProps) => {
         const { cx, cy, payload } = props;
         if (!payload || !payload.is_anomaly) return null;
         return (
