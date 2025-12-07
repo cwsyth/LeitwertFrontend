@@ -8,31 +8,18 @@
 'use client';
 
 import { ResponsiveContainer, Tooltip, Treemap } from 'recharts';
-import {
-    NetworkStatus,
-    TreeMapDataItem,
-    TreeMapOthersData, TreeMapProps
-} from '@/types/network';
+import { NetworkStatus, TreeMapProps } from '@/types/network';
 import {
     getGradientColor,
     getStatusColor,
     OTHERS_COLOR
 } from '@/lib/statusColors';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from '@/components/ui/select';
-import React, { ReactNode } from "react";
+import React from "react";
 
 export function TreeMap({
                             data,
                             others,
                             title,
-                            onStatusFilter,
-                            currentStatus,
                             renderTooltip,
                             othersDisplaySize = 0.5,
                             onItemClick,
@@ -142,18 +129,6 @@ export function TreeMap({
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">{title}</h2>
-                <Select value={currentStatus}
-                        onValueChange={(value) => onStatusFilter(value as NetworkStatus | 'all')}>
-                    <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Filter by status"/>
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="healthy">Healthy</SelectItem>
-                        <SelectItem value="warning">Warning</SelectItem>
-                        <SelectItem value="critical">Critical</SelectItem>
-                    </SelectContent>
-                </Select>
             </div>
 
             <div className="h-96">

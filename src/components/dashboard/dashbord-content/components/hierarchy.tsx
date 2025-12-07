@@ -12,7 +12,7 @@ import {
     AS_SIZE_METRIC_LABELS,
     AsSizeMetric,
     COUNTRY_SIZE_METRIC_LABELS,
-    CountrySizeMetric
+    CountrySizeMetric, NetworkStatus
 } from "@/types/network";
 import {
     Select,
@@ -30,6 +30,7 @@ export default function DashboardContentHierarchy() {
     const [useGradient, setUseGradient] = useState(true);
     const [countrySizeMetric, setCountrySizeMetric] = useState<CountrySizeMetric>('asCount');
     const [asSizeMetric, setAsSizeMetric] = useState<AsSizeMetric>('ipCount');
+    const [statusFilter, setStatusFilter] = useState<NetworkStatus | 'all'>('all');
 
     const handleCountryClick = (countryCode: string) => {
         setSelectedCountry(countryCode);
@@ -122,7 +123,7 @@ export default function DashboardContentHierarchy() {
                     {/* Size Metric Select */}
                     <div className="flex items-center gap-2">
                         <Label htmlFor="size-metric" className="whitespace-nowrap">
-                            Größe nach
+                            Sortierung
                         </Label>
                         {!showCountryView ? (
                             <Select
@@ -158,6 +159,27 @@ export default function DashboardContentHierarchy() {
                             </Select>
                         )}
                     </div>
+
+                    {/* Status Filter */}
+                    <div className="flex items-center gap-2">
+                        <Label htmlFor="status-filter" className="whitespace-nowrap">
+                            Status
+                        </Label>
+                        <Select
+                            value={statusFilter}
+                            onValueChange={(value) => setStatusFilter(value as NetworkStatus | 'all')}
+                        >
+                            <SelectTrigger id="status-filter" className="w-[140px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Alle</SelectItem>
+                                <SelectItem value="healthy">Healthy</SelectItem>
+                                <SelectItem value="warning">Warning</SelectItem>
+                                <SelectItem value="critical">Critical</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
             </div>
 
@@ -168,6 +190,8 @@ export default function DashboardContentHierarchy() {
                     showLabels={showLabels}
                     useGradient={useGradient}
                     sizeMetric={countrySizeMetric}
+                    statusFilter={statusFilter}
+                    onStatusFilterChange={setStatusFilter}
                     onCountryClick={handleCountryClick}
                 />
             ) : (
@@ -178,6 +202,8 @@ export default function DashboardContentHierarchy() {
                         showLabels={showLabels}
                         useGradient={useGradient}
                         sizeMetric={asSizeMetric}
+                        statusFilter={statusFilter}
+                        onStatusFilterChange={setStatusFilter}
                     />
                 )
             )}

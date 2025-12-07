@@ -22,11 +22,12 @@ export function AsTreeMap({
                               limit = 10,
                               showLabels,
                               useGradient,
-                              sizeMetric = 'ipCount'
+                              sizeMetric = 'ipCount',
+                              statusFilter = 'all',
+                              onStatusFilterChange
                           }: AsTreeMapProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
-    const [statusFilter, setStatusFilter] = useState<NetworkStatus | 'all'>('all');
     const [countryName, setCountryName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
@@ -165,7 +166,7 @@ export function AsTreeMap({
             data={data}
             others={others}
             title={`${countryName} - Autonome Systeme`}
-            onStatusFilter={setStatusFilter}
+            onStatusFilter={onStatusFilterChange}
             currentStatus={statusFilter}
             renderTooltip={renderTooltip}
             showLabels={showLabels}

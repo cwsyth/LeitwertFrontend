@@ -20,11 +20,12 @@ export function CountriesTreeMap({
                                      onCountryClick,
                                      showLabels,
                                      useGradient,
-                                     sizeMetric = 'asCount'
+                                     sizeMetric = 'asCount',
+                                     statusFilter = 'all',
+                                     onStatusFilterChange
                                  }: CountriesTreeMapProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
-    const [statusFilter, setStatusFilter] = useState<NetworkStatus | 'all'>('all');
     const [isLoading, setIsLoading] = useState(true);
 
     const handleItemClick = (item: TreeMapDataItem) => {
@@ -167,7 +168,7 @@ export function CountriesTreeMap({
             data={data}
             others={others}
             title="Globale Übersicht"
-            onStatusFilter={setStatusFilter}
+            onStatusFilter={onStatusFilterChange}
             currentStatus={statusFilter}
             renderTooltip={renderTooltip}
             onItemClick={handleItemClick}

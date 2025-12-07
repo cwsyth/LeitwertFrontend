@@ -79,7 +79,7 @@ export interface TreeMapProps {
     data: TreeMapDataItem[],
     others?: TreeMapOthersData,
     title: string,
-    onStatusFilter: (status: NetworkStatus | 'all') => void,
+    onStatusFilter?: (status: NetworkStatus | 'all') => void,
     currentStatus: NetworkStatus | 'all',
     renderTooltip: (data: TreeMapDataItem | TreeMapOthersData) => ReactNode,
     othersDisplaySize?: number,
@@ -97,7 +97,9 @@ export interface AsTreeMapProps {
     limit?: number,
     showLabels?: boolean,
     useGradient?: boolean,
-    sizeMetric?: AsSizeMetric
+    sizeMetric?: AsSizeMetric,
+    statusFilter?: NetworkStatus | 'all'
+    onStatusFilterChange?: (status: NetworkStatus | 'all') => void;
 }
 
 export interface CountriesTreeMapProps {
@@ -105,7 +107,9 @@ export interface CountriesTreeMapProps {
     onCountryClick?: (countryCode: string) => void,
     showLabels?: boolean,
     useGradient?: boolean,
-    sizeMetric?: CountrySizeMetric
+    sizeMetric?: CountrySizeMetric,
+    statusFilter?: NetworkStatus | 'all'
+    onStatusFilterChange?: (status: NetworkStatus | 'all') => void;
 }
 
 export type CountrySizeMetric = 'asCount' | 'anomalyCount' | 'ipCount';
