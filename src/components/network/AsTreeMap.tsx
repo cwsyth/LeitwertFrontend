@@ -13,7 +13,8 @@ import {
     AsTreeMapProps,
     NetworkStatus,
     TreeMapDataItem,
-    TreeMapOthersData
+    TreeMapOthersData,
+    OthersMetadata
 } from '@/types/network';
 import { networkApi } from '@/services/networkApi';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -135,12 +136,16 @@ export function AsTreeMap({
     }, [data, useGradient]);
 
     const renderTooltip = (item: TreeMapDataItem | TreeMapOthersData) => {
-        const isOthersData = (item: TreeMapDataItem | TreeMapOthersData): boolean => {
-            return 'metadata' in item && item.metadata?.isOthers === true;
+        const isOthersData = (
+            item: TreeMapDataItem | TreeMapOthersData
+        ): item is TreeMapDataItem & { metadata: OthersMetadata } => {
+            return ('metadata' in item &&
+                item.metadata !== undefined &&
+                'isOthers' in item.metadata && item.metadata.isOthers);
         };
 
         if (isOthersData(item)) {
-            const othersData = (item as TreeMapDataItem).metadata as TreeMapOthersData;
+            const othersData = item.metadata;
             return (
                 <div className="space-y-3">
                     <div className="flex items-center gap-2 border-b pb-2">
@@ -195,7 +200,7 @@ export function AsTreeMap({
                         {dataItem.status}
                     </span>
                     </div>
-                    {dataItem.metadata?.asNumber && (
+                    {dataItem.metadata && 'asNumber' in dataItem.metadata && (
                         <p className="text-xs text-muted-foreground">AS{dataItem.metadata.asNumber}</p>
                     )}
                 </div>
@@ -223,9 +228,9 @@ export function AsTreeMap({
         return (
             <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                    <Skeleton className="h-8 w-48" /> {/* Titel */}
+                    <Skeleton className="h-8 w-48" />
                 </div>
-                <Skeleton className="h-96 w-full" /> {/* TreeMap */}
+                <Skeleton className="h-96 w-full" />
             </div>
         );
     }

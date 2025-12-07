@@ -8,7 +8,7 @@
 'use client';
 
 import { ResponsiveContainer, Tooltip, Treemap } from 'recharts';
-import { NetworkStatus, TreeMapProps } from '@/types/network';
+import { NetworkStatus, TreeMapDataItem, TreeMapProps } from '@/types/network';
 import {
     getGradientColor,
     getStatusColor,
@@ -137,14 +137,7 @@ export function TreeMap({
     interface TooltipProps {
         active?: boolean;
         payload?: Array<{
-            payload: {
-                id: string;
-                name: string;
-                value: number;
-                status: NetworkStatus;
-                anomalyCount: number;
-                metadata?: Record<string, unknown>;
-            };
+            payload: TreeMapDataItem;
         }>;
     }
 
