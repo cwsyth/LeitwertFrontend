@@ -14,6 +14,7 @@ import {
     CountriesTreeMapProps
 } from '@/types/network';
 import { networkApi } from '@/services/networkApi';
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function CountriesTreeMap({
                                      limit = 50,
@@ -161,7 +162,16 @@ export function CountriesTreeMap({
         );
     };
 
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) {
+        return (
+            <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                    <Skeleton className="h-8 w-48" /> {/* Titel */}
+                </div>
+                <Skeleton className="h-96 w-full" /> {/* TreeMap */}
+            </div>
+        );
+    }
 
     return (
         <TreeMap
