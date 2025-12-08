@@ -227,11 +227,15 @@ export function BgpAnnounceChart() {
     const totalDuration = to.getTime() - from.getTime();
 
     // Calculate view range dates (Immediate for UI)
-    const viewStart = new Date(
-        from.getTime() + (totalDuration * viewRange[0]) / 100
+    const viewStart = useMemo(
+        () =>
+            new Date(from.getTime() + (totalDuration * viewRange[0]) / 100),
+        [from, totalDuration, viewRange]
     );
-    const viewEnd = new Date(
-        from.getTime() + (totalDuration * viewRange[1]) / 100
+    const viewEnd = useMemo(
+        () =>
+            new Date(from.getTime() + (totalDuration * viewRange[1]) / 100),
+        [from, totalDuration, viewRange]
     );
     const viewDuration = viewEnd.getTime() - viewStart.getTime();
 

@@ -1,6 +1,6 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { DashboardContentMode } from "@/types/dashboard";
-import { Map, Network, Calendar } from "lucide-react";
+import { Map, Network } from "lucide-react";
 
 interface DashboardNavProps {
     mode: DashboardContentMode;
@@ -15,7 +15,7 @@ export default function DashboardNav({ mode, setMode }: DashboardNavProps) {
             type="single"
             value={mode}
             onValueChange={(v) => setMode(v as DashboardContentMode)}
-            className="flex w-full items-center rounded-lg border bg-muted p-1 bg-accent"
+            className="flex w-full items-center rounded-lg border p-1 bg-accent"
         >
             <ToggleGroupItem
                 value="street"
@@ -30,7 +30,7 @@ export default function DashboardNav({ mode, setMode }: DashboardNavProps) {
                 className="flex-1 px-3 rounded-[var(--radius)] data-[state=on]:bg-background data-[state=on]:shadow"
             >
                 <Network className="mr-1 h-4 w-4" />
-                Hierarchie
+                Netzwerkübersicht
             </ToggleGroupItem>
 
             { /* <ToggleGroupItem

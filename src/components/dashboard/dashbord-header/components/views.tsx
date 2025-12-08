@@ -19,7 +19,6 @@ interface ComponentItem {
 
 const componentItems: ComponentItem[] = [
     { key: "bgpAnnouncements", label: "BGP Announcements" },
-    { key: "anomalies", label: "Anomalien" },
     { key: "timeline", label: "Zeitleiste" },
     { key: "searchResults", label: "Suchergebnisse" },
     { key: "globalStats", label: "Globale Statistiken" },
@@ -45,7 +44,7 @@ export default function DashboardHeaderViews({
                             variant="outline"
                             className="cursor-not-allowed bg-muted text-muted-foreground border-primary"
                         >
-                            Hierarchie
+                            Netzwerkübersicht
                         </Badge>
                         {componentItems.map((item) => (
                             <Badge
