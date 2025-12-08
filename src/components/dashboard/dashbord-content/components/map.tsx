@@ -16,10 +16,15 @@ interface DashboardContentMapProps {
 export default function DashboardContentMap({ selectedCountry }: DashboardContentMapProps) {
     const mapRef = useRef<MapRef>(null);
 
+    const isWorld = !selectedCountry || selectedCountry.code === 'world';
+    const geoJsonUrl = isWorld
+        ? '/router_collections_by_country_p6.geojson'
+        : '/geohash_points_p6_20000.geojson';
+
     const { data: mapData } = useQuery({
-        queryKey: ['geohash-points'],
+        queryKey: ['geohash-points', selectedCountry?.code],
         queryFn: async () => {
-            const response = await fetch('/geohash_points_p6_20000.geojson');
+            const response = await fetch(geoJsonUrl);
             if (!response.ok) {
                 throw new Error('Failed to fetch map data');
             }
