@@ -276,7 +276,7 @@ def sample_point_around(lat0, lon0, region, weight):
 def main():
     random.seed(42)  # reproducible; remove/change for different output
 
-    N = 20000
+    N = 150000
     precision = 6
     eu_share = 0.55
 
