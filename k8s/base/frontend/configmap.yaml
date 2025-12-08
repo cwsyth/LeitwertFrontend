@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: dashboard
 data:
-  NEXT_PUBLIC_FRONTEND_API_URL: "http://frontendapi:5000"
+  INTERNAL_FRONTEND_API_URL: "http://frontendapi:5000/api"

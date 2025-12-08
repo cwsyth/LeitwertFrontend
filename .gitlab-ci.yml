@@ -1,4 +1,5 @@
 stages:
+  - validate
   - build
 
 default:
@@ -16,6 +17,23 @@ default:
   before_script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
 
+validate:dev:
+  stage: validate
+  script:
+    - |
+      docker build \
+        --build-arg BUILDKIT_INLINE_CACHE=1 \
+        --build-arg APP_VERSION=$CI_COMMIT_SHORT_SHA \
+        --cache-from $CI_REGISTRY_IMAGE:latest \
+        --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
+        --tag $CI_REGISTRY_IMAGE:latest \
+        .
+  rules:
+    - if: $CI_COMMIT_BRANCH && $CI_COMMIT_BRANCH != "main" && $CI_COMMIT_BRANCH != "dev"
+  environment:
+    name: development
+    url: https://dev.univ.leitwert.net
+
 build:dev:
   stage: build
   <<: *registry_login
@@ -23,6 +41,7 @@ build:dev:
     - |
       docker build \
         --build-arg BUILDKIT_INLINE_CACHE=1 \
+        --build-arg APP_VERSION=$CI_COMMIT_SHORT_SHA \
         --cache-from $CI_REGISTRY_IMAGE:latest \
         --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
         --tag $CI_REGISTRY_IMAGE:latest \
@@ -42,6 +61,7 @@ build:prod:
     - |
       docker build \
         --build-arg BUILDKIT_INLINE_CACHE=1 \
+        --build-arg APP_VERSION=$CI_COMMIT_TAG \
         --cache-from $CI_REGISTRY_IMAGE:latest \
         --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG \
         .

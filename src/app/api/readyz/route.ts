@@ -16,7 +16,7 @@ async function ping(url: string, ms = 500) {
 }
 
 export async function GET() {
-    const base = process.env.NEXT_PUBLIC_FRONTEND_API_URL;
+    const base = process.env.INTERNAL_FRONTEND_API_URL;
     if (!base) {
         return new Response('ready', { status: 200, headers: { 'Cache-Control': 'no-store' } });
     }
