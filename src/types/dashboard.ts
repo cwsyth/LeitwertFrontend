@@ -26,3 +26,8 @@ export interface BGPAnnounceASCount {
     is_anomaly?: boolean;
     anomaly_score?: number;
 }
+
+export interface Country {
+    code: string;
+    name: string;
+}
