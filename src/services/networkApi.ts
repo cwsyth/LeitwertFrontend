@@ -7,7 +7,7 @@
 
 import { CountriesSummaryResponse, CountryAsResponse } from '@/types/network';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_FRONTEND_API_URL;
+const API_BASE_URL = process.env.INTERNAL_FRONTEND_API_URL || "/api";
 
 export const networkApi = {
     async getCountriesSummary(limit: number = 50): Promise<CountriesSummaryResponse> {
