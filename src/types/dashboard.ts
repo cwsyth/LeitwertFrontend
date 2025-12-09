@@ -5,7 +5,6 @@ export interface DashboardViewVisibility {
     searchResults: boolean;
     globalStats: boolean;
     bgpAnnouncements: boolean;
-    anomalies: boolean;
 }
 
 export interface BGPAnnounceASCount {
