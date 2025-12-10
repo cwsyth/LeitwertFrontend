@@ -43,7 +43,7 @@ export default function Dashboard() {
     return (
         <div className="dashboard-wrapper h-full flex flex-col items-center justify-center p8">
             <div className="dashboard w-full h-full flex flex-col items-center gap-3">
-                {viewVisibility.timeline && <TimeRangeSelector />}
+                <TimeRangeSelector />
                 <DashboardHeader
                     viewVisibility={viewVisibility}
                     toggleView={toggleView}
