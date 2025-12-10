@@ -20,6 +20,7 @@ import { useTimeRangeStore, TimeRangePreset } from "@/lib/stores/time-range-stor
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import {Slider} from "@/components/ui/slider";
+import {Badge} from "@/components/ui/badge";
 
 export default function TimeRangeSelector() {
     const {
@@ -74,13 +75,6 @@ export default function TimeRangeSelector() {
             setSliderValue(0);
         }
     }, [playbackPosition, timeRange]);
-
-    // Formatiere den aktuellen Zeitraum für die Anzeige
-    const formatTimeRange = () => {
-        const start = format(timeRange.start, "dd. MMM HH:mm", { locale: de });
-        const end = format(timeRange.end, "dd. MMM HH:mm", { locale: de });
-        return `${start} - ${end}`;
-    };
 
     const formatPlaybackPosition = () => {
         if (!playbackPosition) return "";
@@ -173,74 +167,7 @@ export default function TimeRangeSelector() {
 
     return (
         <div className="flex items-center justify-end w-full gap-3">
-            {/* Slider mit Zeitmarken - LINKS */}
-            <div className="flex items-center gap-2" style={{ width: '300px' }}>
-                {/* Start-Zeit */}
-                <span className="text-xs text-white whitespace-nowrap">
-                {format(timeRange.start, "dd.MM HH:mm", { locale: de })}
-            </span>
-
-                {/* Slider */}
-                <div className="flex-1 flex flex-col items-center relative">
-                    <Slider
-                        value={[sliderValue]}
-                        onValueChange={handleSliderChange}
-                        min={0}
-                        max={100}
-                        step={1}
-                        className="w-full [&_[role=slider]]:bg-white [&_[role=slider]]:border-white [&>span:first-child]:bg-gray-600 [&>span>span]:bg-transparent"
-                        onMouseEnter={() => setShowTooltip(true)}
-                        onMouseLeave={() => setShowTooltip(false)}
-                    />
-                    {showTooltip && playbackPosition && (
-                        <div
-                            className="absolute -top-8 bg-popover text-popover-foreground px-2 py-1 rounded-md text-xs shadow-md pointer-events-none"
-                            style={{ left: `${sliderValue}%`, transform: 'translateX(-50%)' }}
-                        >
-                            {format(playbackPosition, "dd.MM HH:mm", { locale: de })}
-                        </div>
-                    )}
-                </div>
-
-                {/* End-Zeit */}
-                <span className="text-xs text-white whitespace-nowrap">
-                {format(timeRange.end, "dd.MM HH:mm", { locale: de })}
-            </span>
-            </div>
-
-            {/* Separator */}
-            <div className="h-6 w-px bg-border" />
-
-            {/* Playback Controls */}
-            <div className="flex items-center gap-2">
-                {/* Play/Pause Button */}
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handlePlayPause}
-                >
-                    {isPlaying ? (
-                        <Pause className="h-4 w-4" />
-                    ) : (
-                        <Play className="h-4 w-4" />
-                    )}
-                </Button>
-
-                {/* Speed Button */}
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleSpeedChange}
-                    className="gap-2 min-w-[4rem]"
-                >
-                    <Gauge className="h-4 w-4" />
-                    {playbackSpeed}x
-                </Button>
-            </div>
-
-            {/* Separator */}
-            <div className="h-6 w-px bg-border" />
-
+            {/* Date Time Picker */}
             <Popover open={isOpen} onOpenChange={setIsOpen}>
                 <PopoverTrigger asChild>
                     <Button
@@ -248,7 +175,6 @@ export default function TimeRangeSelector() {
                         className="gap-2"
                     >
                         <CalendarIcon className="h-4 w-4" />
-                        {formatTimeRange()}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-4" align="end">
@@ -371,6 +297,71 @@ export default function TimeRangeSelector() {
                     </div>
                 </PopoverContent>
             </Popover>
+
+            {/* Slider mit Zeitmarken */}
+            <div className="flex items-center gap-2" style={{ width: '300px' }}>
+                {/* Start-Zeit */}
+                <Badge variant="secondary" className="gap-1.5 px-2 py-1 font-semibold">
+                    {format(timeRange.start, "dd.MM HH:mm", { locale: de })}
+                </Badge>
+
+                {/* Slider */}
+                <div className="flex-1 flex flex-col items-center relative">
+                    <Slider
+                        value={[sliderValue]}
+                        onValueChange={handleSliderChange}
+                        min={0}
+                        max={100}
+                        step={1}
+                        className="w-full [&_[role=slider]]:bg-white [&_[role=slider]]:border-white [&>span:first-child]:bg-gray-600 [&>span>span]:bg-transparent"
+                        onMouseEnter={() => setShowTooltip(true)}
+                        onMouseLeave={() => setShowTooltip(false)}
+                    />
+                    {showTooltip && playbackPosition && (
+                        <div
+                            className="absolute -top-8 bg-popover text-popover-foreground px-2 py-1 rounded-md text-xs shadow-md pointer-events-none"
+                            style={{ left: `${sliderValue}%`, transform: 'translateX(-50%)' }}
+                        >
+                            {format(playbackPosition, "dd.MM HH:mm", { locale: de })}
+                        </div>
+                    )}
+                </div>
+
+                {/* End-Zeit */}
+                <Badge variant="secondary" className="gap-1.5 px-2 py-1 font-semibold">
+                    {format(timeRange.end, "dd.MM HH:mm", { locale: de })}
+                </Badge>
+            </div>
+
+            {/* Separator */}
+            <div className="h-6 w-px bg-border" />
+
+            {/* Playback Controls */}
+            <div className="flex items-center gap-2">
+                {/* Play/Pause Button */}
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handlePlayPause}
+                >
+                    {isPlaying ? (
+                        <Pause className="h-4 w-4" />
+                    ) : (
+                        <Play className="h-4 w-4" />
+                    )}
+                </Button>
+
+                {/* Speed Button */}
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSpeedChange}
+                    className="gap-2 min-w-[4rem]"
+                >
+                    <Gauge className="h-4 w-4" />
+                    {playbackSpeed}x
+                </Button>
+            </div>
         </div>
     );
 }
