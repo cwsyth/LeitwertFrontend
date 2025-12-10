@@ -12,18 +12,55 @@ interface TimeRange {
     end: Date;
 }
 
+export interface GranularityConfig {
+    minAge: number;
+    maxAge: number;
+    stepMinutes: number;
+    windowMinutes: number;
+    label: string;
+}
+
+export const GRANULARITY_LEVELS: GranularityConfig[] = [
+    { minAge: 0, maxAge: 7, stepMinutes: 1, windowMinutes: 60, label: 'Minütlich' },
+    { minAge: 7, maxAge: 14, stepMinutes: 60, windowMinutes: 1440, label: 'Stündlich' },
+    { minAge: 14, maxAge: Infinity, stepMinutes: 1440, windowMinutes: 10080, label: 'Täglich' }
+];
+
 interface TimeRangeState {
     timeRange: TimeRange;
     debouncedTimeRange: TimeRange;
     preset: TimeRangePreset;
     _debounceTimer: NodeJS.Timeout | null;
+    isPlaying: boolean;
+    playbackSpeed: number;
+    playbackPosition: Date | null;
+    playbackWindow: TimeRange | null;
+    _playbackTimer: NodeJS.Timeout | null;
 
     setTimeRange: (start: Date, end: Date, immediate?: boolean) => void;
     setPreset: (preset: TimeRangePreset) => void;
     getTimeRangeForAPI: () => { start: string; end: string };
+
+    startPlayback: () => void;
+    pausePlayback: () => void;
+    setPlaybackSpeed: (speed: number) => void;
+    resetPlayback: () => void;
 }
 
 const DEBOUNCE_MS = 500;
+
+function getAgeInDays(date: Date): number {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    return diffMs / (1000 * 60 * 60 * 24);
+}
+
+function getGranularityForDate(date: Date): GranularityConfig {
+    const age = getAgeInDays(date);
+    return GRANULARITY_LEVELS.find(
+        level => age >= level.minAge && age < level.maxAge
+    ) || GRANULARITY_LEVELS[GRANULARITY_LEVELS.length - 1];
+}
 
 export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
     const now = new Date();
@@ -40,6 +77,12 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
         },
         preset: TimeRangePreset.SMALL,
         _debounceTimer: null,
+
+        isPlaying: false,
+        playbackSpeed: 1,
+        playbackPosition: null,
+        playbackWindow: null,
+        _playbackTimer: null,
 
         setTimeRange: (start, end, immediate = false) => {
             const state = get();
@@ -87,11 +130,110 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
         },
 
         getTimeRangeForAPI: () => {
-            const { start, end } = get().debouncedTimeRange;
+            const state = get();
+
+            // Wenn Playback aktiv, nutze playbackWindow
+            if (state.playbackWindow) {
+                return {
+                    start: state.playbackWindow.start.toISOString(),
+                    end: state.playbackWindow.end.toISOString(),
+                };
+            }
+
+            // Sonst nutze debouncedTimeRange
+            const { start, end } = state.debouncedTimeRange;
             return {
                 start: start.toISOString(),
                 end: end.toISOString(),
             };
+        },
+
+        startPlayback: () => {
+            const state = get();
+
+            if (state._playbackTimer) {
+                clearInterval(state._playbackTimer);
+            }
+
+            const windowStart = new Date(state.timeRange.start.getTime());
+            const windowEnd = new Date(windowStart.getTime() + 60000); // +1 Minute
+
+            console.log('Playback start');
+            console.log('Period:', state.timeRange.start, '-', state.timeRange.end);
+            console.log('Initial window:', windowStart, '-', windowEnd);
+
+            set({
+                isPlaying: true,
+                playbackPosition: windowStart,
+                playbackWindow: {
+                    start: windowStart,
+                    end: windowEnd
+                }
+            });
+
+            const timer = setInterval(() => {
+                const currentState = get();
+
+                if (!currentState.isPlaying) {
+                    clearInterval(timer);
+                    return;
+                }
+
+                const current = currentState.playbackPosition!;
+
+                const nextStart = new Date(current.getTime() + 60000);
+                const nextEnd = new Date(nextStart.getTime() + 60000);
+
+                console.log('Next window:', nextStart, '-', nextEnd);
+
+                if (nextEnd > currentState.timeRange.end) {
+                    console.log('Playback end');
+                    get().pausePlayback();
+                    return;
+                }
+
+                set({
+                    playbackPosition: nextStart,
+                    playbackWindow: {
+                        start: nextStart,
+                        end: nextEnd
+                    }
+                });
+            }, 1000 / state.playbackSpeed);
+
+            set({ _playbackTimer: timer });
+        },
+
+        pausePlayback: () => {
+            const state = get();
+
+            if (state._playbackTimer) {
+                clearInterval(state._playbackTimer);
+            }
+
+            set({
+                isPlaying: false,
+                _playbackTimer: null
+            });
+        },
+
+        setPlaybackSpeed: (speed) => {
+            set({ playbackSpeed: speed });
+        },
+
+        resetPlayback: () => {
+            const state = get();
+
+            if (state._playbackTimer) {
+                clearInterval(state._playbackTimer);
+            }
+
+            set({
+                isPlaying: false,
+                playbackPosition: null,
+                playbackWindow: null,
+                _playbackTimer: null
+            });
         },
     };
 });

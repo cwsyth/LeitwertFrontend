@@ -21,7 +21,19 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 
 export default function TimeRangeSelector() {
-    const { timeRange, preset, setPreset, setTimeRange } = useTimeRangeStore();
+    const {
+        timeRange,
+        preset,
+        isPlaying,
+        playbackSpeed,
+        playbackWindow,
+        setPreset,
+        setTimeRange,
+        startPlayback,
+        pausePlayback,
+        setPlaybackSpeed: setStorePlaybackSpeed,
+        resetPlayback
+    } = useTimeRangeStore();
     const [isOpen, setIsOpen] = useState(false);
 
     // Datum States
@@ -41,9 +53,6 @@ export default function TimeRangeSelector() {
     const [endMinute, setEndMinute] = useState<string>(
         timeRange.end.getMinutes().toString().padStart(2, "0")
     );
-
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
 
     // Datumseinschränkungen
     const MIN_DATE = new Date(new Date().getFullYear(), 9, 1); // 1. Oktober
@@ -70,6 +79,7 @@ export default function TimeRangeSelector() {
 
     const handlePresetClick = (presetValue: TimeRangePreset) => {
         setPreset(presetValue);
+        resetPlayback();
         setIsOpen(false);
     };
 
@@ -82,6 +92,7 @@ export default function TimeRangeSelector() {
         endDateTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
 
         setTimeRange(startDateTime, endDateTime, true);
+        resetPlayback();
         setIsOpen(false);
     };
 
@@ -112,13 +123,17 @@ export default function TimeRangeSelector() {
     };
 
     const handlePlayPause = () => {
-        setIsPlaying(!isPlaying);
-        // TODO: Implementation
+        if (isPlaying) {
+            pausePlayback();
+        } else {
+            startPlayback();
+        }
     };
 
-    const handleSpeedChange = (speed: number) => {
-        setPlaybackSpeed(speed);
-        // TODO: Implementation
+    const handleSpeedChange = () => {
+        const currentIndex = speedOptions.findIndex(opt => opt.value === playbackSpeed);
+        const nextIndex = (currentIndex + 1) % speedOptions.length;
+        setStorePlaybackSpeed(speedOptions[nextIndex].value);
     };
 
     return (
@@ -141,11 +156,8 @@ export default function TimeRangeSelector() {
                 {/* Speed Button */}
                 <Button
                     variant="outline"
-                    onClick={() => {
-                        const currentIndex = speedOptions.findIndex(opt => opt.value === playbackSpeed);
-                        const nextIndex = (currentIndex + 1) % speedOptions.length;
-                        handleSpeedChange(speedOptions[nextIndex].value);
-                    }}
+                    size="sm"
+                    onClick={handleSpeedChange}
                     className="gap-2 min-w-[4rem]"
                 >
                     <Gauge className="h-4 w-4" />
