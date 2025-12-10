@@ -159,10 +159,14 @@ export default function TimeRangeSelector() {
 
     const handleSliderChange = (value: number[]) => {
         const percentage = value[0];
-        setSliderValue(percentage);
 
         const totalDuration = timeRange.end.getTime() - timeRange.start.getTime();
-        const newPosition = new Date(timeRange.start.getTime() + (totalDuration * percentage / 100));
+        const newPositionMs = timeRange.start.getTime() + (totalDuration * percentage / 100);
+
+        const newPosition = new Date(newPositionMs);
+        newPosition.setSeconds(0, 0);
+
+        setSliderValue(percentage);
 
         // TODO: Setze neue Position im Store
         console.log('🎚️ Slider moved to:', newPosition);
@@ -184,7 +188,7 @@ export default function TimeRangeSelector() {
                         onValueChange={handleSliderChange}
                         min={0}
                         max={100}
-                        step={0.1}
+                        step={1}
                         className="w-full [&_[role=slider]]:bg-white [&_[role=slider]]:border-white [&>span:first-child]:bg-gray-600 [&>span>span]:bg-transparent"
                         onMouseEnter={() => setShowTooltip(true)}
                         onMouseLeave={() => setShowTooltip(false)}

@@ -155,11 +155,11 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
                 clearInterval(state._playbackTimer);
             }
 
-            const windowStart = state.playbackPosition
+            const windowEnd = state.playbackPosition
                 ? new Date(state.playbackPosition.getTime())
-                : new Date(state.timeRange.start.getTime());
+                : new Date(state.timeRange.start.getTime() + 60000);
 
-            const windowEnd = new Date(windowStart.getTime() + 60000); // +1 Minute
+            const windowStart = new Date(windowEnd.getTime() - 60000);
 
             console.log('Playback start');
             console.log('Period:', state.timeRange.start, '-', state.timeRange.end);
@@ -167,7 +167,7 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
 
             set({
                 isPlaying: true,
-                playbackPosition: windowStart,
+                playbackPosition: windowEnd,
                 playbackWindow: {
                     start: windowStart,
                     end: windowEnd
@@ -192,11 +192,17 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
                 if (nextEnd > currentState.timeRange.end) {
                     console.log('Playback end');
                     get().pausePlayback();
+
+                    set({
+                        playbackPosition: currentState.timeRange.end,
+                        playbackWindow: null
+                    });
+
                     return;
                 }
 
                 set({
-                    playbackPosition: nextStart,
+                    playbackPosition: nextEnd,
                     playbackWindow: {
                         start: nextStart,
                         end: nextEnd
