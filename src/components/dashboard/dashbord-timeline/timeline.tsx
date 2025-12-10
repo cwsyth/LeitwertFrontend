@@ -82,9 +82,13 @@ export default function TimeRangeSelector() {
         setter: (val: string) => void,
         max: number
     ) => {
-        const num = parseInt(value);
-        if (value === "" || (num >= 0 && num <= max)) {
-            setter(value.padStart(2, "0"));
+        const cleanValue = value.replace(/^0+/, "") || "0";
+        const num = parseInt(cleanValue);
+
+        if (!isNaN(num) && num >= 0 && num <= max) {
+            setter(cleanValue);
+        } else if (value === "") {
+            setter("0");
         }
     };
 
