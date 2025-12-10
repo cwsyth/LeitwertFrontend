@@ -228,7 +228,18 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
         },
 
         setPlaybackSpeed: (speed) => {
+            const wasPlaying = get().isPlaying;
+            const currentPosition = get().playbackPosition;
+
             set({ playbackSpeed: speed });
+
+            if (wasPlaying && currentPosition) {
+                get().pausePlayback();
+
+                setTimeout(() => {
+                    get().startPlayback();
+                }, 10);
+            }
         },
 
         resetPlayback: () => {
