@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
     Popover,
@@ -10,7 +9,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, ChevronDown, Clock } from "lucide-react";
+import { Calendar as CalendarIcon, Clock } from "lucide-react";
 import { useTimeRangeStore, TimeRangePreset } from "@/lib/stores/time-range-store";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -49,10 +48,15 @@ export default function TimeRangeSelector() {
     };
 
     const presetButtons = [
-        { preset: TimeRangePreset.SMALL, label: "1 Tag" },
-        { preset: TimeRangePreset.MEDIUM, label: "7 Tage" },
-        { preset: TimeRangePreset.LARGE, label: "14 Tage" },
+        { preset: TimeRangePreset.SMALL, label: "-1 Tag" },
+        { preset: TimeRangePreset.MEDIUM, label: "-7 Tage" },
+        { preset: TimeRangePreset.LARGE, label: "-14 Tage" },
     ];
+
+    const handlePresetClick = (presetValue: TimeRangePreset) => {
+        setPreset(presetValue);
+        setIsOpen(false);
+    };
 
     const handleApplyCustomRange = () => {
         // Kombiniere Datum + Zeit
@@ -93,39 +97,38 @@ export default function TimeRangeSelector() {
     };
 
     return (
-        <div className="flex items-center gap-2">
-            {/* Preset Buttons */}
-            <div className="flex gap-1">
-                {presetButtons.map(({ preset: presetValue, label }) => (
-                    <Button
-                        key={presetValue}
-                        variant={preset === presetValue ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setPreset(presetValue)}
-                    >
-                        {label}
-                    </Button>
-                ))}
-            </div>
-
-            {/* Separator */}
-            <div className="h-6 w-px bg-border" />
-
-            {/* Custom Date Range Picker */}
+        <div className="flex items-center justify-end w-full">
             <Popover open={isOpen} onOpenChange={setIsOpen}>
                 <PopoverTrigger asChild>
                     <Button
-                        variant={preset === TimeRangePreset.CUSTOM ? "default" : "outline"}
-                        size="sm"
+                        variant="outline"
                         className="gap-2"
                     >
                         <CalendarIcon className="h-4 w-4" />
-                        Custom
-                        <ChevronDown className="h-3 w-3" />
+                        {formatTimeRange()}
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-4" align="start">
-                    <div className="flex gap-4">
+                <PopoverContent className="w-auto p-4" align="end">
+                    {/* Preset Buttons */}
+                    <div className="pb-4 border-b">
+                        <label className="text-sm font-medium block mb-2">Schnellwahl</label>
+                        <div className="flex gap-2">
+                            {presetButtons.map(({ preset: presetValue, label }) => (
+                                <Button
+                                    key={presetValue}
+                                    variant={preset === presetValue ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => handlePresetClick(presetValue)}
+                                    className="flex-1"
+                                >
+                                    {label}
+                                </Button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Custom Date + Time Picker */}
+                    <div className="flex gap-4 pt-4">
                         {/* Start Datum + Zeit */}
                         <div className="space-y-3">
                             <label className="text-sm font-medium">Von</label>
@@ -134,6 +137,7 @@ export default function TimeRangeSelector() {
                                 selected={tempStartDate}
                                 onSelect={(date) => date && setTempStartDate(date)}
                                 disabled={(date) => date < MIN_DATE || date > MAX_DATE}
+                                locale={de}
                             />
                             {/* Zeit-Eingabe */}
                             <div className="flex items-center gap-2 pt-2">
@@ -142,8 +146,10 @@ export default function TimeRangeSelector() {
                                     type="number"
                                     min="0"
                                     max="23"
+                                    maxLength={2}
                                     value={startHour}
                                     onChange={(e) => handleTimeInput(e.target.value, setStartHour, 23)}
+                                    onBlur={(e) => setStartHour(e.target.value.padStart(2, "0"))}
                                     className="w-14 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     placeholder="HH"
                                 />
@@ -152,8 +158,10 @@ export default function TimeRangeSelector() {
                                     type="number"
                                     min="0"
                                     max="59"
+                                    maxLength={2}
                                     value={startMinute}
                                     onChange={(e) => handleTimeInput(e.target.value, setStartMinute, 59)}
+                                    onBlur={(e) => setStartMinute(e.target.value.padStart(2, "0"))}
                                     className="w-14 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     placeholder="MM"
                                 />
@@ -177,8 +185,10 @@ export default function TimeRangeSelector() {
                                     type="number"
                                     min="0"
                                     max="23"
+                                    maxLength={2}
                                     value={endHour}
                                     onChange={(e) => handleTimeInput(e.target.value, setEndHour, 23)}
+                                    onBlur={(e) => setEndHour(e.target.value.padStart(2, "0"))}
                                     className="w-14 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     placeholder="HH"
                                 />
@@ -187,14 +197,18 @@ export default function TimeRangeSelector() {
                                     type="number"
                                     min="0"
                                     max="59"
+                                    maxLength={2}
                                     value={endMinute}
                                     onChange={(e) => handleTimeInput(e.target.value, setEndMinute, 59)}
+                                    onBlur={(e) => setEndMinute(e.target.value.padStart(2, "0"))}
                                     className="w-14 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     placeholder="MM"
                                 />
                             </div>
                         </div>
                     </div>
+
+                    {/* Action Buttons */}
                     <div className="flex gap-2 pt-4">
                         <Button
                             size="sm"
@@ -214,15 +228,6 @@ export default function TimeRangeSelector() {
                     </div>
                 </PopoverContent>
             </Popover>
-
-            {/* Separator */}
-            <div className="h-6 w-px bg-border" />
-
-            {/* Current Time Range Display */}
-            <Badge variant="secondary" className="gap-1.5 px-3 py-1.5 font-normal">
-                <CalendarIcon className="h-3.5 w-3.5" />
-                {formatTimeRange()}
-            </Badge>
         </div>
     );
 }
