@@ -9,7 +9,13 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Clock } from "lucide-react";
+import {
+    Calendar as CalendarIcon,
+    Clock,
+    Gauge,
+    Pause,
+    Play
+} from "lucide-react";
 import { useTimeRangeStore, TimeRangePreset } from "@/lib/stores/time-range-store";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -36,6 +42,9 @@ export default function TimeRangeSelector() {
         timeRange.end.getMinutes().toString().padStart(2, "0")
     );
 
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
+
     // Datumseinschränkungen
     const MIN_DATE = new Date(new Date().getFullYear(), 9, 1); // 1. Oktober
     const MAX_DATE = new Date(); // Heute
@@ -51,6 +60,12 @@ export default function TimeRangeSelector() {
         { preset: TimeRangePreset.SMALL, label: "-1 Tag" },
         { preset: TimeRangePreset.MEDIUM, label: "-7 Tage" },
         { preset: TimeRangePreset.LARGE, label: "-14 Tage" },
+    ];
+
+    const speedOptions = [
+        { value: 0.5, label: "0,5x" },
+        { value: 1, label: "1x" },
+        { value: 2, label: "2x" },
     ];
 
     const handlePresetClick = (presetValue: TimeRangePreset) => {
@@ -96,8 +111,51 @@ export default function TimeRangeSelector() {
         }
     };
 
+    const handlePlayPause = () => {
+        setIsPlaying(!isPlaying);
+        // TODO: Implementation
+    };
+
+    const handleSpeedChange = (speed: number) => {
+        setPlaybackSpeed(speed);
+        // TODO: Implementation
+    };
+
     return (
-        <div className="flex items-center justify-end w-full">
+        <div className="flex items-center justify-end w-full gap-3">
+            {/* Playback Controls */}
+            <div className="flex items-center gap-2">
+                {/* Play/Pause Button */}
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handlePlayPause}
+                >
+                    {isPlaying ? (
+                        <Pause className="h-4 w-4" />
+                    ) : (
+                        <Play className="h-4 w-4" />
+                    )}
+                </Button>
+
+                {/* Speed Button */}
+                <Button
+                    variant="outline"
+                    onClick={() => {
+                        const currentIndex = speedOptions.findIndex(opt => opt.value === playbackSpeed);
+                        const nextIndex = (currentIndex + 1) % speedOptions.length;
+                        handleSpeedChange(speedOptions[nextIndex].value);
+                    }}
+                    className="gap-2 min-w-[4rem]"
+                >
+                    <Gauge className="h-4 w-4" />
+                    {playbackSpeed}x
+                </Button>
+            </div>
+
+            {/* Separator */}
+            <div className="h-6 w-px bg-border" />
+
             <Popover open={isOpen} onOpenChange={setIsOpen}>
                 <PopoverTrigger asChild>
                     <Button
