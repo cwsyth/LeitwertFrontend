@@ -155,7 +155,10 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
                 clearInterval(state._playbackTimer);
             }
 
-            const windowStart = new Date(state.timeRange.start.getTime());
+            const windowStart = state.playbackPosition
+                ? new Date(state.playbackPosition.getTime())
+                : new Date(state.timeRange.start.getTime());
+
             const windowEnd = new Date(windowStart.getTime() + 60000); // +1 Minute
 
             console.log('Playback start');

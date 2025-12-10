@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,6 +19,7 @@ import {
 import { useTimeRangeStore, TimeRangePreset } from "@/lib/stores/time-range-store";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import {Slider} from "@/components/ui/slider";
 
 export default function TimeRangeSelector() {
     const {
@@ -27,6 +28,7 @@ export default function TimeRangeSelector() {
         isPlaying,
         playbackSpeed,
         playbackWindow,
+        playbackPosition,
         setPreset,
         setTimeRange,
         startPlayback,
@@ -54,15 +56,34 @@ export default function TimeRangeSelector() {
         timeRange.end.getMinutes().toString().padStart(2, "0")
     );
 
+    const [sliderValue, setSliderValue] = useState(0);
+    const [showTooltip, setShowTooltip] = useState(false);
+
     // Datumseinschränkungen
     const MIN_DATE = new Date(new Date().getFullYear(), 9, 1); // 1. Oktober
     const MAX_DATE = new Date(); // Heute
+
+    useEffect(() => {
+        if (playbackPosition) {
+            const totalDuration = timeRange.end.getTime() - timeRange.start.getTime();
+            const elapsed = playbackPosition.getTime() - timeRange.start.getTime();
+            const percentage = (elapsed / totalDuration) * 100;
+            setSliderValue(percentage);
+        } else {
+            setSliderValue(0);
+        }
+    }, [playbackPosition, timeRange]);
 
     // Formatiere den aktuellen Zeitraum für die Anzeige
     const formatTimeRange = () => {
         const start = format(timeRange.start, "dd. MMM HH:mm", { locale: de });
         const end = format(timeRange.end, "dd. MMM HH:mm", { locale: de });
         return `${start} - ${end}`;
+    };
+
+    const formatPlaybackPosition = () => {
+        if (!playbackPosition) return "";
+        return format(playbackPosition, "HH:mm:ss", { locale: de });
     };
 
     const presetButtons = [
@@ -136,8 +157,57 @@ export default function TimeRangeSelector() {
         setStorePlaybackSpeed(speedOptions[nextIndex].value);
     };
 
+    const handleSliderChange = (value: number[]) => {
+        const percentage = value[0];
+        setSliderValue(percentage);
+
+        const totalDuration = timeRange.end.getTime() - timeRange.start.getTime();
+        const newPosition = new Date(timeRange.start.getTime() + (totalDuration * percentage / 100));
+
+        // TODO: Setze neue Position im Store
+        console.log('🎚️ Slider moved to:', newPosition);
+    };
+
     return (
         <div className="flex items-center justify-end w-full gap-3">
+            {/* Slider mit Zeitmarken - LINKS */}
+            <div className="flex items-center gap-2" style={{ width: '300px' }}>
+                {/* Start-Zeit */}
+                <span className="text-xs text-white whitespace-nowrap">
+                {format(timeRange.start, "dd.MM HH:mm", { locale: de })}
+            </span>
+
+                {/* Slider */}
+                <div className="flex-1 flex flex-col items-center relative">
+                    <Slider
+                        value={[sliderValue]}
+                        onValueChange={handleSliderChange}
+                        min={0}
+                        max={100}
+                        step={0.1}
+                        className="w-full [&_[role=slider]]:bg-white [&_[role=slider]]:border-white [&>span:first-child]:bg-gray-600 [&>span>span]:bg-transparent"
+                        onMouseEnter={() => setShowTooltip(true)}
+                        onMouseLeave={() => setShowTooltip(false)}
+                    />
+                    {showTooltip && playbackPosition && (
+                        <div
+                            className="absolute -top-8 bg-popover text-popover-foreground px-2 py-1 rounded-md text-xs shadow-md pointer-events-none"
+                            style={{ left: `${sliderValue}%`, transform: 'translateX(-50%)' }}
+                        >
+                            {format(playbackPosition, "dd.MM HH:mm", { locale: de })}
+                        </div>
+                    )}
+                </div>
+
+                {/* End-Zeit */}
+                <span className="text-xs text-white whitespace-nowrap">
+                {format(timeRange.end, "dd.MM HH:mm", { locale: de })}
+            </span>
+            </div>
+
+            {/* Separator */}
+            <div className="h-6 w-px bg-border" />
+
             {/* Playback Controls */}
             <div className="flex items-center gap-2">
                 {/* Play/Pause Button */}
