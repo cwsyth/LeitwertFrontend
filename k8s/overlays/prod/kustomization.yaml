@@ -19,4 +19,4 @@ patches:
 
 images:
   - name: registry.univ.leitwert.net/lagebild/t4-frontend/frontend
-    newTag: v1.0.0-rc1
+    newTag: v1.0.1
