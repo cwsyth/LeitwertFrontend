@@ -11,7 +11,7 @@ import {
     Country,
 } from "@/types/dashboard";
 import { BgpAnnounceChart } from "./dashbord-content/components/charts/bgp-announce-chart";
-import TimeRangeSelector from "./dashbord-timeline/timeline";
+import dynamic from "next/dynamic";
 
 export default function Dashboard() {
     const [mode, setMode] = useState<DashboardContentMode>("street");
@@ -34,6 +34,11 @@ export default function Dashboard() {
         code: "world",
         name: "World",
     });
+
+    const TimeRangeSelector = dynamic(
+        () => import('./dashbord-timeline/timeline'),
+        { ssr: false }
+    );
 
     return (
         <div className="dashboard-wrapper h-full flex flex-col items-center justify-center p8">
