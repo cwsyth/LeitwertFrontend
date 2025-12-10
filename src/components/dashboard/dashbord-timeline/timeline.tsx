@@ -34,6 +34,7 @@ export default function TimeRangeSelector() {
         startPlayback,
         pausePlayback,
         setPlaybackSpeed: setStorePlaybackSpeed,
+        setPlaybackPosition,
         resetPlayback
     } = useTimeRangeStore();
     const [isOpen, setIsOpen] = useState(false);
@@ -167,9 +168,7 @@ export default function TimeRangeSelector() {
         newPosition.setSeconds(0, 0);
 
         setSliderValue(percentage);
-
-        // TODO: Setze neue Position im Store
-        console.log('🎚️ Slider moved to:', newPosition);
+        setPlaybackPosition(newPosition);
     };
 
     return (

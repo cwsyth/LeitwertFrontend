@@ -44,6 +44,7 @@ interface TimeRangeState {
     startPlayback: () => void;
     pausePlayback: () => void;
     setPlaybackSpeed: (speed: number) => void;
+    setPlaybackPosition: (position: Date) => void;
     resetPlayback: () => void;
 }
 
@@ -242,6 +243,17 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
                 playbackPosition: null,
                 playbackWindow: null,
                 _playbackTimer: null
+            });
+        },
+
+        setPlaybackPosition: (position: Date) => {
+            if (get().isPlaying) {
+                get().pausePlayback();
+            }
+
+            set({
+                playbackPosition: position,
+                playbackWindow: null
             });
         },
     };
