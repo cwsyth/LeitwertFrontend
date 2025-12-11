@@ -192,11 +192,15 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
 
                 if (nextEnd > currentState.timeRange.end) {
                     console.log('Playback end');
-                    get().pausePlayback();
+
+                    const newPosition = new Date(currentState.timeRange.start.getTime() + 60000);
 
                     set({
-                        playbackPosition: currentState.timeRange.end,
-                        playbackWindow: null
+                        playbackPosition: newPosition,
+                        playbackWindow: {
+                            start: currentState.timeRange.start,
+                            end: newPosition
+                        }
                     });
 
                     return;
