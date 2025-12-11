@@ -324,7 +324,7 @@ export default function TimeRangeSelector() {
                     />
                     {showTooltip && playbackPosition && (
                         <div
-                            className="absolute -top-8 bg-popover text-popover-foreground px-2 py-1 rounded-md text-xs shadow-md pointer-events-none"
+                            className="absolute -top-8 bg-popover text-popover-foreground px-3 py-1 rounded-md text-xs shadow-md pointer-events-none whitespace-nowrap min-w-fit"
                             style={{ left: `${sliderValue}%`, transform: 'translateX(-50%)' }}
                         >
                             {format(playbackPosition, "dd.MM HH:mm", { locale: de })}
