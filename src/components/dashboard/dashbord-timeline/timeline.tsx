@@ -307,7 +307,7 @@ export default function TimeRangeSelector() {
             <div className="flex items-center gap-2" style={{ width: '300px' }}>
                 {/* Start-Zeit */}
                 <Badge variant="secondary" className="gap-1.5 px-2 py-1 font-semibold">
-                    {format(timeRange.start, "dd.MM HH:mm", { locale: de })}
+                    {format(timeRange.start, "dd.MM HH:mm", { locale: de })} Uhr
                 </Badge>
 
                 {/* Slider */}
@@ -334,7 +334,7 @@ export default function TimeRangeSelector() {
 
                 {/* End-Zeit */}
                 <Badge variant="secondary" className="gap-1.5 px-2 py-1 font-semibold">
-                    {format(timeRange.end, "dd.MM HH:mm", { locale: de })}
+                    {format(timeRange.end, "dd.MM HH:mm", { locale: de })} Uhr
                 </Badge>
             </div>
 
