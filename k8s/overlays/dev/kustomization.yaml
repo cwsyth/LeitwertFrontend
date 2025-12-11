@@ -14,9 +14,6 @@ commonAnnotations:
 resources:
   - ../../base
 
-patches:
-  - path: service.yaml
-
 images:
   - name: registry.univ.leitwert.net/lagebild/t4-frontend/frontend
     newTag: latest
