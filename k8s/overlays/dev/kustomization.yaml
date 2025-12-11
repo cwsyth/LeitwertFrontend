@@ -18,5 +18,5 @@ patches:
   - path: service.yaml
 
 images:
-  - name: docker.io/lup7043/dashboard
+  - name: registry.univ.leitwert.net/lagebild/t4-frontend/frontend
     newTag: latest

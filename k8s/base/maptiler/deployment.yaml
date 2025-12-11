@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: maptiler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: maptiler
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: maptiler
+    spec:
+      containers:
+        - name: maptiler
+          image: maptiler/tileserver-gl:next
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          #volumeMounts:
+          #  - name: tile-data
+          #    mountPath: /data
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "200m"
+            limits:
+              memory: "1Gi"
+              cpu: "1"
+      #volumes:
+      #  - name: tile-data
+      #    hostPath:
+      #      path: /mnt/maptiler-data
+      #      type: DirectoryOrCreate

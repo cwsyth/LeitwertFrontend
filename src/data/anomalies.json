@@ -1,0 +1,44 @@
+[
+    {
+        "timestamp": "2025-10-06T01:46:00+00:00",
+        "entity_type": "country",
+        "entity_id": "HK",
+        "value": 238.0,
+        "z": 1.7314375417184074
+    },
+    {
+        "timestamp": "2025-10-06T01:45:00+00:00",
+        "entity_type": "country",
+        "entity_id": "TW",
+        "value": 18.0,
+        "z": -1.7320500075692464
+    },
+    {
+        "timestamp": "2025-10-06T02:27:00+00:00",
+        "entity_type": "country",
+        "entity_id": "GB",
+        "value": 1034.0,
+        "z": 1.731505926776645
+    },
+    {
+        "timestamp": "2025-10-06T02:27:00+00:00",
+        "entity_type": "country",
+        "entity_id": "HK",
+        "value": 990.0,
+        "z": 1.7314785161882094
+    },
+    {
+        "timestamp": "2025-10-06T03:46:00+00:00",
+        "entity_type": "country",
+        "entity_id": "HK",
+        "value": 1449.0,
+        "z": 1.7312952459854247
+    },
+    {
+        "timestamp": "2025-10-06T05:30:00+00:00",
+        "entity_type": "country",
+        "entity_id": "HK",
+        "value": 479.0,
+        "z": 1.7290071109680947
+    }
+]
