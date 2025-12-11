@@ -49,3 +49,15 @@ spec:
 #            periodSeconds: 5
       imagePullSecrets:
         - name: docker-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: dashboard
+spec:
+    selector:
+        app.kubernetes.io/name: dashboard
+    ports:
+        - name: http
+          port: 80
+          targetPort: 3000
