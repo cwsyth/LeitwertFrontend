@@ -19,7 +19,6 @@ interface ComponentItem {
 
 const componentItems: ComponentItem[] = [
     { key: "bgpAnnouncements", label: "BGP Announcements" },
-    { key: "timeline", label: "Zeitleiste" },
     { key: "searchResults", label: "Suchergebnisse" },
     { key: "globalStats", label: "Globale Statistiken" },
 ];
