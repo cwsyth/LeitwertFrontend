@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+export type WindowSize = 'small' | 'medium' | 'large';
+
 export enum TimeRangePreset {
     SMALL = '1d',
     MEDIUM = '7d',
@@ -36,6 +38,7 @@ interface TimeRangeState {
     playbackPosition: Date | null;
     playbackWindow: TimeRange | null;
     _playbackTimer: NodeJS.Timeout | null;
+    windowSize: WindowSize;
 
     setTimeRange: (start: Date, end: Date, immediate?: boolean) => void;
     setPreset: (preset: TimeRangePreset) => void;
@@ -46,6 +49,7 @@ interface TimeRangeState {
     setPlaybackSpeed: (speed: number) => void;
     setPlaybackPosition: (position: Date) => void;
     resetPlayback: () => void;
+    setWindowSize: (size: WindowSize) => void;
 }
 
 const DEBOUNCE_MS = 500;
@@ -84,6 +88,7 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
         playbackPosition: null,
         playbackWindow: null,
         _playbackTimer: null,
+        windowSize: 'small',
 
         setTimeRange: (start, end, immediate = false) => {
             const state = get();
@@ -271,5 +276,9 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
                 playbackWindow: null
             });
         },
+
+        setWindowSize: (size: WindowSize) => {
+            set({ windowSize: size });
+        }
     };
 });

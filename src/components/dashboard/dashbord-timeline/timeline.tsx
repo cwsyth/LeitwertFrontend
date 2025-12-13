@@ -16,11 +16,20 @@ import {
     Pause,
     Play
 } from "lucide-react";
-import { useTimeRangeStore, TimeRangePreset } from "@/lib/stores/time-range-store";
+import {
+    useTimeRangeStore,
+    TimeRangePreset,
+    WindowSize
+} from "@/lib/stores/time-range-store";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import {Slider} from "@/components/ui/slider";
 import {Badge} from "@/components/ui/badge";
+import {
+    Select,
+    SelectContent, SelectItem,
+    SelectTrigger
+} from "@/components/ui/select";
 
 export default function TimeRangeSelector() {
     const {
@@ -30,12 +39,14 @@ export default function TimeRangeSelector() {
         playbackSpeed,
         playbackWindow,
         playbackPosition,
+        windowSize,
         setPreset,
         setTimeRange,
         startPlayback,
         pausePlayback,
         setPlaybackSpeed: setStorePlaybackSpeed,
         setPlaybackPosition,
+        setWindowSize,
         resetPlayback
     } = useTimeRangeStore();
     const [isOpen, setIsOpen] = useState(false);
@@ -172,6 +183,20 @@ export default function TimeRangeSelector() {
 
     return (
         <div className="flex items-center justify-end w-full gap-3">
+            <div className="flex items-center gap-2">
+                <Select value={windowSize} onValueChange={(value) => setWindowSize(value as WindowSize)}>
+                    <SelectTrigger className="w-25 text-black bg-white">
+                        <span>Window</span>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="small">Klein</SelectItem>
+                        <SelectItem value="medium">Mittel</SelectItem>
+                        <SelectItem value="large">Groß</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+
             {/* Date Time Picker */}
             <Popover open={isOpen} onOpenChange={setIsOpen}>
                 <PopoverTrigger asChild>
