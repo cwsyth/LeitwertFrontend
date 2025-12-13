@@ -17,3 +17,9 @@ resources:
 images:
     -   name: registry.univ.leitwert.net/lagebild/t4-frontend/frontend
         newTag: latest
+
+configMapGenerator:
+    - name: dashboard
+      behavior: merge
+      literals:
+          - NEXT_PUBLIC_FRONTEND_API_URL=https://dev-api.univ.leitwert.net/api
