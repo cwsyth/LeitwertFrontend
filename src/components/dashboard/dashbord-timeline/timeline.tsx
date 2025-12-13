@@ -137,7 +137,7 @@ export default function TimeRangeSelector() {
         const endDateTime = new Date(tempEndDate);
         endDateTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
 
-        setTimeRange(startDateTime, endDateTime, true);
+        setTimeRange(startDateTime, endDateTime);
         resetPlayback();
         setIsOpen(false);
     };
