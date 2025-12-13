@@ -4,16 +4,22 @@ kind: Kustomization
 namespace: frontend-prod
 
 metadata:
-  labels:
-    app.kubernetes.io/instance: dashboard-prod
-    environment: production
+    labels:
+        app.kubernetes.io/instance: dashboard-prod
+        environment: production
 
 commonAnnotations:
-  description: "Dashboard (PROD)"
+    description: "Dashboard (PROD)"
 
 resources:
-  - ../../base
+    - ../../base
 
 images:
-  - name: registry.univ.leitwert.net/lagebild/t4-frontend/frontend
-    newTag: v1.0.1
+    -   name: registry.univ.leitwert.net/lagebild/t4-frontend/frontend
+        newTag: v1.0.1
+
+configMapGenerator:
+    - name: dashboard
+      behavior: merge
+      literals:
+          - NEXT_PUBLIC_FRONTEND_API_URL=https://api.univ.leitwert.net/api
