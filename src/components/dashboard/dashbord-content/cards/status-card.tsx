@@ -20,9 +20,10 @@ export function StatusCard({ title, apiEndpoint, className, selectedCountry }: S
             setError(false);
 
             try {
+                const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_API_URL || '';
                 const url = selectedCountry && selectedCountry.code !== 'world'
-                    ? `${apiEndpoint}?cc=${selectedCountry.code}`
-                    : apiEndpoint;
+                    ? `${baseUrl}${apiEndpoint}?cc=${selectedCountry.code}`
+                    : `${baseUrl}${apiEndpoint}`;
 
                 const response = await fetch(url);
                 if (!response.ok) throw new Error();
