@@ -1,35 +1,20 @@
 "use client";
 
-import {useEffect, useState} from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import {
-    Calendar as CalendarIcon,
-    Clock,
-    Gauge,
-    Pause,
-    Play
-} from "lucide-react";
-import {
-    useTimeRangeStore,
-    TimeRangePreset,
-    WindowSize
-} from "@/lib/stores/time-range-store";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import {Slider} from "@/components/ui/slider";
-import {Badge} from "@/components/ui/badge";
-import {
-    Select,
-    SelectContent, SelectItem,
-    SelectTrigger
-} from "@/components/ui/select";
+import { Calendar as CalendarIcon, Clock, Gauge, Pause, Play } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+
+import { useTimeRangeStore } from "@/lib/stores/time-range-store";
+import { TimeRangePreset, WindowSize, WindowConfig } from "@/types/time-range";
 
 export default function TimeRangeSelector() {
     const {
@@ -37,7 +22,6 @@ export default function TimeRangeSelector() {
         preset,
         isPlaying,
         playbackSpeed,
-        playbackWindow,
         playbackPosition,
         windowSize,
         setPreset,
@@ -49,13 +33,14 @@ export default function TimeRangeSelector() {
         setWindowSize,
         resetPlayback
     } = useTimeRangeStore();
-    const [isOpen, setIsOpen] = useState(false);
 
-    // Datum States
+    const [isOpen, setIsOpen] = useState(false);
+    const [sliderValue, setSliderValue] = useState(0);
+    const [showTooltip, setShowTooltip] = useState(false);
+
     const [tempStartDate, setTempStartDate] = useState<Date>(timeRange.start);
     const [tempEndDate, setTempEndDate] = useState<Date>(timeRange.end);
 
-    // Zeit States (Stunden und Minuten)
     const [startHour, setStartHour] = useState<string>(
         timeRange.start.getHours().toString().padStart(2, "0")
     );
@@ -69,12 +54,57 @@ export default function TimeRangeSelector() {
         timeRange.end.getMinutes().toString().padStart(2, "0")
     );
 
-    const [sliderValue, setSliderValue] = useState(0);
-    const [showTooltip, setShowTooltip] = useState(false);
-
-    // Datumseinschränkungen
     const MIN_DATE = new Date(new Date().getFullYear(), 9, 1); // 1. Oktober
     const MAX_DATE = new Date(); // Heute
+
+    const PRESET_BUTTONS = [
+        { preset: TimeRangePreset.SMALL, label: "-1 Tag" },
+        { preset: TimeRangePreset.MEDIUM, label: "-7 Tage" },
+        { preset: TimeRangePreset.LARGE, label: "-14 Tage" },
+    ];
+
+    const SPEED_OPTIONS = [
+        { value: 0.5, label: "0,5x" },
+        { value: 1, label: "1x" },
+        { value: 2, label: "2x" },
+        { value: 5, label: "5x" },
+        { value: 10, label: "10x" },
+        { value: 20, label: "20x" },
+        { value: 50, label: "50x" },
+        { value: 100, label: "100x" }
+    ];
+
+    const getTimeRangeDuration = (): number => {
+        const durationMs = timeRange.end.getTime() - timeRange.start.getTime();
+        return durationMs / (1000 * 60 * 60);
+    };
+
+    const getWindowConfig = (): WindowConfig => {
+        const durationHours = getTimeRangeDuration();
+        const durationDays = durationHours / 24;
+
+        if (durationHours <= 24) {
+            return {
+                allowedSizes: ['small', 'medium'],
+                defaultSize: 'small',
+                disabledSizes: ['large']
+            };
+        } else if (durationDays <= 14) {
+            return {
+                allowedSizes: ['medium', 'large'],
+                defaultSize: 'medium',
+                disabledSizes: ['small']
+            };
+        } else {
+            return {
+                allowedSizes: ['large'],
+                defaultSize: 'large',
+                disabledSizes: ['small', 'medium']
+            };
+        }
+    };
+
+    const windowConfig = getWindowConfig();
 
     useEffect(() => {
         if (playbackPosition) {
@@ -87,71 +117,13 @@ export default function TimeRangeSelector() {
         }
     }, [playbackPosition, timeRange]);
 
-
-
-    const formatPlaybackPosition = () => {
-        if (!playbackPosition) return "";
-        return format(playbackPosition, "HH:mm:ss", { locale: de });
-    };
-
-    const presetButtons = [
-        { preset: TimeRangePreset.SMALL, label: "-1 Tag" },
-        { preset: TimeRangePreset.MEDIUM, label: "-7 Tage" },
-        { preset: TimeRangePreset.LARGE, label: "-14 Tage" },
-    ];
-
-    const speedOptions = [
-        { value: 0.5, label: "0,5x" },
-        { value: 1, label: "1x" },
-        { value: 2, label: "2x" },
-        { value: 5, label: "5x" },
-        { value: 10, label: "10x" },
-        { value: 20, label: "20x" },
-        { value: 50, label: "50x" },
-        { value: 100, label: "100x" }
-    ];
-
-    const getTimeRangeDuration = () => {
-        const durationMs = timeRange.end.getTime() - timeRange.start.getTime();
-        return durationMs / (1000 * 60 * 60); // Millisekunden -> Stunden
-    };
-
-    const getWindowConfig = () => {
-        const durationHours = getTimeRangeDuration();
-        const durationDays = durationHours / 24;
-
-        if (durationHours <= 24) {
-            // <= 24 Std: small (default), medium
-            return {
-                allowedSizes: ['small', 'medium'] as WindowSize[],
-                defaultSize: 'small' as WindowSize,
-                disabledSizes: ['large'] as WindowSize[]
-            };
-        } else if (durationDays <= 14) {
-            // > 24 Std <= 14 Tage: medium (default), large
-            return {
-                allowedSizes: ['medium', 'large'] as WindowSize[],
-                defaultSize: 'medium' as WindowSize,
-                disabledSizes: ['small'] as WindowSize[]
-            };
-        } else {
-            // > 14 Tage: large
-            return {
-                allowedSizes: ['large'] as WindowSize[],
-                defaultSize: 'large' as WindowSize,
-                disabledSizes: ['small', 'medium'] as WindowSize[]
-            };
-        }
-    };
-
-    const windowConfig = getWindowConfig();
-
     useEffect(() => {
         if (!windowConfig.allowedSizes.includes(windowSize)) {
             setWindowSize(windowConfig.defaultSize);
         }
     }, [timeRange, windowSize, windowConfig.allowedSizes, windowConfig.defaultSize, setWindowSize]);
 
+    // Event Handlers
     const handlePresetClick = (presetValue: TimeRangePreset) => {
         setPreset(presetValue);
         resetPlayback();
@@ -159,7 +131,6 @@ export default function TimeRangeSelector() {
     };
 
     const handleApplyCustomRange = () => {
-        // Kombiniere Datum + Zeit
         const startDateTime = new Date(tempStartDate);
         startDateTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
 
@@ -181,7 +152,6 @@ export default function TimeRangeSelector() {
         setIsOpen(false);
     };
 
-    // Validiere Zeit-Input (0-23 für Stunden, 0-59 für Minuten)
     const handleTimeInput = (
         value: string,
         setter: (val: string) => void,
@@ -206,17 +176,15 @@ export default function TimeRangeSelector() {
     };
 
     const handleSpeedChange = () => {
-        const currentIndex = speedOptions.findIndex(opt => opt.value === playbackSpeed);
-        const nextIndex = (currentIndex + 1) % speedOptions.length;
-        setStorePlaybackSpeed(speedOptions[nextIndex].value);
+        const currentIndex = SPEED_OPTIONS.findIndex(opt => opt.value === playbackSpeed);
+        const nextIndex = (currentIndex + 1) % SPEED_OPTIONS.length;
+        setStorePlaybackSpeed(SPEED_OPTIONS[nextIndex].value);
     };
 
     const handleSliderChange = (value: number[]) => {
         const percentage = value[0];
-
         const totalDuration = timeRange.end.getTime() - timeRange.start.getTime();
         const newPositionMs = timeRange.start.getTime() + (totalDuration * percentage / 100);
-
         const newPosition = new Date(newPositionMs);
         newPosition.setSeconds(0, 0);
 
@@ -227,7 +195,10 @@ export default function TimeRangeSelector() {
     return (
         <div className="flex items-center justify-end w-full gap-3">
             {/* Window Size Selector */}
-            <Select value={windowSize} onValueChange={(value) => setWindowSize(value as WindowSize)}>
+            <Select
+                value={windowSize}
+                onValueChange={(value) => setWindowSize(value as WindowSize)}
+            >
                 <SelectTrigger className="w-25 text-black bg-white">
                     <span>Window</span>
                 </SelectTrigger>
@@ -236,31 +207,27 @@ export default function TimeRangeSelector() {
                         value="small"
                         disabled={windowConfig.disabledSizes.includes('small')}
                     >
-                        Minütlich
+                        Klein
                     </SelectItem>
                     <SelectItem
                         value="medium"
                         disabled={windowConfig.disabledSizes.includes('medium')}
                     >
-                        Stündlich
+                        Mittel
                     </SelectItem>
                     <SelectItem
                         value="large"
                         disabled={windowConfig.disabledSizes.includes('large')}
                     >
-                        Täglich
+                        Groß
                     </SelectItem>
                 </SelectContent>
             </Select>
 
-
             {/* Date Time Picker */}
             <Popover open={isOpen} onOpenChange={setIsOpen}>
                 <PopoverTrigger asChild>
-                    <Button
-                        variant="outline"
-                        className="gap-2"
-                    >
+                    <Button variant="outline" className="gap-2">
                         <CalendarIcon className="h-4 w-4" />
                     </Button>
                 </PopoverTrigger>
@@ -269,7 +236,7 @@ export default function TimeRangeSelector() {
                     <div className="pb-4 border-b">
                         <label className="text-sm font-medium block mb-2">Schnellwahl</label>
                         <div className="flex gap-2">
-                            {presetButtons.map(({ preset: presetValue, label }) => (
+                            {PRESET_BUTTONS.map(({ preset: presetValue, label }) => (
                                 <Button
                                     key={presetValue}
                                     variant={preset === presetValue ? "default" : "outline"}
@@ -295,14 +262,12 @@ export default function TimeRangeSelector() {
                                 disabled={(date) => date < MIN_DATE || date > MAX_DATE}
                                 locale={de}
                             />
-                            {/* Zeit-Eingabe */}
                             <div className="flex items-center gap-2 pt-2">
                                 <Clock className="h-4 w-4 text-muted-foreground" />
                                 <Input
                                     type="number"
                                     min="0"
                                     max="23"
-                                    maxLength={2}
                                     value={startHour}
                                     onChange={(e) => handleTimeInput(e.target.value, setStartHour, 23)}
                                     onBlur={(e) => setStartHour(e.target.value.padStart(2, "0"))}
@@ -314,7 +279,6 @@ export default function TimeRangeSelector() {
                                     type="number"
                                     min="0"
                                     max="59"
-                                    maxLength={2}
                                     value={startMinute}
                                     onChange={(e) => handleTimeInput(e.target.value, setStartMinute, 59)}
                                     onBlur={(e) => setStartMinute(e.target.value.padStart(2, "0"))}
@@ -334,14 +298,12 @@ export default function TimeRangeSelector() {
                                 disabled={(date) => date < tempStartDate || date > MAX_DATE}
                                 locale={de}
                             />
-                            {/* Zeit-Eingabe */}
                             <div className="flex items-center gap-2 pt-2">
                                 <Clock className="h-4 w-4 text-muted-foreground" />
                                 <Input
                                     type="number"
                                     min="0"
                                     max="23"
-                                    maxLength={2}
                                     value={endHour}
                                     onChange={(e) => handleTimeInput(e.target.value, setEndHour, 23)}
                                     onBlur={(e) => setEndHour(e.target.value.padStart(2, "0"))}
@@ -353,7 +315,6 @@ export default function TimeRangeSelector() {
                                     type="number"
                                     min="0"
                                     max="59"
-                                    maxLength={2}
                                     value={endMinute}
                                     onChange={(e) => handleTimeInput(e.target.value, setEndMinute, 59)}
                                     onBlur={(e) => setEndMinute(e.target.value.padStart(2, "0"))}
@@ -387,12 +348,10 @@ export default function TimeRangeSelector() {
 
             {/* Slider mit Zeitmarken */}
             <div className="flex items-center gap-2" style={{ width: '300px' }}>
-                {/* Start-Zeit */}
                 <Badge variant="secondary" className="gap-1.5 px-2 py-1 font-semibold">
                     {format(timeRange.start, "dd.MM HH:mm", { locale: de })} Uhr
                 </Badge>
 
-                {/* Slider */}
                 <div className="flex-1 flex flex-col items-center relative">
                     <Slider
                         value={[sliderValue]}
@@ -414,7 +373,6 @@ export default function TimeRangeSelector() {
                     )}
                 </div>
 
-                {/* End-Zeit */}
                 <Badge variant="secondary" className="gap-1.5 px-2 py-1 font-semibold">
                     {format(timeRange.end, "dd.MM HH:mm", { locale: de })} Uhr
                 </Badge>
@@ -425,7 +383,6 @@ export default function TimeRangeSelector() {
 
             {/* Playback Controls */}
             <div className="flex items-center gap-2">
-                {/* Play/Pause Button */}
                 <Button
                     variant="outline"
                     size="icon"
@@ -438,7 +395,6 @@ export default function TimeRangeSelector() {
                     )}
                 </Button>
 
-                {/* Speed Button */}
                 <Button
                     variant="outline"
                     size="sm"

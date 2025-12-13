@@ -1,49 +1,27 @@
 import { create } from 'zustand';
-
-export type WindowSize = 'small' | 'medium' | 'large';
-
-export enum TimeRangePreset {
-    SMALL = '1d',
-    MEDIUM = '7d',
-    LARGE = '14d',
-    CUSTOM = 'custom'
-}
-
-interface TimeRange {
-    start: Date;
-    end: Date;
-}
-
-export interface GranularityConfig {
-    minAge: number;
-    maxAge: number;
-    stepMinutes: number;
-    windowMinutes: number;
-    label: string;
-}
-
-export const GRANULARITY_LEVELS: GranularityConfig[] = [
-    { minAge: 0, maxAge: 7, stepMinutes: 1, windowMinutes: 60, label: 'Minütlich' },
-    { minAge: 7, maxAge: 14, stepMinutes: 60, windowMinutes: 1440, label: 'Stündlich' },
-    { minAge: 14, maxAge: Infinity, stepMinutes: 1440, windowMinutes: 10080, label: 'Täglich' }
-];
+import { WindowSize, TimeRangePreset, TimeRange } from '@/types/time-range';
 
 interface TimeRangeState {
+    // Zeitbereich
     timeRange: TimeRange;
     debouncedTimeRange: TimeRange;
     preset: TimeRangePreset;
-    _debounceTimer: NodeJS.Timeout | null;
+
+    // Playback
     isPlaying: boolean;
     playbackSpeed: number;
     playbackPosition: Date | null;
     playbackWindow: TimeRange | null;
-    _playbackTimer: NodeJS.Timeout | null;
     windowSize: WindowSize;
 
+    // Private Timer
+    _debounceTimer: NodeJS.Timeout | null;
+    _playbackTimer: NodeJS.Timeout | null;
+
+    // Actions
     setTimeRange: (start: Date, end: Date, immediate?: boolean) => void;
     setPreset: (preset: TimeRangePreset) => void;
     getTimeRangeForAPI: () => { start: string; end: string };
-
     startPlayback: () => void;
     pausePlayback: () => void;
     setPlaybackSpeed: (speed: number) => void;
@@ -54,35 +32,12 @@ interface TimeRangeState {
 
 const DEBOUNCE_MS = 500;
 
-function getAgeInDays(date: Date): number {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    return diffMs / (1000 * 60 * 60 * 24);
-}
-
-function getGranularityForDate(date: Date): GranularityConfig {
-    const age = getAgeInDays(date);
-    return GRANULARITY_LEVELS.find(
-        level => age >= level.minAge && age < level.maxAge
-    ) || GRANULARITY_LEVELS[GRANULARITY_LEVELS.length - 1];
-}
-
 const getStepSize = (windowSize: WindowSize, speed: number): number => {
-    let baseStepMs: number;
-
-    switch (windowSize) {
-        case 'small':
-            baseStepMs = 60 * 1000;
-            break;
-        case 'medium':
-            baseStepMs = 60 * 60 * 1000;
-            break;
-        case 'large':
-            baseStepMs = 24 * 60 * 60 * 1000;
-            break;
-        default:
-            baseStepMs = 60 * 1000;
-    }
+    const baseStepMs = {
+        small: 60 * 1000,                    // 1 Minute
+        medium: 60 * 60 * 1000,              // 1 Stunde
+        large: 24 * 60 * 60 * 1000,          // 1 Tag
+    }[windowSize];
 
     return baseStepMs * speed;
 };
@@ -92,23 +47,16 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
     const initialStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
     return {
-        timeRange: {
-            start: initialStart,
-            end: now,
-        },
-        debouncedTimeRange: {
-            start: initialStart,
-            end: now,
-        },
+        timeRange: { start: initialStart, end: now },
+        debouncedTimeRange: { start: initialStart, end: now },
         preset: TimeRangePreset.SMALL,
-        _debounceTimer: null,
-
         isPlaying: false,
         playbackSpeed: 1,
         playbackPosition: null,
         playbackWindow: null,
-        _playbackTimer: null,
         windowSize: 'small',
+        _debounceTimer: null,
+        _playbackTimer: null,
 
         setTimeRange: (start, end, immediate = false) => {
             const state = get();
@@ -128,29 +76,22 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
                 const timer = setTimeout(() => {
                     set({ debouncedTimeRange: { start, end } });
                 }, DEBOUNCE_MS);
-
                 set({ _debounceTimer: timer });
             }
         },
 
         setPreset: (preset) => {
+            if (preset === TimeRangePreset.CUSTOM) return;
+
             const now = new Date();
-            let start: Date;
+            const startOffsets: Record<Exclude<TimeRangePreset, TimeRangePreset.CUSTOM>, number> = {
+                [TimeRangePreset.SMALL]: 24 * 60 * 60 * 1000,      // 1 Tag
+                [TimeRangePreset.MEDIUM]: 7 * 24 * 60 * 60 * 1000, // 7 Tage
+                [TimeRangePreset.LARGE]: 14 * 24 * 60 * 60 * 1000, // 14 Tage
+            };
 
-            switch (preset) {
-                case TimeRangePreset.SMALL:
-                    start = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-                    break;
-                case TimeRangePreset.MEDIUM:
-                    start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                    break;
-                case TimeRangePreset.LARGE:
-                    start = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-                    break;
-                default:
-                    return;
-            }
-
+            const offset = startOffsets[preset];
+            const start = new Date(now.getTime() - offset);
             set({ preset });
             get().setTimeRange(start, now, true);
         },
@@ -158,7 +99,6 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
         getTimeRangeForAPI: () => {
             const state = get();
 
-            // Wenn Playback aktiv, nutze playbackWindow
             if (state.playbackWindow) {
                 return {
                     start: state.playbackWindow.start.toISOString(),
@@ -166,11 +106,9 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
                 };
             }
 
-            // Sonst nutze debouncedTimeRange
-            const { start, end } = state.debouncedTimeRange;
             return {
-                start: start.toISOString(),
-                end: end.toISOString(),
+                start: state.debouncedTimeRange.start.toISOString(),
+                end: state.debouncedTimeRange.end.toISOString(),
             };
         },
 
@@ -181,8 +119,7 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
                 clearInterval(state._playbackTimer);
             }
 
-            // Berechne initiales Window basierend auf windowSize
-            const initialStepMs = getStepSize(state.windowSize, 1); // Basis-Schritt ohne Speed-Multiplikator
+            const initialStepMs = getStepSize(state.windowSize, 1);
 
             const windowEnd = state.playbackPosition
                 ? new Date(state.playbackPosition.getTime())
@@ -190,18 +127,10 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
 
             const windowStart = new Date(windowEnd.getTime() - initialStepMs);
 
-            console.log('Playback start');
-            console.log('Period:', state.timeRange.start, '-', state.timeRange.end);
-            console.log('Initial window:', windowStart, '-', windowEnd);
-            console.log('Window size:', state.windowSize, 'Step:', initialStepMs / 1000, 'seconds');
-
             set({
                 isPlaying: true,
                 playbackPosition: windowEnd,
-                playbackWindow: {
-                    start: windowStart,
-                    end: windowEnd
-                }
+                playbackWindow: { start: windowStart, end: windowEnd }
             });
 
             const timer = setInterval(() => {
@@ -212,19 +141,12 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
                     return;
                 }
 
-                const current = currentState.playbackPosition!;
-
-                // Berechne Schrittgröße basierend auf windowSize und Speed
                 const stepMs = getStepSize(currentState.windowSize, currentState.playbackSpeed);
-
+                const current = currentState.playbackPosition!;
                 const nextStart = new Date(current.getTime());
                 const nextEnd = new Date(nextStart.getTime() + stepMs);
 
-                console.log('Next window:', nextStart, '-', nextEnd, 'Step:', stepMs / 1000, 'seconds');
-
                 if (nextEnd > currentState.timeRange.end) {
-                    console.log('Playback end - resetting to start');
-
                     const resetStepMs = getStepSize(currentState.windowSize, 1);
                     const newPosition = new Date(currentState.timeRange.start.getTime() + resetStepMs);
 
@@ -235,16 +157,12 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
                             end: newPosition
                         }
                     });
-
                     return;
                 }
 
                 set({
                     playbackPosition: nextEnd,
-                    playbackWindow: {
-                        start: nextStart,
-                        end: nextEnd
-                    }
+                    playbackWindow: { start: nextStart, end: nextEnd }
                 });
             }, 1000 / state.playbackSpeed);
 
@@ -272,11 +190,19 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
 
             if (wasPlaying && currentPosition) {
                 get().pausePlayback();
-
-                setTimeout(() => {
-                    get().startPlayback();
-                }, 10);
+                setTimeout(() => get().startPlayback(), 10);
             }
+        },
+
+        setPlaybackPosition: (position: Date) => {
+            if (get().isPlaying) {
+                get().pausePlayback();
+            }
+
+            set({
+                playbackPosition: position,
+                playbackWindow: null
+            });
         },
 
         resetPlayback: () => {
@@ -291,17 +217,6 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
                 playbackPosition: null,
                 playbackWindow: null,
                 _playbackTimer: null
-            });
-        },
-
-        setPlaybackPosition: (position: Date) => {
-            if (get().isPlaying) {
-                get().pausePlayback();
-            }
-
-            set({
-                playbackPosition: position,
-                playbackWindow: null
             });
         },
 
