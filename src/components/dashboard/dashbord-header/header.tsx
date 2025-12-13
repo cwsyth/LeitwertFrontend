@@ -1,7 +1,10 @@
 import DashboardHeaderFilter from "./components/filter";
-import DashboardHeaderOverview from "./components/overview";
 import DashboardHeaderViews from "./components/views";
 import { Country, DashboardViewVisibility } from "@/types/dashboard";
+import React from "react";
+import {
+    StatusCard
+} from "@/components/dashboard/dashbord-content/cards/status-card";
 
 interface DashboardHeaderProps {
     viewVisibility: DashboardViewVisibility;
@@ -12,8 +15,9 @@ interface DashboardHeaderProps {
 
 export default function DashboardHeader({ viewVisibility, toggleView, selectedCountry, setSelectedCountry }: DashboardHeaderProps) {
     return (
-        <div className="dashboard-header w-full rounded-[var(--radius)] overflow-hidden flex gap-3 h-50">
-            <DashboardHeaderOverview />
+        <div className="dashboard-header w-full rounded-[var(--radius)] overflow-hidden flex gap-3 items-stretch">
+            <StatusCard title={"Autonome Systeme"} apiEndpoint={"http://localhost:5001/api/v1/router/health"} />
+            <StatusCard title={"Router"} apiEndpoint={"http://localhost:5001/api/v1/router/health"} />
             <DashboardHeaderFilter selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} />
             <DashboardHeaderViews viewVisibility={viewVisibility} toggleView={toggleView} />
         </div>
