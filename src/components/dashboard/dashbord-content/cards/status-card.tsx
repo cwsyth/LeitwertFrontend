@@ -9,7 +9,7 @@ import { getStatusColor } from '@/lib/statusColors';
 import { NetworkStatus } from '@/types/network';
 import {AlertCircle} from "lucide-react";
 
-export function StatusCard({ title, apiEndpoint, className }: StatusCardProps) {
+export function StatusCard({ title, apiEndpoint, className, selectedCountry }: StatusCardProps) {
     const [data, setData] = useState<StatusResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(false);
@@ -20,7 +20,11 @@ export function StatusCard({ title, apiEndpoint, className }: StatusCardProps) {
             setError(false);
 
             try {
-                const response = await fetch(apiEndpoint);
+                const url = selectedCountry && selectedCountry.code !== 'world'
+                    ? `${apiEndpoint}?cc=${selectedCountry.code}`
+                    : apiEndpoint;
+
+                const response = await fetch(url);
                 if (!response.ok) throw new Error();
                 const result: StatusResponse = await response.json();
                 setData(result);
@@ -32,7 +36,7 @@ export function StatusCard({ title, apiEndpoint, className }: StatusCardProps) {
         };
 
         fetchStatus();
-    }, [apiEndpoint]);
+    }, [apiEndpoint, selectedCountry]);
 
     const getStatusItems = (): StatusItem[] => {
         if (!data) return [];

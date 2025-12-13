@@ -6,6 +6,7 @@
  */
 
 import { NetworkStatus } from '@/types/network';
+import {Country} from "@/types/dashboard";
 
 export interface StatusResponse {
     count: number;
@@ -19,6 +20,7 @@ export interface StatusCardProps {
     title: string;
     apiEndpoint: string;
     className?: string;
+    selectedCountry?: Country | null;
 }
 
 export interface StatusItem {
