@@ -23,6 +23,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import {API_BASE_URL} from "@/lib/config";
 
 // Configuration from env
 const CONFIG = {
@@ -56,13 +57,12 @@ async function fetchBoxPlotData(
 
     const from = new Date(to.getTime() - config.days * 24 * 60 * 60 * 1000);
 
-    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_API_URL || "/api";
     let url = "";
 
     if (mode === "as") {
-        url = `${baseUrl}/v1/bgp/announce-as-count-per-as?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&as-path-entry=${identifier}`;
+        url = `${API_BASE_URL}/v1/bgp/announce-as-count-per-as?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&as-path-entry=${identifier}`;
     } else {
-        url = `${baseUrl}/v1/bgp/announce-cc-count-per-cc?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&country-code=${identifier}`;
+        url = `${API_BASE_URL}/v1/bgp/announce-cc-count-per-cc?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&country-code=${identifier}`;
     }
 
     const response = await fetch(url);
