@@ -18,6 +18,7 @@ export interface StatusResponse {
 
 export interface StatusCardProps {
     title: string;
+    description?: string;
     apiEndpoint: string;
     className?: string;
     selectedCountry?: Country | null;

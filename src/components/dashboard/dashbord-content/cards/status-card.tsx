@@ -9,7 +9,7 @@ import { getStatusColor } from '@/lib/statusColors';
 import { NetworkStatus } from '@/types/network';
 import {AlertCircle} from "lucide-react";
 
-export function StatusCard({ title, apiEndpoint, className, selectedCountry }: StatusCardProps) {
+export function StatusCard({ title, description, apiEndpoint, className, selectedCountry }: StatusCardProps) {
     const [data, setData] = useState<StatusResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(false);
@@ -54,7 +54,12 @@ export function StatusCard({ title, apiEndpoint, className, selectedCountry }: S
     return (
         <Card className={`${className} min-w-[240px]`}>
             <CardHeader>
-                <CardTitle>{title}</CardTitle>
+                <CardTitle>
+                    {title}
+                    {description && (
+                        <span className="text-xs text-muted-foreground ml-2">{description}</span>
+                    )}
+                </CardTitle>
             </CardHeader>
             <CardContent className="p-3 pt-1 flex gap-3">
                 {isLoading ? (
