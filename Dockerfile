@@ -23,6 +23,7 @@ FROM base AS builder
 
 # Build argument for version
 ARG APP_VERSION
+ARG NEXT_PUBLIC_FRONTEND_API_URL
 
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
