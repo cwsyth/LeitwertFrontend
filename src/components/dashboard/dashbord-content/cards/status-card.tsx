@@ -42,10 +42,10 @@ export function StatusCard({ title, description, apiEndpoint, className, selecte
     const getStatusItems = (): StatusItem[] => {
         if (!data) return [];
         return [
-            { status: 'healthy' as NetworkStatus, count: data.healthy, label: 'Gesund' },
-            { status: 'warning' as NetworkStatus, count: data.warning, label: 'Warnung' },
-            { status: 'critical' as NetworkStatus, count: data.critical, label: 'Kritisch' },
-            { status: 'unknown' as NetworkStatus, count: data.unknown, label: 'Unbekannt' }
+            { status: 'healthy' as NetworkStatus, count: data.healthy, label: 'Healthy' },
+            { status: 'warning' as NetworkStatus, count: data.warning, label: 'Warning' },
+            { status: 'critical' as NetworkStatus, count: data.critical, label: 'Critical' },
+            { status: 'unknown' as NetworkStatus, count: data.unknown, label: 'Unknown' }
         ].filter(item => item.count > 0);
     };
 
