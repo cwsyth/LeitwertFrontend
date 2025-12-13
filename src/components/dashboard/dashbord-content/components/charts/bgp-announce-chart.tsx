@@ -56,13 +56,13 @@ async function fetchBoxPlotData(
 
     const from = new Date(to.getTime() - config.days * 24 * 60 * 60 * 1000);
 
-    const baseUrl = process.env.INTERNAL_FRONTEND_API_URL || "";
+    const baseUrl = process.env.NEXT_PUBLIC_FRONTEND_API_URL || "/api";
     let url = "";
 
     if (mode === "as") {
-        url = `${baseUrl}/api/v1/bgp/announce-as-count-per-as?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&as-path-entry=${identifier}`;
+        url = `${baseUrl}/v1/bgp/announce-as-count-per-as?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&as-path-entry=${identifier}`;
     } else {
-        url = `${baseUrl}/api/v1/bgp/announce-cc-count-per-cc?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&country-code=${identifier}`;
+        url = `${baseUrl}/v1/bgp/announce-cc-count-per-cc?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&country-code=${identifier}`;
     }
 
     const response = await fetch(url);
