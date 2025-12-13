@@ -87,6 +87,8 @@ export default function TimeRangeSelector() {
         }
     }, [playbackPosition, timeRange]);
 
+
+
     const formatPlaybackPosition = () => {
         if (!playbackPosition) return "";
         return format(playbackPosition, "HH:mm:ss", { locale: de });
@@ -108,6 +110,47 @@ export default function TimeRangeSelector() {
         { value: 50, label: "50x" },
         { value: 100, label: "100x" }
     ];
+
+    const getTimeRangeDuration = () => {
+        const durationMs = timeRange.end.getTime() - timeRange.start.getTime();
+        return durationMs / (1000 * 60 * 60); // Millisekunden -> Stunden
+    };
+
+    const getWindowConfig = () => {
+        const durationHours = getTimeRangeDuration();
+        const durationDays = durationHours / 24;
+
+        if (durationHours <= 24) {
+            // <= 24 Std: small (default), medium
+            return {
+                allowedSizes: ['small', 'medium'] as WindowSize[],
+                defaultSize: 'small' as WindowSize,
+                disabledSizes: ['large'] as WindowSize[]
+            };
+        } else if (durationDays <= 14) {
+            // > 24 Std <= 14 Tage: medium (default), large
+            return {
+                allowedSizes: ['medium', 'large'] as WindowSize[],
+                defaultSize: 'medium' as WindowSize,
+                disabledSizes: ['small'] as WindowSize[]
+            };
+        } else {
+            // > 14 Tage: large
+            return {
+                allowedSizes: ['large'] as WindowSize[],
+                defaultSize: 'large' as WindowSize,
+                disabledSizes: ['small', 'medium'] as WindowSize[]
+            };
+        }
+    };
+
+    const windowConfig = getWindowConfig();
+
+    useEffect(() => {
+        if (!windowConfig.allowedSizes.includes(windowSize)) {
+            setWindowSize(windowConfig.defaultSize);
+        }
+    }, [timeRange, windowSize, windowConfig.allowedSizes, windowConfig.defaultSize, setWindowSize]);
 
     const handlePresetClick = (presetValue: TimeRangePreset) => {
         setPreset(presetValue);
@@ -183,18 +226,32 @@ export default function TimeRangeSelector() {
 
     return (
         <div className="flex items-center justify-end w-full gap-3">
-            <div className="flex items-center gap-2">
-                <Select value={windowSize} onValueChange={(value) => setWindowSize(value as WindowSize)}>
-                    <SelectTrigger className="w-25 text-black bg-white">
-                        <span>Window</span>
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="small">Klein</SelectItem>
-                        <SelectItem value="medium">Mittel</SelectItem>
-                        <SelectItem value="large">Groß</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+            {/* Window Size Selector */}
+            <Select value={windowSize} onValueChange={(value) => setWindowSize(value as WindowSize)}>
+                <SelectTrigger className="w-25 text-black bg-white">
+                    <span>Window</span>
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem
+                        value="small"
+                        disabled={windowConfig.disabledSizes.includes('small')}
+                    >
+                        Minütlich
+                    </SelectItem>
+                    <SelectItem
+                        value="medium"
+                        disabled={windowConfig.disabledSizes.includes('medium')}
+                    >
+                        Stündlich
+                    </SelectItem>
+                    <SelectItem
+                        value="large"
+                        disabled={windowConfig.disabledSizes.includes('large')}
+                    >
+                        Täglich
+                    </SelectItem>
+                </SelectContent>
+            </Select>
 
 
             {/* Date Time Picker */}

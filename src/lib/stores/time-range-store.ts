@@ -67,6 +67,26 @@ function getGranularityForDate(date: Date): GranularityConfig {
     ) || GRANULARITY_LEVELS[GRANULARITY_LEVELS.length - 1];
 }
 
+const getStepSize = (windowSize: WindowSize, speed: number): number => {
+    let baseStepMs: number;
+
+    switch (windowSize) {
+        case 'small':
+            baseStepMs = 60 * 1000;
+            break;
+        case 'medium':
+            baseStepMs = 60 * 60 * 1000;
+            break;
+        case 'large':
+            baseStepMs = 24 * 60 * 60 * 1000;
+            break;
+        default:
+            baseStepMs = 60 * 1000;
+    }
+
+    return baseStepMs * speed;
+};
+
 export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
     const now = new Date();
     const initialStart = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -161,15 +181,19 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
                 clearInterval(state._playbackTimer);
             }
 
+            // Berechne initiales Window basierend auf windowSize
+            const initialStepMs = getStepSize(state.windowSize, 1); // Basis-Schritt ohne Speed-Multiplikator
+
             const windowEnd = state.playbackPosition
                 ? new Date(state.playbackPosition.getTime())
-                : new Date(state.timeRange.start.getTime() + 60000);
+                : new Date(state.timeRange.start.getTime() + initialStepMs);
 
-            const windowStart = new Date(windowEnd.getTime() - 60000);
+            const windowStart = new Date(windowEnd.getTime() - initialStepMs);
 
             console.log('Playback start');
             console.log('Period:', state.timeRange.start, '-', state.timeRange.end);
             console.log('Initial window:', windowStart, '-', windowEnd);
+            console.log('Window size:', state.windowSize, 'Step:', initialStepMs / 1000, 'seconds');
 
             set({
                 isPlaying: true,
@@ -190,15 +214,19 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
 
                 const current = currentState.playbackPosition!;
 
-                const nextStart = new Date(current.getTime() + 60000);
-                const nextEnd = new Date(nextStart.getTime() + 60000);
+                // Berechne Schrittgröße basierend auf windowSize und Speed
+                const stepMs = getStepSize(currentState.windowSize, currentState.playbackSpeed);
 
-                console.log('Next window:', nextStart, '-', nextEnd);
+                const nextStart = new Date(current.getTime());
+                const nextEnd = new Date(nextStart.getTime() + stepMs);
+
+                console.log('Next window:', nextStart, '-', nextEnd, 'Step:', stepMs / 1000, 'seconds');
 
                 if (nextEnd > currentState.timeRange.end) {
-                    console.log('Playback end');
+                    console.log('Playback end - resetting to start');
 
-                    const newPosition = new Date(currentState.timeRange.start.getTime() + 60000);
+                    const resetStepMs = getStepSize(currentState.windowSize, 1);
+                    const newPosition = new Date(currentState.timeRange.start.getTime() + resetStepMs);
 
                     set({
                         playbackPosition: newPosition,
