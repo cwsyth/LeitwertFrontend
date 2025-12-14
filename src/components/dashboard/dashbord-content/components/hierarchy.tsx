@@ -2,7 +2,7 @@
 
 import { CountriesTreeMap } from "@/components/network/CountriesTreeMap";
 import { AsTreeMap } from "@/components/network/AsTreeMap";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -24,11 +24,23 @@ export default function DashboardContentHierarchy() {
     const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
     const [showCountryView, setShowCountryView] = useState(false);
     const [limit, setLimit] = useState(50);
+    const [inputLimit, setInputLimit] = useState("50");
     const [showLabels, setShowLabels] = useState(true);
     const [useGradient, setUseGradient] = useState(true);
     const [countrySizeMetric, setCountrySizeMetric] = useState<CountrySizeMetric>('asCount');
     const [asSizeMetric, setAsSizeMetric] = useState<AsSizeMetric>('ipCount');
     const [statusFilter, setStatusFilter] = useState<NetworkStatus | 'all'>('all');
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const value = parseInt(inputLimit, 10);
+            if (!isNaN(value) && value > 0) {
+                setLimit(value);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [inputLimit]);
 
     const handleCountryClick = (countryCode: string) => {
         setSelectedCountry(countryCode);
@@ -40,10 +52,7 @@ export default function DashboardContentHierarchy() {
     };
 
     const handleLimitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = parseInt(e.target.value);
-        if (!isNaN(value) && value > 0) {
-            setLimit(value);
-        }
+        setInputLimit(e.target.value);
     };
 
     return (
@@ -88,7 +97,7 @@ export default function DashboardContentHierarchy() {
                             id="limit-input"
                             type="number"
                             min="1"
-                            value={limit}
+                            value={inputLimit}
                             onChange={handleLimitChange}
                             className="w-18"
                         />
