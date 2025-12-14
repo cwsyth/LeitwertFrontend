@@ -54,17 +54,28 @@ export function AsTreeMap({
                 ? response.country.asNetworks
                 : response.country.asNetworks.filter(as => as.status === statusFilter);
 
-            const transformedData: TreeMapDataItem[] = filteredAsNetworks.map(as => ({
-                id: as.asNumber.toString(),
-                name: as.name,
-                value: as[sizeMetric === 'ip_count' ? 'ipCount' : 'anomalyCount'],
-                status: as.status,
-                anomalyCount: as.anomalyCount,
-                metadata: {
-                    asNumber: as.asNumber,
-                    ipCount: as.ipCount
-                }
-            }));
+            const transformedData: TreeMapDataItem[] = filteredAsNetworks.map(as => {
+                const metricValue = as[sizeMetric === 'ip_count' ? 'ipCount' : 'anomalyCount'];
+                return {
+                    id: as.asNumber.toString(),
+                    name: as.name,
+                    value: metricValue,
+                    status: as.status,
+                    anomalyCount: as.anomalyCount ?? 0,
+                    metadata: {
+                        asNumber: as.asNumber,
+                        ipCount: as.ipCount
+                    }
+                };
+            });
+
+            const allValuesZero = transformedData.every(item => item.value === 0);
+
+            if (allValuesZero) {
+                transformedData.forEach(item => {
+                    item.value = 1;
+                });
+            }
 
             const othersValue = sizeMetric === 'ip_count'
                 ? response.others.totalIpCount
@@ -72,7 +83,7 @@ export function AsTreeMap({
 
             const othersData: TreeMapOthersData = {
                 name: 'Others',
-                value: othersValue,
+                value: othersValue === 0 ? 1 : othersValue,
                 count: response.others.asCount,
                 totalAnomalyCount: response.others.totalAnomalyCount,
                 items: response.others.asNetworks.map(as => ({
@@ -80,6 +91,15 @@ export function AsTreeMap({
                     name: as.name
                 }))
             };
+
+            console.log('AsTreeMap Debug:', {
+                totalAsNetworks: response.country.asNetworks.length,
+                statusFilter,
+                filteredCount: filteredAsNetworks.length,
+                transformedCount: transformedData.length,
+                sizeMetric,
+                sample: transformedData[0]
+            });
 
             setData(transformedData);
             setOthers(othersData);

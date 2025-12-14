@@ -48,17 +48,28 @@ export function CountriesTreeMap({
                 ? response.countries
                 : response.countries.filter(country => country.status === statusFilter);
 
-            const transformedData: TreeMapDataItem[] = filteredCountries.map(country => ({
-                id: country.code,
-                name: country.name,
-                value: country[sizeMetric === 'as_count' ? 'asCount' : sizeMetric === 'ip_count' ? 'ipCount' : 'anomalyCount'],
-                status: country.status,
-                anomalyCount: country.anomalyCount,
-                metadata: {
-                    asCount: country.asCount,
-                    ipCount: country.ipCount
-                }
-            }));
+            const transformedData: TreeMapDataItem[] = filteredCountries.map(country => {
+                const metricValue = country[sizeMetric === 'as_count' ? 'asCount' : sizeMetric === 'ip_count' ? 'ipCount' : 'anomalyCount'];
+                return {
+                    id: country.code,
+                    name: country.name,
+                    value: metricValue,
+                    status: country.status,
+                    anomalyCount: country.anomalyCount ?? 0,
+                    metadata: {
+                        asCount: country.asCount,
+                        ipCount: country.ipCount
+                    }
+                };
+            });
+
+            const allValuesZero = transformedData.every(item => item.value === 0);
+
+            if (allValuesZero) {
+                transformedData.forEach(item => {
+                    item.value = 1;
+                });
+            }
 
             const othersValue = sizeMetric === 'as_count'
                 ? response.others.totalAsCount
@@ -68,7 +79,7 @@ export function CountriesTreeMap({
 
             const othersData: TreeMapOthersData = {
                 name: 'Others',
-                value: othersValue,
+                value: othersValue === 0 ? 1 : othersValue,
                 count: response.others.countryCount,
                 totalAnomalyCount: response.others.totalAnomalyCount,
                 items: response.others.countries.map(c => ({ id: c.code, name: c.name }))
