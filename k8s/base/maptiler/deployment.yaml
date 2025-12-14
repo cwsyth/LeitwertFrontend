@@ -12,6 +12,8 @@ spec:
       labels:
         app.kubernetes.io/name: maptiler
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: node106
       containers:
         - name: maptiler
           image: maptiler/tileserver-gl:next
