@@ -24,7 +24,7 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
         ? '/router_collections_by_country_p6.geojson'
         : '/geohash_points_p6_20000.geojson';
 
-    const { data: mapData } = useQuery({
+    const { data: mapData, isLoading } = useQuery({
         queryKey: ['geohash-points', selectedCountry?.code],
         queryFn: async () => {
             const response = await fetch(geoJsonUrl);
@@ -86,6 +86,14 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
 
     return (
         <div className="dashboard-map w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden rounded-[var(--radius)]">
+            {isLoading && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="w-12 h-12 border-4 border-slate-600 border-t-slate-300 rounded-full animate-spin" />
+                        <p className="text-slate-300 text-sm font-medium">Loading map data...</p>
+                    </div>
+                </div>
+            )}
            <Map
                 initialViewState={{ // default to Germany
                     latitude,
