@@ -100,7 +100,7 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
                     longitude,
                     zoom: 4.5
                 }}
-                mapStyle="https://demotiles.maplibre.org/style.json"
+                mapStyle="https://dev-maptiler.univ.leitwert.net/styles/dark-basic/style.json"
                 interactiveLayerIds={[clusterLayer.id!]}
                 onClick={onClick}
                 ref={mapRef}
