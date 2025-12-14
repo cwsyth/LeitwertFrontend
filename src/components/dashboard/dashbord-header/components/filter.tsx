@@ -5,7 +5,6 @@ import { useState } from "react";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 
 import { Check, ChevronUp } from "lucide-react";
 
@@ -34,24 +33,12 @@ interface DashboardHeaderFilterProps {
 export default function DashboardHeaderFilter({ selectedCountry, setSelectedCountry }: DashboardHeaderFilterProps) {
     const [open, setOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [tiers, setTiers] = useState({
-        tier1: true,
-        tier2: true,
-        tier3: true,
-    });
 
     const filteredCountries = searchQuery
         ? countries.filter(country =>
             country.name.toLowerCase().includes(searchQuery.toLowerCase())
         )
         : countries;
-
-    const handleTierChange = (tier: keyof typeof tiers) => {
-        setTiers(prev => ({
-            ...prev,
-            [tier]: !prev[tier]
-        }));
-    };
 
     return (
         <Card className="flex-1">
@@ -137,25 +124,6 @@ export default function DashboardHeaderFilter({ selectedCountry, setSelectedCoun
                                 </div>
                             </PopoverContent>
                         </Popover>
-
-                        {/* Tier Checkboxes */}
-                        <div className="ml-1 mt-1 flex gap-4">
-                            {(Object.keys(tiers) as (keyof typeof tiers)[]).map((tier) => (
-                                <div key={tier} className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id={tier}
-                                        checked={tiers[tier]}
-                                        onCheckedChange={() => handleTierChange(tier)}
-                                    />
-                                    <label
-                                        htmlFor={tier}
-                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                    >
-                                        {`Tier ${tier.charAt(tier.length - 1)}`}
-                                    </label>
-                                </div>
-                            ))}
-                        </div>
                     </div>
                 </CardDescription>
             </CardHeader>

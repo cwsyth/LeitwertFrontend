@@ -23,6 +23,7 @@ FROM base AS builder
 
 # Build argument for version
 ARG APP_VERSION
+ARG NEXT_PUBLIC_FRONTEND_API_URL
 
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
@@ -35,6 +36,7 @@ COPY . .
 
 # Make version available to Next.js during build
 ENV NEXT_PUBLIC_APP_VERSION=$APP_VERSION
+ENV NEXT_PUBLIC_FRONTEND_API_URL=$NEXT_PUBLIC_FRONTEND_API_URL
 
 RUN \
   if [ -f yarn.lock ]; then yarn run build; \

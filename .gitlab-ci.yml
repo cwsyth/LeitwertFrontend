@@ -24,6 +24,7 @@ validate:dev:
       docker build \
         --build-arg BUILDKIT_INLINE_CACHE=1 \
         --build-arg APP_VERSION=$CI_COMMIT_SHORT_SHA \
+        --build-arg NEXT_PUBLIC_FRONTEND_API_URL="https://dev-api.univ.leitwert.net/api" \
         --cache-from $CI_REGISTRY_IMAGE:latest \
         --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
         --tag $CI_REGISTRY_IMAGE:latest \
@@ -42,6 +43,7 @@ build:dev:
       docker build \
         --build-arg BUILDKIT_INLINE_CACHE=1 \
         --build-arg APP_VERSION=$CI_COMMIT_SHORT_SHA \
+        --build-arg NEXT_PUBLIC_FRONTEND_API_URL="https://dev-api.univ.leitwert.net/api" \
         --cache-from $CI_REGISTRY_IMAGE:latest \
         --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA \
         --tag $CI_REGISTRY_IMAGE:latest \
@@ -62,6 +64,7 @@ build:prod:
       docker build \
         --build-arg BUILDKIT_INLINE_CACHE=1 \
         --build-arg APP_VERSION=$CI_COMMIT_TAG \
+        --build-arg NEXT_PUBLIC_FRONTEND_API_URL="https://api.univ.leitwert.net/api" \
         --cache-from $CI_REGISTRY_IMAGE:latest \
         --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG \
         .
