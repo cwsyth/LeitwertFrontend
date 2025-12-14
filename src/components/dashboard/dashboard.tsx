@@ -9,6 +9,7 @@ import {
     DashboardContentMode,
     DashboardViewVisibility,
     Country,
+    Router,
 } from "@/types/dashboard";
 import { BgpAnnounceChart } from "./dashbord-content/components/charts/bgp-announce-chart";
 import dynamic from "next/dynamic";
@@ -31,10 +32,14 @@ export default function Dashboard() {
         }));
     };
 
-    const [selectedCountry, setSelectedCountry] = useState<Country | null>({
+    const [selectedCountry, setSelectedCountry] = useState<Country>({
         code: "world",
         name: "World",
     });
+
+    const [routers, setRouters] = useState<Router[]>([]);
+
+    const [selectedRouter, setSelectedRouter] = useState<Router | null>(null);
 
     const TimeRangeSelector = dynamic(
         () => import('./dashbord-timeline/timeline'),
@@ -62,9 +67,15 @@ export default function Dashboard() {
                 <DashboardContent
                     mode={mode}
                     selectedCountry={selectedCountry}
+                    setRouters={setRouters}
                 />
-                {viewVisibility.bgpAnnouncements && <BgpAnnounceChart />}
-                <DashboardFooter viewVisibility={viewVisibility} />
+                <DashboardFooter
+                    viewVisibility={viewVisibility}
+                    selectedCountry={selectedCountry}
+                    routers={routers}
+                    setSelectedRouter={setSelectedRouter}
+                />
+                {viewVisibility.bgpAnnouncements && <BgpAnnounceChart router={selectedRouter?.asn} />}
             </div>
         </div>
     );

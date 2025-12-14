@@ -26,8 +26,8 @@ const sortedCountries: Country[] = Object.entries(countriesData).map(([code, dat
 const countries: Country[] = [worldCountry, ...sortedCountries];
 
 interface DashboardHeaderFilterProps {
-    selectedCountry: Country | null;
-    setSelectedCountry: React.Dispatch<React.SetStateAction<Country | null>>;
+    selectedCountry: Country;
+    setSelectedCountry: React.Dispatch<React.SetStateAction<Country>>;
 }
 
 export default function DashboardHeaderFilter({ selectedCountry, setSelectedCountry }: DashboardHeaderFilterProps) {

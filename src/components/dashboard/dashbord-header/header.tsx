@@ -6,8 +6,8 @@ import { Country, DashboardViewVisibility } from "@/types/dashboard";
 interface DashboardHeaderProps {
     viewVisibility: DashboardViewVisibility;
     toggleView: (view: keyof DashboardViewVisibility) => void;
-    selectedCountry: Country | null;
-    setSelectedCountry: React.Dispatch<React.SetStateAction<Country | null>>;
+    selectedCountry: Country;
+    setSelectedCountry: React.Dispatch<React.SetStateAction<Country>>;
 }
 
 export default function DashboardHeader({ viewVisibility, toggleView, selectedCountry, setSelectedCountry }: DashboardHeaderProps) {

@@ -1,21 +1,8 @@
 import { TCountryCode } from 'countries-list';
 import type { FeatureCollection, Feature, Point } from 'geojson';
+import type { Router } from './dashboard';
 
-type router_status =  "online" | "degraded" | "down" | "unknown";
-
-export interface CountryCustomProperties {
-    router_id: string;
-    asn: string;
-    geohash: string;
-    location: {
-        city: string,
-        isp: string,
-        lat: number,
-        lon: number,
-        region: string
-    },
-    status: router_status
-}
+export type CountryCustomProperties = Router;
 
 export interface WorldCustomProperties {
   country_code: TCountryCode;

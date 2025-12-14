@@ -24,6 +24,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {API_BASE_URL} from "@/lib/config";
+import Router from "next/dist/shared/lib/router/router";
 
 // Configuration from env
 const CONFIG = {
@@ -144,7 +145,11 @@ function ChartTooltip({
     );
 }
 
-export function BgpAnnounceChart() {
+interface BgpAnnounceChartProps {
+    router: string | undefined;
+}
+
+export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
     const DEBOUNCE_TIME = 500;
     const [range, setRange] = useState<TimeRange>("small");
     const [mode, setMode] = useState<QueryMode>("as");
@@ -324,7 +329,7 @@ export function BgpAnnounceChart() {
         <Card className="w-full">
             <CardHeader className="space-y-4 pb-4">
                 <div className="flex flex-col space-y-1.5">
-                    <CardTitle>BGP Announcements (Boxplot)</CardTitle>
+                    <CardTitle>BGP Announcements (Boxplot) for <span className="text-blue-500">AS-{router}</span></CardTitle>
                     <CardDescription>
                         Verteilung der BGP Announcements für{" "}
                         {mode === "as" ? "AS" : "Country Code"} {identifier}

@@ -30,3 +30,19 @@ export interface Country {
     code: string;
     name: string;
 }
+
+type router_status =  "good" | "degraded" | "offline" | "unknown";
+
+export interface Router {
+    router_id: string;
+    asn: string;
+    geohash: string;
+    location: {
+        city: string,
+        isp: string,
+        lat: number,
+        lon: number,
+        region: string
+    },
+    status: router_status
+}

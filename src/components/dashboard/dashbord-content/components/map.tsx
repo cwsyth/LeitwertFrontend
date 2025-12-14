@@ -1,22 +1,23 @@
 import { useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-
 import { Map, Source, Layer } from 'react-map-gl/maplibre';
 import type { MapRef, MapMouseEvent } from 'react-map-gl/maplibre';
 import type { GeoJSONSource } from 'maplibre-gl';
-import { countryView, worldView } from './layers';
 import geohash from 'ngeohash';
 
-import { Country } from '@/types/dashboard';
-import { CountryCustomProperties, CountryFeatureCollection, WorldCustomProperties, WorldFeatureCollection } from '@/types/geojson';
+import { countryView, worldView } from './layers';
 import { countryMiddlepoints } from '@/data/country_middlepoints';
+import type { Country, Router } from '@/types/dashboard';
+import type { CountryCustomProperties, CountryFeature, CountryFeatureCollection, WorldCustomProperties, WorldFeatureCollection } from '@/types/geojson';
 import type { CountryMiddlepointFeature } from '@/data/country_middlepoints';
+import type { FeatureCollection, Feature } from 'geojson';
 
 interface DashboardContentMapProps {
-    selectedCountry: Country | null;
+    selectedCountry: Country;
+    setRouters: React.Dispatch<React.SetStateAction<Router[]>>
 }
 
-export default function DashboardContentMap({ selectedCountry }: DashboardContentMapProps) {
+export default function DashboardContentMap({ selectedCountry, setRouters }: DashboardContentMapProps) {
     const mapRef = useRef<MapRef>(null);
     let [longitude, latitude] = [10.426171427430804, 51.08304539800482]; // default to Germany
 
@@ -33,7 +34,8 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
         if(selectedCountry.code !== 'world') {
             // find the selected country in the middlepoints data
             const countryWithMiddlepoint = countryMiddlepoints.features.find(
-                (feature: CountryMiddlepointFeature) => feature.properties.ISO.toLowerCase() === selectedCountry.code.toLowerCase()
+                (feature: CountryMiddlepointFeature) =>
+                    feature.properties.ISO.toLowerCase() === selectedCountry.code.toLowerCase()
             );
 
             if (countryWithMiddlepoint && countryWithMiddlepoint.geometry.coordinates) {
@@ -68,9 +70,10 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
                         type: "Feature",
                         geometry: {
                             type: "Point",
-                            coordinates: countryMiddlepoints.features.find((feature: CountryMiddlepointFeature) =>
-                                feature.properties.ISO.toLowerCase() === item.country_code.toLowerCase()
-                            )?.geometry.coordinates || [0, 0],
+                            coordinates: countryMiddlepoints.features.find(
+                                (feature: CountryMiddlepointFeature) =>
+                                    feature.properties.ISO.toLowerCase() === item.country_code.toLowerCase()
+                                )?.geometry.coordinates || [0, 0],
                         },
                         properties: item
                     }))
@@ -95,19 +98,38 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
             }
         }
     });
+    console.log('Map Data:', mapData);
 
     const onClick = async (event: MapMouseEvent) => {
-        const feature = event?.features?.[0];
-        const clusterId = feature?.properties.cluster_id;
-        const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
-        const zoom = await geojsonSource.getClusterExpansionZoom(clusterId);
+        if (!isWorld) {
+            const feature = event?.features?.[0];
+            if (!feature) return;
 
-        if (feature?.geometry && 'coordinates' in feature.geometry) {
-            mapRef?.current?.easeTo({
-                center: feature.geometry.coordinates as [number, number],
-                zoom,
-                duration: 500
-            });
+            const clusterId = feature?.properties?.cluster_id;
+            const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
+
+            if (clusterId) {
+                // Handle cluster click
+                const zoom = await geojsonSource.getClusterExpansionZoom(clusterId);
+
+                if (feature?.geometry && 'coordinates' in feature.geometry) {
+                    mapRef?.current?.easeTo({
+                        center: feature.geometry.coordinates as [number, number],
+                        zoom,
+                        duration: 500
+                    });
+                }
+
+                // Get all points in the cluster & filter out router properties
+                const leaves: Feature[] = await geojsonSource.getClusterLeaves(clusterId, Infinity, 0);
+                const routers = leaves.map((leaf: Feature) => leaf.properties as Router);
+                console.log(routers);
+                setRouters(routers);
+            } else {
+                // Handle single point click
+                const router = feature.properties as Router;
+                setRouters([router]);
+            }
         }
     };
 
