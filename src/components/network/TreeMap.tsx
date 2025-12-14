@@ -30,11 +30,18 @@ export function TreeMap({
                             anomalyRanges,
                             onBackClick,
                         }: TreeMapProps) {
-    // Berechne den kleinsten Wert aus den Haupt-Daten
-    const minDataValue = data.length > 0 ? Math.min(...data.map(d => d.value)) : 0;
 
-    // "Others" bekommt einen Anteil des kleinsten Wertes
-    const othersDisplayValue = minDataValue * othersDisplaySize;
+    const minDataValue = data.length > 0 ? Math.min(...data.map(d => d.value)) : 0;
+    const othersDisplayValue = Math.max(minDataValue * othersDisplaySize, 1);
+
+    console.log('TreeMap Debug:', {
+        minDataValue,
+        othersDisplaySize,
+        othersDisplayValue,
+        hasOthers: !!others,
+        othersActualValue: others?.value,
+        dataLength: data.length
+    });
 
     const treeMapData = [
         ...data,
