@@ -1,10 +1,11 @@
 import { useRef, useEffect } from 'react';
-import { Map, Source, Layer } from 'react-map-gl/maplibre';
-import { clusterLayer, clusterCountLayer, unclusteredPointLayer } from './layers';
 import { useQuery } from '@tanstack/react-query';
 
+import { Map, Source, Layer } from 'react-map-gl/maplibre';
 import type { MapRef, MapMouseEvent } from 'react-map-gl/maplibre';
 import type { GeoJSONSource } from 'maplibre-gl';
+import { clusterLayer, clusterCountLayer, unclusteredPointLayer } from './layers';
+import geohash from 'ngeohash';
 
 import { Country } from '@/types/dashboard';
 import { CountryCustomProperties, CountryFeatureCollection, WorldCustomProperties, WorldFeatureCollection } from '@/types/geojson';
@@ -40,7 +41,7 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
                 [longitude, latitude] = countryWithMiddlepoint.geometry.coordinates;
             }
         }
-        // Smoothly transition to the new position
+        // transition to the new position
         if (mapRef.current) {
             mapRef.current.flyTo({
                 center: [longitude, latitude],
@@ -83,7 +84,9 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
                         type: "Feature",
                         geometry: {
                             type: "Point",
-                            coordinates: [item.location.lon, item.location.lat],
+                            coordinates: item.location?.lon && item.location?.lat
+                                ? [item.location.lon, item.location.lat]
+                                : geohash.decode(item.geohash),
                         },
                         properties: item
                     })) || []
@@ -92,7 +95,6 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
             }
         }
     });
-    console.log('Map Data:', mapData);
 
     const onClick = async (event: MapMouseEvent) => {
         const feature = event?.features?.[0];
