@@ -27,8 +27,8 @@ export default function DashboardContentHierarchy() {
     const [inputLimit, setInputLimit] = useState("50");
     const [showLabels, setShowLabels] = useState(true);
     const [useGradient, setUseGradient] = useState(true);
-    const [countrySizeMetric, setCountrySizeMetric] = useState<CountrySizeMetric>('asCount');
-    const [asSizeMetric, setAsSizeMetric] = useState<AsSizeMetric>('ipCount');
+    const [countrySizeMetric, setCountrySizeMetric] = useState<CountrySizeMetric>('as_count');
+    const [asSizeMetric, setAsSizeMetric] = useState<AsSizeMetric>('ip_count');
     const [statusFilter, setStatusFilter] = useState<NetworkStatus | 'all'>('all');
 
     useEffect(() => {

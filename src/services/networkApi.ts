@@ -11,9 +11,13 @@ import {API_BASE_URL} from "@/lib/config";
 export const networkApi = {
     async getCountriesSummary(
         limit: number = 50,
-        timeRange?: { start: Date, end: Date }
+        timeRange?: { start: Date; end: Date },
+        sizeMetric: string = 'as_count'
     ): Promise<CountriesSummaryResponse> {
-        const params = new URLSearchParams({ limit: limit.toString() });
+        const params = new URLSearchParams({
+            limit: limit.toString(),
+            sort: sizeMetric
+        });
 
         if (timeRange) {
             params.append('from', timeRange.start.toISOString());
@@ -38,9 +42,13 @@ export const networkApi = {
     async getCountryAs(
         countryCode: string,
         limit: number = 50,
-        timeRange?: { start: Date; end: Date }
+        timeRange?: { start: Date; end: Date },
+        sizeMetric: string = 'ip_count'
     ): Promise<CountryAsResponse> {
-        const params = new URLSearchParams({ limit: limit.toString() });
+        const params = new URLSearchParams({
+            limit: limit.toString(),
+            sort: sizeMetric
+        });
 
         if (timeRange) {
             params.append('from', timeRange.start.toISOString());

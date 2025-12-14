@@ -23,7 +23,7 @@ export function CountriesTreeMap({
                                      onCountryClick,
                                      showLabels,
                                      useGradient,
-                                     sizeMetric = 'asCount',
+                                     sizeMetric = 'as_count',
                                      statusFilter = 'all',
                                      onStatusFilterChange
                                  }: CountriesTreeMapProps) {
@@ -42,7 +42,7 @@ export function CountriesTreeMap({
     const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await networkApi.getCountriesSummary(limit, timeRange);
+            const response = await networkApi.getCountriesSummary(limit, timeRange, sizeMetric);
 
             const filteredCountries = statusFilter === 'all'
                 ? response.countries
@@ -51,13 +51,13 @@ export function CountriesTreeMap({
             const transformedData: TreeMapDataItem[] = filteredCountries.map(country => {
                 let value: number;
                 switch (sizeMetric) {
-                    case 'asCount':
+                    case 'as_count':
                         value = country.asCount;
                         break;
-                    case 'anomalyCount':
+                    case 'anomaly_count':
                         value = country.anomalyCount;
                         break;
-                    case 'ipCount':
+                    case 'ip_count':
                         value = country.ipCount;
                         break;
                     default:
@@ -80,10 +80,10 @@ export function CountriesTreeMap({
 
             let othersValue: number;
             switch (sizeMetric) {
-                case 'asCount':
+                case 'as_count':
                     othersValue = response.others.totalAsCount;
                     break;
-                case 'anomalyCount':
+                case 'anomaly_count':
                     othersValue = response.others.totalAnomalyCount;
                     break;
                 default:

@@ -133,16 +133,16 @@ export interface CountriesTreeMapProps {
     onStatusFilterChange?: (status: NetworkStatus | 'all') => void;
 }
 
-export type CountrySizeMetric = 'asCount' | 'anomalyCount' | 'ipCount';
-export type AsSizeMetric = 'ipCount' | 'anomalyCount';
+export type CountrySizeMetric = 'as_count' | 'ip_count' | 'anomaly_count';
+export type AsSizeMetric = 'ip_count' | 'anomaly_count';
 
 export const COUNTRY_SIZE_METRIC_LABELS: Record<CountrySizeMetric, string> = {
-    asCount: 'AS Count',
-    anomalyCount: 'Anomalien',
-    ipCount: 'IP Count'
+    as_count: 'AS Count',
+    anomaly_count: 'Anomalien',
+    ip_count: 'IP Count'
 };
 
 export const AS_SIZE_METRIC_LABELS: Record<AsSizeMetric, string> = {
-    ipCount: 'IP Count',
-    anomalyCount: 'Anomalien'
+    ip_count: 'IP Count',
+    anomaly_count: 'Anomalien'
 };

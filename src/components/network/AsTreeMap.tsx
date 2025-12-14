@@ -26,7 +26,7 @@ export function AsTreeMap({
                               limit = 10,
                               showLabels,
                               useGradient,
-                              sizeMetric = 'ipCount',
+                              sizeMetric = 'ip_count',
                               statusFilter = 'all',
                               onStatusFilterChange,
                               onBackClick
@@ -44,7 +44,8 @@ export function AsTreeMap({
             const response = await networkApi.getCountryAs(
                 countryCode,
                 limit,
-                timeRange
+                timeRange,
+                sizeMetric
             );
 
             setCountryName(response.country.name);
@@ -56,10 +57,10 @@ export function AsTreeMap({
             const transformedData: TreeMapDataItem[] = filteredAsNetworks.map(as => {
                 let value: number;
                 switch (sizeMetric) {
-                    case 'ipCount':
+                    case 'ip_count':
                         value = as.ipCount;
                         break;
-                    case 'anomalyCount':
+                    case 'anomaly_count':
                         value = as.anomalyCount;
                         break;
                     default:
@@ -85,10 +86,10 @@ export function AsTreeMap({
 
             let othersValue: number;
             switch (sizeMetric) {
-                case 'ipCount':
+                case 'ip_count':
                     othersValue = response.others.totalIpCount;
                     break;
-                case 'anomalyCount':
+                case 'anomaly_count':
                     othersValue = response.others.totalAnomalyCount;
                     break;
                 default:
