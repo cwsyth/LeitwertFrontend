@@ -11,7 +11,6 @@ import { Country } from '@/types/dashboard';
 import { CountryCustomProperties, CountryFeatureCollection, WorldCustomProperties, WorldFeatureCollection } from '@/types/geojson';
 import { countryMiddlepoints } from '@/data/country_middlepoints';
 import type { CountryMiddlepointFeature } from '@/data/country_middlepoints';
-import { is } from 'date-fns/locale';
 
 interface DashboardContentMapProps {
     selectedCountry: Country | null;
@@ -135,6 +134,7 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
                 attributionControl={false}
             >
                 <Source
+                    key={isWorld ? 'world-source' : 'country-source'}
                     id="points"
                     type="geojson"
                     data={mapData ? mapData : { type: "FeatureCollection", features: [] }}

@@ -24,7 +24,7 @@ export const countryView = {
   } as LayerProps,
 
   unclusteredPointLayer: {
-    id: 'unclustered-point',
+    id: 'country-unclustered-point',
     type: 'circle',
     source: 'points',
     filter: ['!', ['has', 'point_count']],
@@ -39,7 +39,7 @@ export const countryView = {
 
 export const worldView = {
   unclusteredPointLayer: {
-    id: 'unclustered-point',
+    id: 'world-unclustered-point',
     type: 'circle',
     source: 'points',
     filter: ['!', ['has', 'point_count']],
