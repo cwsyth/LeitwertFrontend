@@ -7,7 +7,7 @@ import type { MapRef, MapMouseEvent } from 'react-map-gl/maplibre';
 import type { GeoJSONSource } from 'maplibre-gl';
 
 import { Country } from '@/types/dashboard';
-import { RouterFeatureCollection } from '@/types/geojson';
+import { CountryCustomProperties, CountryFeatureCollection, WorldCustomProperties, WorldFeatureCollection } from '@/types/geojson';
 import { countryMiddlepoints } from '@/data/country_middlepoints';
 import type { CountryMiddlepointFeature } from '@/data/country_middlepoints';
 
@@ -20,22 +20,12 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
     let [longitude, latitude] = [10.426171427430804, 51.08304539800482]; // default to Germany
 
     const isWorld = !selectedCountry || selectedCountry.code === 'world';
-    const geoJsonUrl = isWorld
-        ? '/router_collections_by_country_p6.geojson'
-        : '/geohash_points_p6_20000.geojson';
+    const baseUrl = 'https://dev-api.univ.leitwert.net/api/v1';
+    const geoJsonUrl = baseUrl + (isWorld
+        ? '/map?view=world'
+        : '/map?view=country&country=' + selectedCountry?.code);
 
-    const { data: mapData, isLoading } = useQuery({
-        queryKey: ['router-feature-collection', selectedCountry?.code],
-        queryFn: async () => {
-            const response = await fetch(geoJsonUrl);
-            if (!response.ok) {
-                throw new Error('Failed to fetch map data');
-            }
-            return response.json();
-        }
-    });
-
-     // Focus map on selected country
+    // Focus map on selected country
     useEffect(() => {
         if (!selectedCountry) return;
 
@@ -60,6 +50,50 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
         }
     }, [selectedCountry]);
 
+    // Fetch map data
+    const { data: mapData, isLoading } = useQuery({
+        queryKey: isWorld ? ['world-feature-collection'] : ['country-feature-collection', selectedCountry?.code],
+        queryFn: async () => {
+            const response = await fetch(geoJsonUrl);
+            if (!response.ok) {
+                throw new Error('Failed to fetch map data');
+            }
+
+            if (isWorld) {
+                const data: WorldCustomProperties[] = await response.json();
+                const mapData: WorldFeatureCollection = {
+                    type: "FeatureCollection",
+                    features: data.map((item) => ({
+                        type: "Feature",
+                        geometry: {
+                            type: "Point",
+                            coordinates: countryMiddlepoints.features.find((feature: CountryMiddlepointFeature) =>
+                                feature.properties.ISO.toLowerCase() === item.country_code.toLowerCase()
+                            )?.geometry.coordinates || [0, 0],
+                        },
+                        properties: item
+                    }))
+                };
+                return mapData;
+            } else {
+                const data = await response.json();
+                const mapData: CountryFeatureCollection = {
+                    type: "FeatureCollection",
+                    features: data[0].routers?.map((item: CountryCustomProperties) => ({
+                        type: "Feature",
+                        geometry: {
+                            type: "Point",
+                            coordinates: [item.location.lon, item.location.lat],
+                        },
+                        properties: item
+                    })) || []
+                };
+                return mapData;
+            }
+        }
+    });
+    console.log('Map Data:', mapData);
+
     const onClick = async (event: MapMouseEvent) => {
         const feature = event?.features?.[0];
         const clusterId = feature?.properties.cluster_id;
@@ -74,15 +108,6 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
             });
         }
     };
-
-    const filteredMapData: RouterFeatureCollection = selectedCountry && selectedCountry.code !== 'world' && mapData
-        ? {
-            ...mapData,
-            features: mapData?.features.filter((feature: {properties: {country_code: string}}) =>
-                feature.properties.country_code.toLowerCase() === selectedCountry.code.toLowerCase()
-            )
-        }
-        : mapData;
 
     return (
         <div className="dashboard-map w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden rounded-[var(--radius)]">
@@ -106,9 +131,9 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
                 ref={mapRef}
             >
                 <Source
-                    id="earthquakes"
+                    id="routers"
                     type="geojson"
-                    data={filteredMapData}
+                    data={mapData ? mapData : { type: "FeatureCollection", features: [] }}
                     cluster={true}
                     clusterMaxZoom={14}
                     clusterRadius={50}

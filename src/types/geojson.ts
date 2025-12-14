@@ -1,17 +1,35 @@
+import { TCountryCode } from 'countries-list';
 import type { FeatureCollection, Feature, Point } from 'geojson';
 
-type router_type = "router" | "router_collection";
 type router_status =  "online" | "degraded" | "down" | "unknown";
 
-interface CustomProperties {
-    //router_id?: string;
-    type: router_type;
+export interface CountryCustomProperties {
+    router_id: string;
+    asn: string;
     geohash: string;
-    country_code: string;
-    router_status?: router_status
-    router_count?: number;
+    location: {
+        city: string,
+        isp: string,
+        lat: number,
+        lon: number,
+        region: string
+    },
+    status: router_status
+}
+
+export interface WorldCustomProperties {
+  country_code: TCountryCode;
+  router_count_total: number;
+  router_count_status: {
+    good: number;
+    degraded: number;
+    down: number;
+    unknown: number;
+  }
 }
 
 // Create typed GeoJSON types
-export type RouterFeature = Feature<Point, CustomProperties>;
-export type RouterFeatureCollection = FeatureCollection<Point, CustomProperties>;
+export type CountryFeature = Feature<Point, CountryCustomProperties>;
+export type CountryFeatureCollection = FeatureCollection<Point, CountryCustomProperties>;
+export type WorldFeature = Feature<Point, WorldCustomProperties>;
+export type WorldFeatureCollection = FeatureCollection<Point, WorldCustomProperties>;
