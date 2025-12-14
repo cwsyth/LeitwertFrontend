@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { Map, Source, Layer } from 'react-map-gl/maplibre';
 import { clusterLayer, clusterCountLayer, unclusteredPointLayer } from './layers';
 import { useQuery } from '@tanstack/react-query';
@@ -25,7 +25,7 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
         : '/geohash_points_p6_20000.geojson';
 
     const { data: mapData, isLoading } = useQuery({
-        queryKey: ['geohash-points', selectedCountry?.code],
+        queryKey: ['router-feature-collection', selectedCountry?.code],
         queryFn: async () => {
             const response = await fetch(geoJsonUrl);
             if (!response.ok) {

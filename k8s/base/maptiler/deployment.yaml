@@ -19,9 +19,9 @@ spec:
           ports:
             - name: http
               containerPort: 8080
-          #volumeMounts:
-          #  - name: tile-data
-          #    mountPath: /data
+          volumeMounts:
+            - name: maptiler-data
+              mountPath: /data
           resources:
             requests:
               memory: "512Mi"
@@ -29,8 +29,8 @@ spec:
             limits:
               memory: "1Gi"
               cpu: "1"
-      #volumes:
-      #  - name: tile-data
-      #    hostPath:
-      #      path: /mnt/maptiler-data
-      #      type: DirectoryOrCreate
+      volumes:
+        - name: maptiler-data
+          hostPath:
+            path: /data/store/maptiler-data
+            type: Directory
