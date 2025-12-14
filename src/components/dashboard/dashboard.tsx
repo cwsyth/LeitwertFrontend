@@ -68,6 +68,7 @@ export default function Dashboard() {
                     mode={mode}
                     selectedCountry={selectedCountry}
                     setRouters={setRouters}
+                    setSelectedCountry={setSelectedCountry}
                 />
                 <DashboardFooter
                     viewVisibility={viewVisibility}

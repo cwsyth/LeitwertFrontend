@@ -30,11 +30,9 @@ export function TreeMap({
                             anomalyRanges,
                             onBackClick,
                         }: TreeMapProps) {
-    // Berechne den kleinsten Wert aus den Haupt-Daten
-    const minDataValue = data.length > 0 ? Math.min(...data.map(d => d.value)) : 0;
 
-    // "Others" bekommt einen Anteil des kleinsten Wertes
-    const othersDisplayValue = minDataValue * othersDisplaySize;
+    const minDataValue = data.length > 0 ? Math.min(...data.map(d => d.value)) : 0;
+    const othersDisplayValue = Math.max(minDataValue * othersDisplaySize, 1);
 
     const treeMapData = [
         ...data,
@@ -119,17 +117,23 @@ export function TreeMap({
                         strokeOpacity: 1,
                     }}
                 />
-                {showLabels && width > 50 && height > 30 && (
-                    <text
-                        x={x + width / 2}
-                        y={y + height / 2}
-                        textAnchor="middle"
-                        fill="#fff"
-                        fontSize={14}
-                    >
-                        {name}
-                    </text>
-                )}
+                {showLabels && width > 50 && height > 30 && (() => {
+                    const estimatedTextWidth = name.length * 8;
+                    const textFitsWidth  = estimatedTextWidth < width - 10; // 10px Padding
+
+                    return textFitsWidth  ? (
+                        <text
+                            x={x + width / 2}
+                            y={y + height / 2}
+                            textAnchor="middle"
+                            fill="#fff"
+                            fontSize={14}
+                            style={{ fontWeight: "lighter" }}
+                        >
+                            {name}
+                        </text>
+                    ) : null;
+                })()}
             </g>
         );
     };
