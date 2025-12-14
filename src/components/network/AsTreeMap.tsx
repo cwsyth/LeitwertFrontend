@@ -19,13 +19,14 @@ import {
 import { networkApi } from '@/services/networkApi';
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, Globe, Hash, Network } from "lucide-react";
+import {useTimeRangeStore} from "@/lib/stores/time-range-store";
 
 export function AsTreeMap({
                               countryCode,
                               limit = 10,
                               showLabels,
                               useGradient,
-                              sizeMetric = 'ipCount',
+                              sizeMetric = 'ip_count',
                               statusFilter = 'all',
                               onStatusFilterChange,
                               onBackClick
@@ -35,12 +36,16 @@ export function AsTreeMap({
     const [countryName, setCountryName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
+    const timeRange = useTimeRangeStore((state) => state.timeRange);
+
     const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await networkApi.getCountryAs(
                 countryCode,
                 limit,
+                timeRange,
+                sizeMetric
             );
 
             setCountryName(response.country.name);
@@ -50,27 +55,11 @@ export function AsTreeMap({
                 : response.country.asNetworks.filter(as => as.status === statusFilter);
 
             const transformedData: TreeMapDataItem[] = filteredAsNetworks.map(as => {
-                let value: number;
-                switch (sizeMetric) {
-                    case 'ipCount':
-                        value = as.ipCount;
-                        break;
-                    case 'anomalyCount':
-                        value = as.anomalyCount;
-                        break;
-                    default:
-                        value = as.ipCount;
-                }
-
-                // Log warning if anomalyCount is missing
-                if (as.anomalyCount === undefined) {
-                    console.warn(`Missing anomalyCount for AS: ${as.name} (AS${as.asNumber}), defaulting to 0`);
-                }
-
+                const metricValue = as[sizeMetric === 'ip_count' ? 'ipCount' : 'anomalyCount'];
                 return {
                     id: as.asNumber.toString(),
                     name: as.name,
-                    value: value,
+                    value: metricValue,
                     status: as.status,
                     anomalyCount: as.anomalyCount ?? 0,
                     metadata: {
@@ -80,21 +69,21 @@ export function AsTreeMap({
                 };
             });
 
-            let othersValue: number;
-            switch (sizeMetric) {
-                case 'ipCount':
-                    othersValue = response.others.totalIpCount;
-                    break;
-                case 'anomalyCount':
-                    othersValue = response.others.totalAnomalyCount;
-                    break;
-                default:
-                    othersValue = response.others.totalIpCount;
+            const allValuesZero = transformedData.every(item => item.value === 0);
+
+            if (allValuesZero) {
+                transformedData.forEach(item => {
+                    item.value = 1;
+                });
             }
+
+            const othersValue = sizeMetric === 'ip_count'
+                ? response.others.totalIpCount
+                : response.others.totalAnomalyCount;
 
             const othersData: TreeMapOthersData = {
                 name: 'Others',
-                value: othersValue,
+                value: othersValue === 0 ? 1 : othersValue,
                 count: response.others.asCount,
                 totalAnomalyCount: response.others.totalAnomalyCount,
                 items: response.others.asNetworks.map(as => ({
@@ -110,7 +99,7 @@ export function AsTreeMap({
         } finally {
             setIsLoading(false);
         }
-    }, [countryCode, limit, statusFilter, sizeMetric]);
+    }, [countryCode, limit, statusFilter, sizeMetric, timeRange]);
 
     useEffect(() => {
         loadData();
@@ -209,7 +198,11 @@ export function AsTreeMap({
                     <div className="flex items-center gap-2">
                         <Globe className="h-3.5 w-3.5 text-blue-500" />
                         <span className="text-muted-foreground">IP Count:</span>
-                        <span className="font-semibold ml-auto">{dataItem.value.toLocaleString()}</span>
+                        <span className="font-semibold ml-auto">
+                            {dataItem.metadata && 'ipCount' in dataItem.metadata
+                                ? dataItem.metadata.ipCount.toLocaleString()
+                                : 'N/A'}
+                        </span>
                     </div>
 
                     {dataItem.anomalyCount !== undefined && (

@@ -16,19 +16,22 @@ import {
 import { networkApi } from '@/services/networkApi';
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, Building2, Globe } from "lucide-react";
+import {useTimeRangeStore} from "@/lib/stores/time-range-store";
 
 export function CountriesTreeMap({
                                      limit = 50,
                                      onCountryClick,
                                      showLabels,
                                      useGradient,
-                                     sizeMetric = 'asCount',
+                                     sizeMetric = 'as_count',
                                      statusFilter = 'all',
                                      onStatusFilterChange
                                  }: CountriesTreeMapProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
     const [isLoading, setIsLoading] = useState(true);
+
+    const timeRange = useTimeRangeStore((state) => state.timeRange);
 
     const handleItemClick = (item: TreeMapDataItem) => {
         if (onCountryClick) {
@@ -39,58 +42,44 @@ export function CountriesTreeMap({
     const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await networkApi.getCountriesSummary(limit);
+            const response = await networkApi.getCountriesSummary(limit, timeRange, sizeMetric);
 
             const filteredCountries = statusFilter === 'all'
                 ? response.countries
                 : response.countries.filter(country => country.status === statusFilter);
 
             const transformedData: TreeMapDataItem[] = filteredCountries.map(country => {
-                let value: number;
-                switch (sizeMetric) {
-                    case 'asCount':
-                        value = country.asCount;
-                        break;
-                    case 'anomalyCount':
-                        value = country.anomalyCount;
-                        break;
-                    case 'ipCount':
-                        value = country.ipCount;
-                        break;
-                    default:
-                        value = country.asCount;
-                }
-
-                // Log warning if anomalyCount is missing
-                if (country.anomalyCount === undefined) {
-                    console.warn(`Missing anomalyCount for country: ${country.name} (${country.code}), defaulting to 0`);
-                }
-
+                const metricValue = country[sizeMetric === 'as_count' ? 'asCount' : sizeMetric === 'ip_count' ? 'ipCount' : 'anomalyCount'];
                 return {
                     id: country.code,
                     name: country.name,
-                    value: value,
+                    value: metricValue,
                     status: country.status,
                     anomalyCount: country.anomalyCount ?? 0,
-                    metadata: { ipCount: country.ipCount }
-                }
+                    metadata: {
+                        asCount: country.asCount,
+                        ipCount: country.ipCount
+                    }
+                };
             });
 
-            let othersValue: number;
-            switch (sizeMetric) {
-                case 'asCount':
-                    othersValue = response.others.totalAsCount;
-                    break;
-                case 'anomalyCount':
-                    othersValue = response.others.totalAnomalyCount;
-                    break;
-                default:
-                    othersValue = response.others.totalAsCount;
+            const allValuesZero = transformedData.every(item => item.value === 0);
+
+            if (allValuesZero) {
+                transformedData.forEach(item => {
+                    item.value = 1;
+                });
             }
+
+            const othersValue = sizeMetric === 'as_count'
+                ? response.others.totalAsCount
+                : sizeMetric === 'anomaly_count'
+                    ? response.others.totalAnomalyCount
+                    : response.others.totalAsCount;
 
             const othersData: TreeMapOthersData = {
                 name: 'Others',
-                value: othersValue,
+                value: othersValue === 0 ? 1 : othersValue,
                 count: response.others.countryCount,
                 totalAnomalyCount: response.others.totalAnomalyCount,
                 items: response.others.countries.map(c => ({ id: c.code, name: c.name }))
@@ -103,7 +92,7 @@ export function CountriesTreeMap({
         } finally {
             setIsLoading(false);
         }
-    }, [limit, statusFilter, sizeMetric]);
+    }, [limit, statusFilter, sizeMetric, timeRange]);
 
     useEffect(() => {
         loadData();
@@ -197,7 +186,11 @@ export function CountriesTreeMap({
                     <div className="flex items-center gap-2">
                         <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-muted-foreground">AS Count:</span>
-                        <span className="font-semibold ml-auto">{dataItem.value.toLocaleString()}</span>
+                        <span className="font-semibold ml-auto">
+                            {dataItem.metadata && 'asCount' in dataItem.metadata
+                                ? dataItem.metadata.asCount.toLocaleString()
+                                : 'N/A'}
+                        </span>
                     </div>
 
                     {dataItem.anomalyCount !== undefined && (
