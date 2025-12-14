@@ -214,19 +214,19 @@ export default function TimeRangeSelector() {
                         value="small"
                         disabled={windowConfig.disabledSizes.includes('small')}
                     >
-                        Klein
+                        Minütlich
                     </SelectItem>
                     <SelectItem
                         value="medium"
                         disabled={windowConfig.disabledSizes.includes('medium')}
                     >
-                        Mittel
+                        Stündlich
                     </SelectItem>
                     <SelectItem
                         value="large"
                         disabled={windowConfig.disabledSizes.includes('large')}
                     >
-                        Groß
+                        Täglich
                     </SelectItem>
                 </SelectContent>
             </Select>
