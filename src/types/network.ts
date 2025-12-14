@@ -63,6 +63,7 @@ export interface CountryAsResponse {
 export type NetworkStatus = 'healthy' | 'warning' | 'critical' | 'unknown';
 
 interface CountryMetadata {
+    asCount: number;
     ipCount: number;
 }
 

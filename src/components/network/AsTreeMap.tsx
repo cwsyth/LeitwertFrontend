@@ -54,47 +54,21 @@ export function AsTreeMap({
                 ? response.country.asNetworks
                 : response.country.asNetworks.filter(as => as.status === statusFilter);
 
-            const transformedData: TreeMapDataItem[] = filteredAsNetworks.map(as => {
-                let value: number;
-                switch (sizeMetric) {
-                    case 'ip_count':
-                        value = as.ipCount;
-                        break;
-                    case 'anomaly_count':
-                        value = as.anomalyCount;
-                        break;
-                    default:
-                        value = as.ipCount;
+            const transformedData: TreeMapDataItem[] = filteredAsNetworks.map(as => ({
+                id: as.asNumber.toString(),
+                name: as.name,
+                value: as[sizeMetric === 'ip_count' ? 'ipCount' : 'anomalyCount'],
+                status: as.status,
+                anomalyCount: as.anomalyCount,
+                metadata: {
+                    asNumber: as.asNumber,
+                    ipCount: as.ipCount
                 }
+            }));
 
-                if (as.anomalyCount === undefined) {
-                    console.warn(`Missing anomalyCount for AS: ${as.name} (AS${as.asNumber}), defaulting to 0`);
-                }
-
-                return {
-                    id: as.asNumber.toString(),
-                    name: as.name,
-                    value: value,
-                    status: as.status,
-                    anomalyCount: as.anomalyCount ?? 0,
-                    metadata: {
-                        asNumber: as.asNumber,
-                        ipCount: as.ipCount
-                    }
-                };
-            });
-
-            let othersValue: number;
-            switch (sizeMetric) {
-                case 'ip_count':
-                    othersValue = response.others.totalIpCount;
-                    break;
-                case 'anomaly_count':
-                    othersValue = response.others.totalAnomalyCount;
-                    break;
-                default:
-                    othersValue = response.others.totalIpCount;
-            }
+            const othersValue = sizeMetric === 'ip_count'
+                ? response.others.totalIpCount
+                : response.others.totalAnomalyCount;
 
             const othersData: TreeMapOthersData = {
                 name: 'Others',
@@ -213,7 +187,11 @@ export function AsTreeMap({
                     <div className="flex items-center gap-2">
                         <Globe className="h-3.5 w-3.5 text-blue-500" />
                         <span className="text-muted-foreground">IP Count:</span>
-                        <span className="font-semibold ml-auto">{dataItem.value.toLocaleString()}</span>
+                        <span className="font-semibold ml-auto">
+                            {dataItem.metadata && 'ipCount' in dataItem.metadata
+                                ? dataItem.metadata.ipCount.toLocaleString()
+                                : 'N/A'}
+                        </span>
                     </div>
 
                     {dataItem.anomalyCount !== undefined && (

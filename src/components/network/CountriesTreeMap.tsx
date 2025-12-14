@@ -48,47 +48,23 @@ export function CountriesTreeMap({
                 ? response.countries
                 : response.countries.filter(country => country.status === statusFilter);
 
-            const transformedData: TreeMapDataItem[] = filteredCountries.map(country => {
-                let value: number;
-                switch (sizeMetric) {
-                    case 'as_count':
-                        value = country.asCount;
-                        break;
-                    case 'anomaly_count':
-                        value = country.anomalyCount;
-                        break;
-                    case 'ip_count':
-                        value = country.ipCount;
-                        break;
-                    default:
-                        value = country.asCount;
+            const transformedData: TreeMapDataItem[] = filteredCountries.map(country => ({
+                id: country.code,
+                name: country.name,
+                value: country[sizeMetric === 'as_count' ? 'asCount' : sizeMetric === 'ip_count' ? 'ipCount' : 'anomalyCount'],
+                status: country.status,
+                anomalyCount: country.anomalyCount,
+                metadata: {
+                    asCount: country.asCount,
+                    ipCount: country.ipCount
                 }
+            }));
 
-                if (country.anomalyCount === undefined) {
-                    console.warn(`Missing anomalyCount for country: ${country.name} (${country.code}), defaulting to 0`);
-                }
-
-                return {
-                    id: country.code,
-                    name: country.name,
-                    value: value,
-                    status: country.status,
-                    anomalyCount: country.anomalyCount ?? 0,
-                    metadata: { ipCount: country.ipCount }
-                }
-            });
-
-            let othersValue: number;
-            switch (sizeMetric) {
-                case 'as_count':
-                    othersValue = response.others.totalAsCount;
-                    break;
-                case 'anomaly_count':
-                    othersValue = response.others.totalAnomalyCount;
-                    break;
-                default:
-                    othersValue = response.others.totalAsCount;
-            }
+            const othersValue = sizeMetric === 'as_count'
+                ? response.others.totalAsCount
+                : sizeMetric === 'anomaly_count'
+                    ? response.others.totalAnomalyCount
+                    : response.others.totalAsCount;
 
             const othersData: TreeMapOthersData = {
                 name: 'Others',
@@ -199,7 +175,11 @@ export function CountriesTreeMap({
                     <div className="flex items-center gap-2">
                         <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
                         <span className="text-muted-foreground">AS Count:</span>
-                        <span className="font-semibold ml-auto">{dataItem.value.toLocaleString()}</span>
+                        <span className="font-semibold ml-auto">
+                            {dataItem.metadata && 'asCount' in dataItem.metadata
+                                ? dataItem.metadata.asCount.toLocaleString()
+                                : 'N/A'}
+                        </span>
                     </div>
 
                     {dataItem.anomalyCount !== undefined && (
