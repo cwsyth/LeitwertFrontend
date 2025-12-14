@@ -59,7 +59,7 @@ export default function DashboardContentHierarchy() {
         <div className="dashboard-hierarchy container mx-auto p-6">
             {/* Customization Options */}
             <div className="mb-6 p-4 border rounded-lg bg-card">
-                <div className="flex items-center gap-6">
+                <div className="flex flex-wrap items-center gap-6">
                     {/* View Select */}
                     <div className="flex items-center gap-2">
                         <Label htmlFor="view-select" className="whitespace-nowrap">
