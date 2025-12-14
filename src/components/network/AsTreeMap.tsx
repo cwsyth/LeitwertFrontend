@@ -92,15 +92,6 @@ export function AsTreeMap({
                 }))
             };
 
-            console.log('AsTreeMap Debug:', {
-                totalAsNetworks: response.country.asNetworks.length,
-                statusFilter,
-                filteredCount: filteredAsNetworks.length,
-                transformedCount: transformedData.length,
-                sizeMetric,
-                sample: transformedData[0]
-            });
-
             setData(transformedData);
             setOthers(othersData);
         } catch (error) {
