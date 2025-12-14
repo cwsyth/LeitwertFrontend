@@ -19,6 +19,7 @@ import {
 import { networkApi } from '@/services/networkApi';
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, Globe, Hash, Network } from "lucide-react";
+import {useTimeRangeStore} from "@/lib/stores/time-range-store";
 
 export function AsTreeMap({
                               countryCode,
@@ -35,12 +36,15 @@ export function AsTreeMap({
     const [countryName, setCountryName] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
+    const timeRange = useTimeRangeStore((state) => state.timeRange);
+
     const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await networkApi.getCountryAs(
                 countryCode,
                 limit,
+                timeRange
             );
 
             setCountryName(response.country.name);
@@ -62,7 +66,6 @@ export function AsTreeMap({
                         value = as.ipCount;
                 }
 
-                // Log warning if anomalyCount is missing
                 if (as.anomalyCount === undefined) {
                     console.warn(`Missing anomalyCount for AS: ${as.name} (AS${as.asNumber}), defaulting to 0`);
                 }
@@ -110,7 +113,7 @@ export function AsTreeMap({
         } finally {
             setIsLoading(false);
         }
-    }, [countryCode, limit, statusFilter, sizeMetric]);
+    }, [countryCode, limit, statusFilter, sizeMetric, timeRange]);
 
     useEffect(() => {
         loadData();

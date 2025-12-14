@@ -14,6 +14,7 @@ export interface CountryData {
     anomalyCount: number;
     status: NetworkStatus;
     ipCount: number;
+    anomalies: string[];
 }
 
 export interface AsNetworkData {
@@ -22,6 +23,7 @@ export interface AsNetworkData {
     ipCount: number;
     status: NetworkStatus;
     anomalyCount: number;
+    anomalies: string[];
 }
 
 export interface CountriesSummaryResponse {
@@ -30,9 +32,11 @@ export interface CountriesSummaryResponse {
         countryCount: number;
         totalAsCount: number;
         totalAnomalyCount: number;
-        countries: Array<{ code: string; name: string }>;
+        totalIpCount: number;
+        countries: CountryData[];
         metadata: {
             totalCountries: number;
+            totalAsCount: number;
             lastUpdated: string;
         };
     };
@@ -48,7 +52,7 @@ export interface CountryAsResponse {
         asCount: number;
         totalIpCount: number;
         totalAnomalyCount: number;
-        asNetworks: Array<{ asNumber: number; name: string }>;
+        asNetworks: AsNetworkData[];
         metadata: {
             totalAsCount: number;
             lastUpdated: string;

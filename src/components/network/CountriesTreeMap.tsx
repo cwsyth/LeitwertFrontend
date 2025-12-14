@@ -16,6 +16,7 @@ import {
 import { networkApi } from '@/services/networkApi';
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertTriangle, Building2, Globe } from "lucide-react";
+import {useTimeRangeStore} from "@/lib/stores/time-range-store";
 
 export function CountriesTreeMap({
                                      limit = 50,
@@ -30,6 +31,8 @@ export function CountriesTreeMap({
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
     const [isLoading, setIsLoading] = useState(true);
 
+    const timeRange = useTimeRangeStore((state) => state.timeRange);
+
     const handleItemClick = (item: TreeMapDataItem) => {
         if (onCountryClick) {
             onCountryClick(item.id);
@@ -39,7 +42,7 @@ export function CountriesTreeMap({
     const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await networkApi.getCountriesSummary(limit);
+            const response = await networkApi.getCountriesSummary(limit, timeRange);
 
             const filteredCountries = statusFilter === 'all'
                 ? response.countries
@@ -61,7 +64,6 @@ export function CountriesTreeMap({
                         value = country.asCount;
                 }
 
-                // Log warning if anomalyCount is missing
                 if (country.anomalyCount === undefined) {
                     console.warn(`Missing anomalyCount for country: ${country.name} (${country.code}), defaulting to 0`);
                 }
@@ -103,7 +105,7 @@ export function CountriesTreeMap({
         } finally {
             setIsLoading(false);
         }
-    }, [limit, statusFilter, sizeMetric]);
+    }, [limit, statusFilter, sizeMetric, timeRange]);
 
     useEffect(() => {
         loadData();
