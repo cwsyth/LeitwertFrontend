@@ -16,8 +16,12 @@ interface DashboardHeaderProps {
 export default function DashboardHeader({ viewVisibility, toggleView, selectedCountry, setSelectedCountry }: DashboardHeaderProps) {
     return (
         <div className="dashboard-header w-full rounded-[var(--radius)] overflow-hidden flex gap-3 items-stretch">
-            <StatusCard title={"Autonome Systeme"} description={"(Land)"} apiEndpoint={"/v1/networks/health"} selectedCountry={selectedCountry} />
-            <StatusCard title={"Router"} description={"(Land)"} apiEndpoint={"/v1/router/health"} selectedCountry={selectedCountry} />
+            <div className="flex-3">
+                <StatusCard title={"Autonome Systeme"} description={"(Land)"} apiEndpoint={"/v1/networks/health"} selectedCountry={selectedCountry} />
+            </div>
+            <div className="flex-3">
+                <StatusCard title={"Router"} description={"(Land)"} apiEndpoint={"/v1/router/health"} selectedCountry={selectedCountry} />
+            </div>
             <DashboardHeaderFilter selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} />
             <DashboardHeaderViews viewVisibility={viewVisibility} toggleView={toggleView} />
         </div>
