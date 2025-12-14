@@ -4,13 +4,14 @@ import { useQuery } from '@tanstack/react-query';
 import { Map, Source, Layer } from 'react-map-gl/maplibre';
 import type { MapRef, MapMouseEvent } from 'react-map-gl/maplibre';
 import type { GeoJSONSource } from 'maplibre-gl';
-import { clusterLayer, clusterCountLayer, unclusteredPointLayer } from './layers';
+import { countryView, worldView } from './layers';
 import geohash from 'ngeohash';
 
 import { Country } from '@/types/dashboard';
 import { CountryCustomProperties, CountryFeatureCollection, WorldCustomProperties, WorldFeatureCollection } from '@/types/geojson';
 import { countryMiddlepoints } from '@/data/country_middlepoints';
 import type { CountryMiddlepointFeature } from '@/data/country_middlepoints';
+import { is } from 'date-fns/locale';
 
 interface DashboardContentMapProps {
     selectedCountry: Country | null;
@@ -99,7 +100,7 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
     const onClick = async (event: MapMouseEvent) => {
         const feature = event?.features?.[0];
         const clusterId = feature?.properties.cluster_id;
-        const geojsonSource = mapRef?.current?.getSource('earthquakes') as GeoJSONSource;
+        const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
         const zoom = await geojsonSource.getClusterExpansionZoom(clusterId);
 
         if (feature?.geometry && 'coordinates' in feature.geometry) {
@@ -128,21 +129,27 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
                     zoom: 4.5
                 }}
                 mapStyle="https://dev-maptiler.univ.leitwert.net/styles/dark-basic/style.json"
-                interactiveLayerIds={[clusterLayer.id!]}
+                interactiveLayerIds={isWorld ? [] : [countryView.clusterLayer.id!]}
                 onClick={onClick}
                 ref={mapRef}
+                attributionControl={false}
             >
                 <Source
-                    id="routers"
+                    id="points"
                     type="geojson"
                     data={mapData ? mapData : { type: "FeatureCollection", features: [] }}
-                    cluster={true}
+                    cluster={!isWorld}
                     clusterMaxZoom={14}
                     clusterRadius={50}
                 >
-                <Layer {...clusterLayer} />
-                <Layer {...clusterCountLayer} />
-                <Layer {...unclusteredPointLayer} />
+                    {isWorld ? [
+                        <Layer key="world-point" {...worldView.unclusteredPointLayer} />,
+                        <Layer key="world-count" {...worldView.clusterCountLayer} />
+                    ] : [
+                        <Layer key="cluster" {...countryView.clusterLayer} />,
+                        <Layer key="cluster-count" {...countryView.clusterCountLayer} />,
+                        <Layer key="unclustered" {...countryView.unclusteredPointLayer} />
+                    ]}
                 </Source>
             </Map>
         </div>
