@@ -126,6 +126,7 @@ export function TreeMap({
                         textAnchor="middle"
                         fill="#fff"
                         fontSize={14}
+                        style={{ fontWeight: "lighter" }}
                     >
                         {name}
                     </text>
