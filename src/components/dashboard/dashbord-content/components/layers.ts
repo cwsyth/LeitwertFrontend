@@ -2,7 +2,7 @@ import type {LayerProps} from 'react-map-gl/maplibre';
 
 export const countryView = {
   clusterLayer: {
-    id: 'clusters',
+    id: 'country-clusters',
     type: 'circle',
     source: 'points',
     filter: ['has', 'point_count'],
@@ -13,7 +13,7 @@ export const countryView = {
   } as LayerProps,
 
   clusterCountLayer: {
-    id: 'cluster-count',
+    id: 'country-cluster-count',
     type: 'symbol',
     source: 'points',
     filter: ['has', 'point_count'],

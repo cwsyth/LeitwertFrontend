@@ -143,12 +143,12 @@ export default function DashboardContentMap({ selectedCountry }: DashboardConten
                     clusterRadius={50}
                 >
                     {isWorld ? [
-                        <Layer key="world-point" {...worldView.unclusteredPointLayer} />,
-                        <Layer key="world-count" {...worldView.clusterCountLayer} />
+                        <Layer key="world-unclustered-point" {...worldView.unclusteredPointLayer} />,
+                        <Layer key="world-cluster-count" {...worldView.clusterCountLayer} />
                     ] : [
-                        <Layer key="cluster" {...countryView.clusterLayer} />,
-                        <Layer key="cluster-count" {...countryView.clusterCountLayer} />,
-                        <Layer key="unclustered" {...countryView.unclusteredPointLayer} />
+                        <Layer key="country-clusters" {...countryView.clusterLayer} />,
+                        <Layer key="country-cluster-count" {...countryView.clusterCountLayer} />,
+                        <Layer key="country-unclustered-point" {...countryView.unclusteredPointLayer} />
                     ]}
                 </Source>
             </Map>
