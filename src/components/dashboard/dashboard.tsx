@@ -62,6 +62,7 @@ export default function Dashboard() {
                 <DashboardContent
                     mode={mode}
                     selectedCountry={selectedCountry}
+                    setSelectedCountry={setSelectedCountry}
                 />
                 {viewVisibility.bgpAnnouncements && <BgpAnnounceChart />}
                 <DashboardFooter viewVisibility={viewVisibility} />
