@@ -1,11 +1,11 @@
 'use client';
 
-import { CountriesTreeMap } from "@/components/network/CountriesTreeMap";
-import { AsTreeMap } from "@/components/network/AsTreeMap";
-import React, { useState } from "react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import {CountriesTreeMap} from "@/components/network/CountriesTreeMap";
+import {AsTreeMap} from "@/components/network/AsTreeMap";
+import React, {useState, useEffect} from "react";
+import {Switch} from "@/components/ui/switch";
+import {Label} from "@/components/ui/label";
+import {Input} from "@/components/ui/input";
 import {
     AS_SIZE_METRIC_LABELS,
     AsSizeMetric,
@@ -19,66 +19,58 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
+import {Country} from "@/types/dashboard";
+import { countries as countriesData } from "countries-list";
 
-export default function DashboardContentHierarchy() {
-    const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-    const [showCountryView, setShowCountryView] = useState(false);
+interface DashboardContentHierarchyProps {
+    selectedCountry: Country | null;
+    setSelectedCountry: React.Dispatch<React.SetStateAction<Country | null>>;
+}
+
+export default function DashboardContentHierarchy({ selectedCountry, setSelectedCountry }: DashboardContentHierarchyProps) {
     const [limit, setLimit] = useState(50);
+    const [inputLimit, setInputLimit] = useState("50");
     const [showLabels, setShowLabels] = useState(true);
     const [useGradient, setUseGradient] = useState(true);
-    const [countrySizeMetric, setCountrySizeMetric] = useState<CountrySizeMetric>('asCount');
-    const [asSizeMetric, setAsSizeMetric] = useState<AsSizeMetric>('ipCount');
+    const [countrySizeMetric, setCountrySizeMetric] = useState<CountrySizeMetric>('as_count');
+    const [asSizeMetric, setAsSizeMetric] = useState<AsSizeMetric>('ip_count');
     const [statusFilter, setStatusFilter] = useState<NetworkStatus | 'all'>('all');
 
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const value = parseInt(inputLimit, 10);
+            if (!isNaN(value) && value > 0) {
+                setLimit(value);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [inputLimit]);
+
     const handleCountryClick = (countryCode: string) => {
-        setSelectedCountry(countryCode);
-        setShowCountryView(true);
+        const upperCode = countryCode.toUpperCase() as keyof typeof countriesData;
+        const countryName = countriesData[upperCode]?.name || countryCode;
+        setSelectedCountry({
+            code: countryCode.toLowerCase(),
+            name: countryName
+        });
     };
 
     const handleBackToWorld = () => {
-        setShowCountryView(false);
+        setSelectedCountry({ code: 'world', name: 'World' });
     };
 
     const handleLimitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = parseInt(e.target.value);
-        if (!isNaN(value) && value > 0) {
-            setLimit(value);
-        }
+        setInputLimit(e.target.value);
     };
+
+    const isWorldView = !selectedCountry || selectedCountry.code === 'world';
 
     return (
         <div className="dashboard-hierarchy container mx-auto p-6">
             {/* Customization Options */}
             <div className="mb-6 p-4 border rounded-lg bg-card">
-                <div className="flex items-center gap-6">
-                    {/* View Select */}
-                    <div className="flex items-center gap-2">
-                        <Label htmlFor="view-select" className="whitespace-nowrap">
-                            Ansicht
-                        </Label>
-                        <Select
-                            value={showCountryView ? "country" : "world"}
-                            onValueChange={(value) => {
-                                if (value === "world") {
-                                    setShowCountryView(false);
-                                } else if (selectedCountry) {
-                                    setShowCountryView(true);
-                                }
-                            }}
-                            disabled={!selectedCountry && !showCountryView}
-                        >
-                            <SelectTrigger id="view-select" className="w-[140px]">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="world">World View</SelectItem>
-                                <SelectItem value="country" disabled={!selectedCountry}>
-                                    Country View
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
+                <div className="flex flex-wrap items-center gap-6">
                     {/* Limit Input */}
                     <div className="flex items-center gap-2">
                         <Label htmlFor="limit-input" className="whitespace-nowrap">
@@ -88,7 +80,7 @@ export default function DashboardContentHierarchy() {
                             id="limit-input"
                             type="number"
                             min="1"
-                            value={limit}
+                            value={inputLimit}
                             onChange={handleLimitChange}
                             className="w-18"
                         />
@@ -105,6 +97,7 @@ export default function DashboardContentHierarchy() {
                             onCheckedChange={setShowLabels}
                         />
                     </div>
+
                     {/* Gradient Toggle */}
                     <div className="flex items-center gap-2">
                         <Label htmlFor="use-gradient" className="whitespace-nowrap">
@@ -116,18 +109,19 @@ export default function DashboardContentHierarchy() {
                             onCheckedChange={setUseGradient}
                         />
                     </div>
+
                     {/* Size Metric Select */}
                     <div className="flex items-center gap-2">
                         <Label htmlFor="size-metric" className="whitespace-nowrap">
                             Sortierung
                         </Label>
-                        {!showCountryView ? (
+                        {isWorldView ? (
                             <Select
                                 value={countrySizeMetric}
                                 onValueChange={(value) => setCountrySizeMetric(value as CountrySizeMetric)}
                             >
                                 <SelectTrigger id="size-metric" className="w-[140px]">
-                                    <SelectValue />
+                                    <SelectValue/>
                                 </SelectTrigger>
                                 <SelectContent>
                                     {Object.entries(COUNTRY_SIZE_METRIC_LABELS).map(([value, label]) => (
@@ -143,7 +137,7 @@ export default function DashboardContentHierarchy() {
                                 onValueChange={(value) => setAsSizeMetric(value as AsSizeMetric)}
                             >
                                 <SelectTrigger id="size-metric" className="w-[140px]">
-                                    <SelectValue />
+                                    <SelectValue/>
                                 </SelectTrigger>
                                 <SelectContent>
                                     {Object.entries(AS_SIZE_METRIC_LABELS).map(([value, label]) => (
@@ -166,7 +160,7 @@ export default function DashboardContentHierarchy() {
                             onValueChange={(value) => setStatusFilter(value as NetworkStatus | 'all')}
                         >
                             <SelectTrigger id="status-filter" className="w-[140px]">
-                                <SelectValue />
+                                <SelectValue/>
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">Alle</SelectItem>
@@ -180,7 +174,7 @@ export default function DashboardContentHierarchy() {
             </div>
 
             {/* TreeMap Content */}
-            {!showCountryView ? (
+            {isWorldView ? (
                 <CountriesTreeMap
                     limit={limit}
                     showLabels={showLabels}
@@ -191,18 +185,16 @@ export default function DashboardContentHierarchy() {
                     onCountryClick={handleCountryClick}
                 />
             ) : (
-                selectedCountry && (
-                    <AsTreeMap
-                        countryCode={selectedCountry}
-                        limit={limit}
-                        showLabels={showLabels}
-                        useGradient={useGradient}
-                        sizeMetric={asSizeMetric}
-                        statusFilter={statusFilter}
-                        onStatusFilterChange={setStatusFilter}
-                        onBackClick={handleBackToWorld}
-                    />
-                )
+                <AsTreeMap
+                    countryCode={selectedCountry.code.toUpperCase()}
+                    limit={limit}
+                    showLabels={showLabels}
+                    useGradient={useGradient}
+                    sizeMetric={asSizeMetric}
+                    statusFilter={statusFilter}
+                    onStatusFilterChange={setStatusFilter}
+                    onBackClick={handleBackToWorld}
+                />
             )}
         </div>
     );

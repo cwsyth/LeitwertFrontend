@@ -9,8 +9,20 @@ import { CountriesSummaryResponse, CountryAsResponse } from '@/types/network';
 import {API_BASE_URL} from "@/lib/config";
 
 export const networkApi = {
-    async getCountriesSummary(limit: number = 50): Promise<CountriesSummaryResponse> {
-        const params = new URLSearchParams({ limit: limit.toString() });
+    async getCountriesSummary(
+        limit: number = 50,
+        timeRange?: { start: Date; end: Date },
+        sizeMetric: string = 'as_count'
+    ): Promise<CountriesSummaryResponse> {
+        const params = new URLSearchParams({
+            limit: limit.toString(),
+            sort: sizeMetric
+        });
+
+        if (timeRange) {
+            params.append('from', timeRange.start.toISOString());
+            params.append('to', timeRange.end.toISOString());
+        }
 
         try {
             const response = await fetch(`${API_BASE_URL}/v1/network/countries/summary?${params}`);
@@ -27,8 +39,21 @@ export const networkApi = {
         }
     },
 
-    async getCountryAs(countryCode: string, limit: number = 50): Promise<CountryAsResponse> {
-        const params = new URLSearchParams({ limit: limit.toString() });
+    async getCountryAs(
+        countryCode: string,
+        limit: number = 50,
+        timeRange?: { start: Date; end: Date },
+        sizeMetric: string = 'ip_count'
+    ): Promise<CountryAsResponse> {
+        const params = new URLSearchParams({
+            limit: limit.toString(),
+            sort: sizeMetric
+        });
+
+        if (timeRange) {
+            params.append('from', timeRange.start.toISOString());
+            params.append('to', timeRange.end.toISOString());
+        }
 
         try {
             const response = await fetch(`${API_BASE_URL}/v1/network/countries/summary/${countryCode}?${params}`);
