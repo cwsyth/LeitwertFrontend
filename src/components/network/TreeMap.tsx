@@ -119,18 +119,23 @@ export function TreeMap({
                         strokeOpacity: 1,
                     }}
                 />
-                {showLabels && width > 50 && height > 30 && (
-                    <text
-                        x={x + width / 2}
-                        y={y + height / 2}
-                        textAnchor="middle"
-                        fill="#fff"
-                        fontSize={14}
-                        style={{ fontWeight: "lighter" }}
-                    >
-                        {name}
-                    </text>
-                )}
+                {showLabels && width > 50 && height > 30 && (() => {
+                    const estimatedTextWidth = name.length * 8;
+                    const textFitsWidth  = estimatedTextWidth < width - 10; // 10px Padding
+
+                    return textFitsWidth  ? (
+                        <text
+                            x={x + width / 2}
+                            y={y + height / 2}
+                            textAnchor="middle"
+                            fill="#fff"
+                            fontSize={14}
+                            style={{ fontWeight: "lighter" }}
+                        >
+                            {name}
+                        </text>
+                    ) : null;
+                })()}
             </g>
         );
     };
