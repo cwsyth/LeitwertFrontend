@@ -23,8 +23,8 @@ import {Country} from "@/types/dashboard";
 import { countries as countriesData } from "countries-list";
 
 interface DashboardContentHierarchyProps {
-    selectedCountry: Country | null;
-    setSelectedCountry: React.Dispatch<React.SetStateAction<Country | null>>;
+    selectedCountry: Country;
+    setSelectedCountry: React.Dispatch<React.SetStateAction<Country>>;
 }
 
 export default function DashboardContentHierarchy({ selectedCountry, setSelectedCountry }: DashboardContentHierarchyProps) {
