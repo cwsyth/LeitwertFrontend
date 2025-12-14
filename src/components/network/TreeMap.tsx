@@ -34,15 +34,6 @@ export function TreeMap({
     const minDataValue = data.length > 0 ? Math.min(...data.map(d => d.value)) : 0;
     const othersDisplayValue = Math.max(minDataValue * othersDisplaySize, 1);
 
-    console.log('TreeMap Debug:', {
-        minDataValue,
-        othersDisplaySize,
-        othersDisplayValue,
-        hasOthers: !!others,
-        othersActualValue: others?.value,
-        dataLength: data.length
-    });
-
     const treeMapData = [
         ...data,
         ...(others ? [{
