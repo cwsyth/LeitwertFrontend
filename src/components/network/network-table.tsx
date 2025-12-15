@@ -378,8 +378,8 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
                     )}
                 </div>
                 <div className='flex items-center justify-between'>
-                    <p className='text-muted-foreground text-sm'>
-                        Einträge {((currentPage - 1) * itemsPerPage) + 1} bis {Math.min(currentPage * itemsPerPage, totalEntries)} von {totalEntries}
+                    <p className='text-muted-foreground whitespace-nowrap text-sm'>
+                        Einträge {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalEntries)} ({totalEntries})
                     </p>
 
                     <Pagination>
@@ -417,7 +417,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
                     </Pagination>
 
                     <div className='flex items-center gap-2'>
-                        <span className='text-muted-foreground text-sm'>Anzahl pro Seite:</span>
+                        <span className='text-muted-foreground whitespace-nowrap text-sm'>Anzahl pro Seite:</span>
                         <Select
                             value={String(itemsPerPage)}
                             onValueChange={(value) => {
@@ -425,7 +425,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
                                 setCurrentPage(1)
                             }}
                         >
-                            <SelectTrigger className='h-8 w-[70px]'>
+                            <SelectTrigger className='h-8 w-[80px]'>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
