@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Map, Source, Layer } from 'react-map-gl/maplibre';
 import type { MapRef, MapMouseEvent } from 'react-map-gl/maplibre';
 import type { GeoJSONSource } from 'maplibre-gl';
@@ -8,9 +8,9 @@ import geohash from 'ngeohash';
 import { countryView, worldView } from './layers';
 import { countryMiddlepoints } from '@/data/country_middlepoints';
 import type { Country, Router } from '@/types/dashboard';
-import type { CountryCustomProperties, CountryFeature, CountryFeatureCollection, WorldCustomProperties, WorldFeatureCollection } from '@/types/geojson';
+import type { CountryCustomProperties, CountryFeatureCollection, WorldCustomProperties, WorldFeatureCollection } from '@/types/geojson';
 import type { CountryMiddlepointFeature } from '@/data/country_middlepoints';
-import type { FeatureCollection, Feature } from 'geojson';
+import type { Feature } from 'geojson';
 
 interface DashboardContentMapProps {
     selectedCountry: Country;
@@ -19,6 +19,7 @@ interface DashboardContentMapProps {
 
 export default function DashboardContentMap({ selectedCountry, setRouters }: DashboardContentMapProps) {
     const mapRef = useRef<MapRef>(null);
+    const queryClient = useQueryClient();
     let [longitude, latitude] = [10.426171427430804, 51.08304539800482]; // default to Germany
 
     const isWorld = !selectedCountry || selectedCountry.code === 'world';
@@ -55,7 +56,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
 
     // Fetch map data
     const { data: mapData, isLoading } = useQuery({
-        queryKey: isWorld ? ['world-feature-collection'] : ['country-feature-collection', selectedCountry?.code],
+        queryKey: isWorld ? ['world-feature-collection'] : ['country-feature-collection', selectedCountry.code],
         queryFn: async () => {
             const response = await fetch(geoJsonUrl);
             if (!response.ok) {
@@ -101,32 +102,51 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
     console.log('Map Data:', mapData);
 
     const onClick = async (event: MapMouseEvent) => {
-        if (!isWorld) {
-            const feature = event?.features?.[0];
-            if (!feature) return;
+        const feature = event?.features?.[0];
+        if (!feature) return;
 
-            const clusterId = feature?.properties?.cluster_id;
-            const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
+        const clusterId = feature?.properties?.cluster_id;
+        const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
 
-            if (clusterId) {
-                // Handle cluster click
-                const zoom = await geojsonSource.getClusterExpansionZoom(clusterId);
+        if (clusterId) {
+            // expand cluster
+            const zoom = await geojsonSource.getClusterExpansionZoom(clusterId);
 
-                if (feature?.geometry && 'coordinates' in feature.geometry) {
-                    mapRef?.current?.easeTo({
-                        center: feature.geometry.coordinates as [number, number],
-                        zoom,
-                        duration: 500
-                    });
-                }
+            if (feature?.geometry && 'coordinates' in feature.geometry) {
+                mapRef?.current?.easeTo({
+                    center: feature.geometry.coordinates as [number, number],
+                    zoom,
+                    duration: 500
+                });
+            }
 
-                // Get all points in the cluster & filter out router properties
-                const leaves: Feature[] = await geojsonSource.getClusterLeaves(clusterId, Infinity, 0);
-                const routers = leaves.map((leaf: Feature) => leaf.properties as Router);
+            // get all points in the cluster & filter out router properties
+            const leaves: Feature[] = await geojsonSource.getClusterLeaves(clusterId, Infinity, 0);
+            const routers = leaves.map((leaf: Feature) => leaf.properties as Router);
+            console.log(routers);
+            setRouters(routers);
+        } else {
+            // handle single point click
+            if (isWorld) {
+                // fetch country feature collection using tanstack query cache
+                const countryCode = feature.properties?.country_code;
+                if (!countryCode) return;
+
+                const data = await queryClient.fetchQuery({
+                    queryKey: ['country-feature-collection', countryCode],
+                    queryFn: async () => {
+                        const response = await fetch(`${baseUrl}/map?view=country&country=${countryCode}`);
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch country data');
+                        }
+                        return response.json();
+                    }
+                });
+
+                const routers = data[0]?.routers || [];
                 console.log(routers);
                 setRouters(routers);
             } else {
-                // Handle single point click
                 const router = feature.properties as Router;
                 setRouters([router]);
             }
@@ -150,10 +170,11 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                     zoom: 4.5
                 }}
                 mapStyle="https://dev-maptiler.univ.leitwert.net/styles/dark-basic/style.json"
-                interactiveLayerIds={isWorld ? [] : [countryView.clusterLayer.id!]}
+                interactiveLayerIds={isWorld ? [worldView.unclusteredPointLayer.id!] : [countryView.clusterLayer.id!]}
                 onClick={onClick}
                 ref={mapRef}
                 attributionControl={false}
+                maxZoom={14}
             >
                 <Source
                     key={isWorld ? 'world-source' : 'country-source'}
