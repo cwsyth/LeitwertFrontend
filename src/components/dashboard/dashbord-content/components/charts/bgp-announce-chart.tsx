@@ -1,7 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect, useMemo, useDeferredValue, useCallback } from "react";
+import {
+    useState,
+    useEffect,
+    useMemo,
+    useDeferredValue,
+    useCallback,
+} from "react";
 import { BoxPlotChart, BoxPlotData } from "./boxplot-chart";
 import { TotalIncrementsChart } from "./total-increments-chart";
 import { Play, Pause, SkipBack, SkipForward, ZoomOut } from "lucide-react";
@@ -210,7 +216,7 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
 
     // Pre-process data to include timestampMs for faster filtering
     const processedData = useMemo(() => {
-        if (!data) return [];
+        if (!data || !Array.isArray(data)) return [];
         return data.map((d) => ({
             ...d,
             timestampMs: new Date(d.timestamp).getTime(),
@@ -232,13 +238,11 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
 
     // Calculate view range dates (Immediate for UI)
     const viewStart = useMemo(
-        () =>
-            new Date(from.getTime() + (totalDuration * viewRange[0]) / 100),
+        () => new Date(from.getTime() + (totalDuration * viewRange[0]) / 100),
         [from, totalDuration, viewRange]
     );
     const viewEnd = useMemo(
-        () =>
-            new Date(from.getTime() + (totalDuration * viewRange[1]) / 100),
+        () => new Date(from.getTime() + (totalDuration * viewRange[1]) / 100),
         [from, totalDuration, viewRange]
     );
     const viewDuration = viewEnd.getTime() - viewStart.getTime();
@@ -343,7 +347,10 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
         <Card className="w-full">
             <CardHeader className="space-y-4 pb-4">
                 <div className="flex flex-col space-y-1.5">
-                    <CardTitle>BGP Announcements (Boxplot) for <span className="text-blue-500">AS-{router}</span></CardTitle>
+                    <CardTitle>
+                        BGP Announcements (Boxplot) for{" "}
+                        <span className="text-blue-500">AS-{router}</span>
+                    </CardTitle>
                     <CardDescription>
                         Verteilung der BGP Announcements für{" "}
                         {mode === "as" ? "AS" : "Country Code"} {identifier}
@@ -441,7 +448,8 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                             Fehler beim Laden der Daten.
                         </div>
                     ) : !data ||
-                        (data.length === 0 && !isLoading && !isFetching) ? (
+                      !Array.isArray(data) ||
+                      (data.length === 0 && !isLoading && !isFetching) ? (
                         <div className="h-[400px] flex items-center justify-center text-muted-foreground">
                             Keine Daten vorhanden.
                         </div>
@@ -460,8 +468,9 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                                     <div
                                         className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
                                         style={{
-                                            left: `calc(50px + (100% - 50px - 20px) * ${currentTimePercent / 100
-                                                })`,
+                                            left: `calc(50px + (100% - 50px - 20px) * ${
+                                                currentTimePercent / 100
+                                            })`,
                                         }}
                                     >
                                         {(isInteracting || isPlaying) &&
@@ -471,22 +480,22 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                                                     style={{
                                                         left:
                                                             currentTimePercent >
-                                                                50
+                                                            50
                                                                 ? "auto"
                                                                 : "100%",
                                                         right:
                                                             currentTimePercent >
-                                                                50
+                                                            50
                                                                 ? "100%"
                                                                 : "auto",
                                                         marginLeft:
                                                             currentTimePercent >
-                                                                50
+                                                            50
                                                                 ? 0
                                                                 : "8px",
                                                         marginRight:
                                                             currentTimePercent >
-                                                                50
+                                                            50
                                                                 ? "8px"
                                                                 : 0,
                                                     }}
@@ -515,8 +524,9 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                                     <div
                                         className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
                                         style={{
-                                            left: `calc(50px + (100% - 50px - 20px) * ${currentTimePercent / 100
-                                                })`,
+                                            left: `calc(50px + (100% - 50px - 20px) * ${
+                                                currentTimePercent / 100
+                                            })`,
                                         }}
                                     >
                                         {(isInteracting || isPlaying) &&
@@ -526,22 +536,22 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                                                     style={{
                                                         left:
                                                             currentTimePercent >
-                                                                50
+                                                            50
                                                                 ? "auto"
                                                                 : "100%",
                                                         right:
                                                             currentTimePercent >
-                                                                50
+                                                            50
                                                                 ? "100%"
                                                                 : "auto",
                                                         marginLeft:
                                                             currentTimePercent >
-                                                                50
+                                                            50
                                                                 ? 0
                                                                 : "8px",
                                                         marginRight:
                                                             currentTimePercent >
-                                                                50
+                                                            50
                                                                 ? "8px"
                                                                 : 0,
                                                     }}
