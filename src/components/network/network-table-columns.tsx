@@ -8,12 +8,13 @@
 import type { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import type { NetworkDetail, NetworkStatus, AllocationStatus } from '@/types/network'
+import {getStatusColor} from "@/lib/statusColors";
 
-const statusConfig: Record<NetworkStatus, { variant: 'default' | 'destructive' | 'outline' | 'secondary'; label: string }> = {
-    critical: { variant: 'destructive', label: 'Critical' },
-    warning: { variant: 'outline', label: 'Warning' },
-    healthy: { variant: 'default', label: 'Healthy' },
-    unknown: { variant: 'secondary', label: 'Unknown' }
+const statusConfig: Record<NetworkStatus, { label: string }> = {
+    critical: { label: 'Critical' },
+    warning: { label: 'Warning' },
+    healthy: { label: 'Healthy' },
+    unknown: { label: 'Unknown' }
 }
 
 const allocationStatusConfig: Record<AllocationStatus, { variant: 'default' | 'destructive' | 'outline' | 'secondary'; label: string }> = {
@@ -56,7 +57,20 @@ export const columns: ColumnDef<NetworkDetail>[] = [
         cell: ({ row }) => {
             const status = row.getValue('status') as NetworkStatus
             const config = statusConfig[status] || statusConfig.unknown
-            return <Badge variant={config.variant}>{config.label}</Badge>
+            const color = getStatusColor(status)
+
+            return (
+                <Badge
+                    variant='outline'
+                    style={{
+                        borderColor: color,
+                        color: color,
+                        backgroundColor: `${color}10`
+                    }}
+                >
+                    {config.label}
+                </Badge>
+            )
         }
     },
     {
