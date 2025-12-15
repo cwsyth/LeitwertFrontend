@@ -78,7 +78,6 @@ export default function Dashboard() {
                     setSelectedRouter={setSelectedRouter}
                 />
                 {viewVisibility.bgpAnnouncements && <BgpAnnounceChart router={selectedRouter?.asn} />}
-                <NetworkTable selectedCountry={selectedCountry.code} />
             </div>
         </div>
     );

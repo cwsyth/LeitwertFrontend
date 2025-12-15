@@ -354,7 +354,8 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
     }
 
     return (
-        <div className='w-full space-y-4'>
+        <div className='h-full rounded-lg border bg-card p-6 shadow-sm'>
+            <div className='w-full space-y-4'>
             <div className='rounded-md border bg-white'>
                 <DndContext
                     id={dndContextId}
@@ -457,6 +458,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
                     </Select>
                 </div>
             </div>
+        </div>
         </div>
     )
 }
