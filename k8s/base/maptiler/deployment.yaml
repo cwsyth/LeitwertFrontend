@@ -25,6 +25,11 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+          env:
+            - name: PUBLIC_URL
+              value: "https://dev-maptiler.univ.leitwert.net"
+            - name: HOST
+              value: "0.0.0.0"
           volumeMounts:
             - name: maptiler-data
               mountPath: /data
