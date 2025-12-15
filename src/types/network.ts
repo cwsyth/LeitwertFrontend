@@ -147,3 +147,13 @@ export const AS_SIZE_METRIC_LABELS: Record<AsSizeMetric, string> = {
     ip_count: 'IP Count',
     anomaly_count: 'Anomalien'
 };
+
+export interface NetworkDetailsResponse {
+    details: NetworkDetail[]
+    meta: {
+        total_entries: number
+        page: number
+        limit: number
+        has_next: boolean
+    }
+}
