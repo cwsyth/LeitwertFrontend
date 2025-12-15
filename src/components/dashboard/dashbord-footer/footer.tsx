@@ -19,7 +19,9 @@ export default function DashboardFooter({ viewVisibility, selectedCountry, route
                     )}
                 </div>
             )}
-            <NetworkTable selectedCountry={selectedCountry} />
+            {selectedCountry.code !== 'world' && (
+                <NetworkTable selectedCountry={selectedCountry} />
+            )}
         </div>
     );
 }
