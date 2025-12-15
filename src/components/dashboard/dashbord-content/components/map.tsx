@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Map, Source, Layer } from 'react-map-gl/maplibre';
 import type { MapRef, MapMouseEvent } from 'react-map-gl/maplibre';
@@ -20,6 +20,7 @@ interface DashboardContentMapProps {
 export default function DashboardContentMap({ selectedCountry, setRouters }: DashboardContentMapProps) {
     const mapRef = useRef<MapRef>(null);
     const queryClient = useQueryClient();
+    const [isClickLoading, setIsClickLoading] = useState(false);
     let [longitude, latitude] = [10.426171427430804, 51.08304539800482]; // default to Germany
 
     const isWorld = !selectedCountry || selectedCountry.code === 'world';
@@ -102,12 +103,13 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
     console.log('Map Data:', mapData);
 
     const onClick = async (event: MapMouseEvent) => {
-
         const feature = event?.features?.[0];
         if (!feature) return;
 
-        const clusterId = feature?.properties?.cluster_id;
-        const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
+        setIsClickLoading(true);
+        try {
+            const clusterId = feature?.properties?.cluster_id;
+            const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
 
         if (clusterId) {
             // expand cluster
@@ -154,11 +156,14 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
             console.log(routers);
             setRouters(routers);
         }
+        } finally {
+            setIsClickLoading(false);
+        }
     };
 
     return (
         <div className="dashboard-map w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden rounded-[var(--radius)]">
-            {isLoading && (
+            {(isLoading || isClickLoading) && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
                     <div className="flex flex-col items-center gap-3">
                         <div className="w-12 h-12 border-4 border-slate-600 border-t-slate-300 rounded-full animate-spin" />
