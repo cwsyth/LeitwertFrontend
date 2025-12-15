@@ -21,7 +21,7 @@ export interface GetNetworkDetailsParams {
 
 export const networkApi = {
     async getCountriesSummary(
-        limit: number = 50,
+        limit: number = 20,
         timeRange?: { start: Date; end: Date },
         sizeMetric: string = 'as_count'
     ): Promise<CountriesSummaryResponse> {
