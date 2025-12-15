@@ -54,7 +54,7 @@ export default function DashboardHeaderFilter({ selectedCountry, setSelectedCoun
                                     variant="outline"
                                     role="combobox"
                                     aria-expanded={open}
-                                    className="w-68 justify-between"
+                                    className="w-full justify-between"
                                 >
                                     <div className="flex items-center gap-2">
                                         {selectedCountry && (

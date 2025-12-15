@@ -133,7 +133,7 @@ export function StatusCard({ title, description, apiEndpoint, className, selecte
     const currentData = getCurrentStatusData();
 
     return (
-        <Card className={`${className} min-w-[240px]`}>
+        <Card className={`${className} flex-1`}>
             <CardHeader>
                 <CardTitle>
                     {title}

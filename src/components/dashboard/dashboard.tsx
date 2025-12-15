@@ -17,6 +17,7 @@ import {Skeleton} from "@/components/ui/skeleton";
 
 export default function Dashboard() {
     const [mode, setMode] = useState<DashboardContentMode>("street");
+
     const [viewVisibility, setViewVisibility] =
         useState<DashboardViewVisibility>({
             timeline: true,
