@@ -28,7 +28,7 @@ export default function DashboardHeaderViews({
     toggleView,
 }: DashboardHeaderResultsProps) {
     return (
-        <Card className="flex-2">
+        <Card className="flex-1">
             <CardHeader>
                 <CardTitle>Ansichten</CardTitle>
                 <CardDescription>

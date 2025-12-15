@@ -41,7 +41,7 @@ export default function DashboardHeaderFilter({ selectedCountry, setSelectedCoun
         : countries;
 
     return (
-        <Card className="flex-2">
+        <Card className="flex-1">
             <CardHeader>
                 <CardTitle>
                     Filter
