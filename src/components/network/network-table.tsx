@@ -54,6 +54,12 @@ import {
     PaginationNext,
     PaginationPrevious
 } from "@/components/ui/pagination";
+import {
+    Select, SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from "@/components/ui/select";
 
 interface NetworkTableProps {
     selectedCountry: string
@@ -159,7 +165,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
     const [totalEntries, setTotalEntries] = useState(0)
-    const itemsPerPage = 10
+    const [itemsPerPage, setItemsPerPage] = useState(10)
 
     const dndContextId = useId()
 
@@ -262,7 +268,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
         }
 
         fetchData()
-    }, [selectedCountry, currentPage])
+    }, [selectedCountry, currentPage, itemsPerPage])
 
     if (!selectedCountry || selectedCountry === 'world') {
         return (
@@ -393,6 +399,27 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
                         </PaginationItem>
                     </PaginationContent>
                 </Pagination>
+
+                <div className='flex items-center gap-2'>
+                    <span className='text-muted-foreground text-sm'>Anzahl pro Seite:</span>
+                    <Select
+                        value={String(itemsPerPage)}
+                        onValueChange={(value) => {
+                            setItemsPerPage(Number(value))
+                            setCurrentPage(1)
+                        }}
+                    >
+                        <SelectTrigger className='h-8 w-[70px]'>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value='10'>10</SelectItem>
+                            <SelectItem value='25'>25</SelectItem>
+                            <SelectItem value='50'>50</SelectItem>
+                            <SelectItem value='100'>100</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
         </div>
     )
