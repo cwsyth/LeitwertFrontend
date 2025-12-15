@@ -46,6 +46,14 @@ import { Button } from '@/components/ui/button'
 import { columns } from './network-table-columns'
 import type { NetworkDetail } from '@/types/network'
 import {networkApi} from "@/services/networkApi";
+import {
+    Pagination,
+    PaginationContent, PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious
+} from "@/components/ui/pagination";
 
 interface NetworkTableProps {
     selectedCountry: string
@@ -148,6 +156,11 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnOrder, setColumnOrder] = useState<string[]>(columns.map(column => column.id as string))
 
+    const [currentPage, setCurrentPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+    const [totalEntries, setTotalEntries] = useState(0)
+    const itemsPerPage = 10
+
     const dndContextId = useId()
 
     const table = useReactTable({
@@ -170,6 +183,41 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
         useSensor(KeyboardSensor, {})
     )
 
+    const getPageNumbers = () => {
+        const pages: (number | 'ellipsis')[] = []
+        const maxVisible = 5
+
+        if (totalPages <= maxVisible) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i)
+            }
+        } else {
+            if (currentPage <= 3) {
+                for (let i = 1; i <= 4; i++) {
+                    pages.push(i)
+                }
+                pages.push('ellipsis')
+                pages.push(totalPages)
+            } else if (currentPage >= totalPages - 2) {
+                pages.push(1)
+                pages.push('ellipsis')
+                for (let i = totalPages - 3; i <= totalPages; i++) {
+                    pages.push(i)
+                }
+            } else {
+                pages.push(1)
+                pages.push('ellipsis')
+                pages.push(currentPage - 1)
+                pages.push(currentPage)
+                pages.push(currentPage + 1)
+                pages.push('ellipsis')
+                pages.push(totalPages)
+            }
+        }
+
+        return pages
+    }
+
     function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event
 
@@ -187,6 +235,8 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
             if (!selectedCountry || selectedCountry === 'world') {
                 setData([])
                 setLoading(false)
+                setTotalPages(1)
+                setTotalEntries(0)
                 return
             }
 
@@ -196,11 +246,13 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
             try {
                 const response = await networkApi.getNetworkDetails({
                     cc: selectedCountry,
-                    limit: 20,
-                    page: 1,
+                    limit: itemsPerPage,
+                    page: currentPage,
                     sort: 'name'
                 })
                 setData(response.details)
+                setTotalPages(Math.ceil(response.meta.total_entries / itemsPerPage))
+                setTotalEntries(response.meta.total_entries)
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Failed to load network data')
                 setData([])
@@ -210,7 +262,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
         }
 
         fetchData()
-    }, [selectedCountry])
+    }, [selectedCountry, currentPage])
 
     if (!selectedCountry || selectedCountry === 'world') {
         return (
@@ -303,9 +355,45 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
                     </Table>
                 </DndContext>
             </div>
-            <p className='text-muted-foreground text-center text-sm'>
-                Showing {table.getRowModel().rows.length} autonomous systems
-            </p>
+            <div className='flex items-center justify-between'>
+                <p className='text-muted-foreground text-sm'>
+                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalEntries)} of {totalEntries} autonomous systems
+                </p>
+
+                <Pagination>
+                    <PaginationContent>
+                        <PaginationItem>
+                            <PaginationPrevious
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                            />
+                        </PaginationItem>
+
+                        {getPageNumbers().map((page, index) => (
+                            <PaginationItem key={index}>
+                                {page === 'ellipsis' ? (
+                                    <PaginationEllipsis />
+                                ) : (
+                                    <PaginationLink
+                                        onClick={() => setCurrentPage(page)}
+                                        isActive={currentPage === page}
+                                        className='cursor-pointer'
+                                    >
+                                        {page}
+                                    </PaginationLink>
+                                )}
+                            </PaginationItem>
+                        ))}
+
+                        <PaginationItem>
+                            <PaginationNext
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                            />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
+            </div>
         </div>
     )
 }
