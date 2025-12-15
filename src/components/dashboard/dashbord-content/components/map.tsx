@@ -102,6 +102,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
     console.log('Map Data:', mapData);
 
     const onClick = async (event: MapMouseEvent) => {
+
         const feature = event?.features?.[0];
         if (!feature) return;
 
@@ -127,29 +128,31 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
             setRouters(routers);
         } else {
             // handle single point click
-            if (isWorld) {
-                // fetch country feature collection using tanstack query cache
-                const countryCode = feature.properties?.country_code;
-                if (!countryCode) return;
-
-                const data = await queryClient.fetchQuery({
-                    queryKey: ['country-feature-collection', countryCode],
-                    queryFn: async () => {
-                        const response = await fetch(`${baseUrl}/map?view=country&country=${countryCode}`);
-                        if (!response.ok) {
-                            throw new Error('Failed to fetch country data');
-                        }
-                        return response.json();
-                    }
-                });
-
-                const routers = data[0]?.routers || [];
-                console.log(routers);
-                setRouters(routers);
-            } else {
+            if (!isWorld) {
                 const router = feature.properties as Router;
+                console.log(router);
                 setRouters([router]);
+                return;
             }
+
+            // fetch country feature collection using tanstack query cache
+            const countryCode = feature.properties?.country_code;
+            if (!countryCode) return;
+
+            const data = await queryClient.fetchQuery({
+                queryKey: ['country-feature-collection', countryCode],
+                queryFn: async () => {
+                    const response = await fetch(`${baseUrl}/map?view=country&country=${countryCode}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch country data');
+                    }
+                    return response.json();
+                }
+            });
+
+            const routers = data[0]?.routers || [];
+            console.log(routers);
+            setRouters(routers);
         }
     };
 
@@ -170,7 +173,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                     zoom: 4.5
                 }}
                 mapStyle="https://dev-maptiler.univ.leitwert.net/styles/dark-basic/style.json"
-                interactiveLayerIds={isWorld ? [worldView.unclusteredPointLayer.id!] : [countryView.clusterLayer.id!]}
+                interactiveLayerIds={isWorld ? [worldView.unclusteredPointLayer.id!] : [countryView.clusterLayer.id!, countryView.unclusteredPointLayer.id!]}
                 onClick={onClick}
                 ref={mapRef}
                 attributionControl={false}
