@@ -9,6 +9,11 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import type { NetworkDetail, NetworkStatus, AllocationStatus } from '@/types/network'
 import {getStatusColor} from "@/lib/statusColors";
+import {
+    Tooltip, TooltipContent,
+    TooltipProvider,
+    TooltipTrigger
+} from "@/components/ui/tooltip";
 
 const statusConfig: Record<NetworkStatus, { label: string }> = {
     critical: { label: 'Critical' },
@@ -124,13 +129,42 @@ export const columns: ColumnDef<NetworkDetail>[] = [
                 return <div className='text-muted-foreground'>-</div>
             }
 
+            if (cidrs.length === 1) {
+                return <code className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{cidrs[0]}</code>
+            }
+
             return (
-                <div className='max-w-[200px]'>
-                    <div className='font-mono text-xs'>{cidrs[0]}</div>
-                    {cidrs.length > 1 && (
-                        <div className='text-muted-foreground text-xs'>+{cidrs.length - 1} more</div>
-                    )}
-                </div>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className='cursor-pointer'>
+                                <code className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{cidrs[0]}</code>
+                                <div className='text-muted-foreground text-xs mt-0.5'>+{cidrs.length - 1} more</div>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent
+                            side='left'
+                            align='start'
+                            className='max-w-xs border border-muted bg-white p-3 text-black shadow-lg'
+                        >
+                            <div className='flex flex-col'>
+                                <p className='mb-2 text-xs font-semibold text-black'>
+                                    IPv4 CIDR Ranges ({cidrs.length})
+                                </p>
+                                <div className='max-h-[200px] space-y-1.5 overflow-y-auto pr-2'>
+                                    {cidrs.map((cidr, index) => (
+                                        <code
+                                            key={index}
+                                            className='block cursor-text select-text rounded bg-gray-100 px-2 py-1 font-mono text-xs text-black hover:bg-gray-200'
+                                        >
+                                            {cidr}
+                                        </code>
+                                    ))}
+                                </div>
+                            </div>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             )
         },
         enableSorting: false
