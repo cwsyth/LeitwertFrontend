@@ -357,7 +357,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
             </div>
             <div className='flex items-center justify-between'>
                 <p className='text-muted-foreground text-sm'>
-                    Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalEntries)} of {totalEntries} autonomous systems
+                    Einträge {((currentPage - 1) * itemsPerPage) + 1} bis {Math.min(currentPage * itemsPerPage, totalEntries)} von {totalEntries}
                 </p>
 
                 <Pagination>
