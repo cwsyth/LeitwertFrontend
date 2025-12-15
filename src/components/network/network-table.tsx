@@ -290,29 +290,65 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
 
     if (loading) {
         return (
-            <div className='rounded-md border bg-white'>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            {columns.map(column => (
-                                <TableHead key={column.id}>
-                                    <Skeleton className='h-4 w-full' />
-                                </TableHead>
-                            ))}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {Array.from({ length: 5 }).map((_, i) => (
-                            <TableRow key={i}>
-                                {columns.map(column => (
-                                    <TableCell key={column.id}>
-                                        <Skeleton className='h-4 w-full' />
-                                    </TableCell>
+            <div className='w-full space-y-4'>
+                <div className='rounded-md border bg-white'>
+                    {loading ? (
+                        <Table>
+                            <TableHeader>
+                                <TableRow className='bg-muted/50'>
+                                    {columns.map(column => (
+                                        <TableHead key={column.id} className='h-10'>
+                                            <div className='flex items-center gap-2'>
+                                                <Skeleton className='h-4 w-4 rounded' />
+                                                <Skeleton className='h-4 w-24' />
+                                                <Skeleton className='ml-auto h-4 w-4 rounded' />
+                                            </div>
+                                        </TableHead>
+                                    ))}
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {Array.from({ length: itemsPerPage }).map((_, i) => (
+                                    <TableRow key={i}>
+                                        {columns.map((column, colIndex) => (
+                                            <TableCell key={column.id}>
+                                                {colIndex === 0 ? (
+                                                    <Skeleton className='h-4 w-16' />
+                                                ) : colIndex === 1 ? (
+                                                    <Skeleton className='h-4 w-32' />
+                                                ) : colIndex === 3 || colIndex === 4 ? (
+                                                    <Skeleton className='h-5 w-20 rounded-full' />
+                                                ) : colIndex === 7 ? (
+                                                    <div className='space-y-1'>
+                                                        <Skeleton className='h-3 w-28' />
+                                                        <Skeleton className='h-3 w-16' />
+                                                    </div>
+                                                ) : (
+                                                    <Skeleton className='h-4 w-12 mx-auto' />
+                                                )}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
                                 ))}
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                            </TableBody>
+                        </Table>
+                    ) : (
+                        <DndContext
+                            id={dndContextId}
+                            collisionDetection={closestCenter}
+                            modifiers={[restrictToHorizontalAxis]}
+                            onDragEnd={handleDragEnd}
+                            sensors={sensors}
+                        >
+                            <Table>
+                                {/* ... existing table content ... */}
+                            </Table>
+                        </DndContext>
+                    )}
+                </div>
+                <div className='flex items-center justify-between'>
+                    {/* ... existing pagination ... */}
+                </div>
             </div>
         )
     }
