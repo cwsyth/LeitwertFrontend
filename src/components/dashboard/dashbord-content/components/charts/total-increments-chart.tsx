@@ -93,12 +93,12 @@ const TotalIncrementsChartComponent = ({ data }: TotalIncrementsChartProps) => {
                             if (active && payload && payload.length) {
                                 const item = payload[0]
                                     .payload as BoxPlotData & {
-                                    conf_lower?: number | null;
-                                    conf_upper?: number | null;
-                                    anomaly_point?: number | null;
-                                    is_anomaly?: boolean;
-                                    anomaly_score?: number;
-                                };
+                                        conf_lower?: number | null;
+                                        conf_upper?: number | null;
+                                        anomaly_point?: number | null;
+                                        is_anomaly?: boolean;
+                                        anomaly_score?: number;
+                                    };
 
                                 return (
                                     <div className="rounded-lg border bg-background p-2 shadow-sm">
@@ -123,7 +123,7 @@ const TotalIncrementsChartComponent = ({ data }: TotalIncrementsChartProps) => {
                                             </div>
                                             {item.conf_lower !== undefined &&
                                                 item.conf_upper !==
-                                                    undefined && (
+                                                undefined && (
                                                     <div>
                                                         <span className="text-[0.70rem] uppercase text-muted-foreground">
                                                             Expected
@@ -167,7 +167,7 @@ const TotalIncrementsChartComponent = ({ data }: TotalIncrementsChartProps) => {
                         dataKey="band"
                         stroke="none"
                         fill="#2563eb"
-                        fillOpacity={0.12}
+                        fillOpacity={0.33}
                         stackId="1"
                     />
 
