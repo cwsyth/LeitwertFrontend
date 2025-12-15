@@ -148,6 +148,23 @@ export const AS_SIZE_METRIC_LABELS: Record<AsSizeMetric, string> = {
     anomaly_count: 'Anomalien'
 };
 
+export type NetworkRegistry = 'ripencc' | 'arin' | 'apnic' | 'lacnic' | 'afrinic'
+
+export type AllocationStatus = 'allocated' | 'assigned' | 'reserved' | 'available'
+
+export interface NetworkDetail {
+    asn: string
+    name?: string
+    organization?: string
+    country: string
+    registry: NetworkRegistry
+    status2: AllocationStatus
+    status: NetworkStatus
+    ipv4_cidrs: string[]
+    routers: number
+    anomalies: number
+}
+
 export interface NetworkDetailsResponse {
     details: NetworkDetail[]
     meta: {
