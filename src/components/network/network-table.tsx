@@ -60,9 +60,10 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
+import {Country} from "@/types/dashboard";
 
 interface NetworkTableProps {
-    selectedCountry: string
+    selectedCountry: Country
 }
 
 const DraggableTableHeader = ({ header }: { header: Header<NetworkDetail, unknown> }) => {
@@ -238,7 +239,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
 
     useEffect(() => {
         async function fetchData() {
-            if (!selectedCountry || selectedCountry === 'world') {
+            if (!selectedCountry || selectedCountry.code === 'world') {
                 setData([])
                 setLoading(false)
                 setTotalPages(1)
@@ -251,7 +252,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
 
             try {
                 const response = await networkApi.getNetworkDetails({
-                    cc: selectedCountry,
+                    cc: selectedCountry.code,
                     limit: itemsPerPage,
                     page: currentPage,
                     sort: 'name'
@@ -270,7 +271,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
         fetchData()
     }, [selectedCountry, currentPage, itemsPerPage])
 
-    if (!selectedCountry || selectedCountry === 'world') {
+    if (!selectedCountry || selectedCountry.code === 'world') {
         return (
             <div className='flex h-[400px] items-center justify-center rounded-md border bg-white'>
                 <p className='text-muted-foreground'>Select a country to view network details</p>
@@ -290,6 +291,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
 
     return (
         <div className='h-full rounded-lg border bg-card p-6 shadow-sm'>
+            <h2 className='mb-4 text-xl font-semibold'>Übersicht Autonome System - {selectedCountry.name}</h2>
             <div className='w-full space-y-4'>
                 <div className='rounded-md border bg-white'>
                     {loading ? (
@@ -366,7 +368,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
                                     ) : (
                                         <TableRow>
                                             <TableCell colSpan={columns.length} className='h-24 text-center'>
-                                                No network data available for {selectedCountry}
+                                                No network data available for {selectedCountry.code}
                                             </TableCell>
                                         </TableRow>
                                     )}
