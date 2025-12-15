@@ -1,5 +1,6 @@
 import DashboardFooterSearch from "./components/search";
 import { Country, DashboardViewVisibility, Router } from "@/types/dashboard";
+import { NetworkTable } from "@/components/network/network-table";
 
 interface DashboardFooterProps {
     viewVisibility: DashboardViewVisibility;
@@ -9,16 +10,17 @@ interface DashboardFooterProps {
 }
 
 export default function DashboardFooter({ viewVisibility, selectedCountry, routers, setSelectedRouter }: DashboardFooterProps) {
-    if (!viewVisibility.searchResults && !viewVisibility.globalStats) {
-        return null;
-    }
-
     return (
-        <div className="dashboard-footer w-full rounded-[var(--radius)] flex gap-3 h-[500px]">
-            {viewVisibility.searchResults ? (
-                <DashboardFooterSearch selectedCountry={selectedCountry} routers={routers} setSelectedRouter={setSelectedRouter} />
-            ) : (
-                null
+        <div className="dashboard-footer w-full rounded-[var(--radius)] flex flex-col gap-3">
+            {(viewVisibility.searchResults || viewVisibility.globalStats) && (
+                <div className="flex gap-3 h-[500px]">
+                    {viewVisibility.searchResults && (
+                        <DashboardFooterSearch selectedCountry={selectedCountry} routers={routers} setSelectedRouter={setSelectedRouter} />
+                    )}
+                </div>
+            )}
+            {selectedCountry.code !== 'world' && (
+                <NetworkTable selectedCountry={selectedCountry} />
             )}
         </div>
     );

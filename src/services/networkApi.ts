@@ -5,12 +5,23 @@
  * For a copy, see LICENSE.txt in the project root.
  */
 
-import { CountriesSummaryResponse, CountryAsResponse } from '@/types/network';
+import {
+    CountriesSummaryResponse,
+    CountryAsResponse,
+    NetworkDetailsResponse
+} from '@/types/network';
 import {API_BASE_URL} from "@/lib/config";
+
+export interface GetNetworkDetailsParams {
+    cc: string
+    limit?: number
+    page?: number
+    sort?: string
+}
 
 export const networkApi = {
     async getCountriesSummary(
-        limit: number = 50,
+        limit: number = 20,
         timeRange?: { start: Date; end: Date },
         sizeMetric: string = 'as_count'
     ): Promise<CountriesSummaryResponse> {
@@ -68,5 +79,28 @@ export const networkApi = {
             console.error(`Error fetching AS data for ${countryCode}:`, error);
             throw error;
         }
+    },
+
+    async getNetworkDetails(params: GetNetworkDetailsParams): Promise<NetworkDetailsResponse> {
+        const searchParams = new URLSearchParams({
+            cc: params.cc,
+            limit: String(params.limit || 10),
+            page: String(params.page || 1),
+            sort: params.sort || 'name'
+        })
+
+        const response = await fetch(`${API_BASE_URL}/v1/networks/get-details?${searchParams}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            cache: 'no-store'
+        })
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch network details: ${response.statusText}`)
+        }
+
+        return response.json()
     }
 };
