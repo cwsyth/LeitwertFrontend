@@ -99,10 +99,14 @@ export const columns: ColumnDef<NetworkDetail>[] = [
         cell: ({ row }) => {
             const anomalies = row.getValue('anomalies') as number
             const status = row.original.status
+            const color = getStatusColor(status)
 
             return (
                 <div className='text-center'>
-          <span className={status === 'critical' ? 'font-semibold text-destructive' : ''}>
+          <span
+              className='font-semibold'
+              style={{ color: status === 'critical' || status === 'warning' ? color : undefined }}
+          >
             {anomalies}
           </span>
                 </div>
