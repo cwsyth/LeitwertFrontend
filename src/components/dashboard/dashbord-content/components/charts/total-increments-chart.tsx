@@ -1,11 +1,12 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState, useMemo } from "react";
 import {
     Line,
     ComposedChart,
     Area,
     CartesianGrid,
+    ReferenceArea,
     ResponsiveContainer,
     Tooltip,
     XAxis,
@@ -15,6 +16,8 @@ import { BoxPlotData } from "./boxplot-chart";
 
 interface TotalIncrementsChartProps {
     data: BoxPlotData[];
+    onZoom?: (startMs: number, endMs: number) => void;
+    domain?: [number, number];
 }
 
 interface CustomAnomalyDotProps {
@@ -25,25 +28,59 @@ interface CustomAnomalyDotProps {
     };
 }
 
-const TotalIncrementsChartComponent = ({ data }: TotalIncrementsChartProps) => {
+const TotalIncrementsChartComponent = ({
+    data,
+    onZoom,
+    domain,
+}: TotalIncrementsChartProps) => {
+    const [refAreaLeft, setRefAreaLeft] = useState<number | null>(null);
+    const [refAreaRight, setRefAreaRight] = useState<number | null>(null);
+
+    const handleZoom = () => {
+        if (
+            refAreaLeft === null ||
+            refAreaRight === null ||
+            refAreaLeft === refAreaRight
+        ) {
+            setRefAreaLeft(null);
+            setRefAreaRight(null);
+            return;
+        }
+
+        let startMs = refAreaLeft;
+        let endMs = refAreaRight;
+
+        if (startMs > endMs) {
+            [startMs, endMs] = [endMs, startMs];
+        }
+
+        onZoom?.(startMs, endMs);
+        setRefAreaLeft(null);
+        setRefAreaRight(null);
+    };
+
     // Compute chart-friendly fields: conf_lower, conf_upper, band, anomaly_point
-    const chartData = data.map((d) => {
-        const mean = d.mean ?? null;
-        const std = d.std ?? null;
-        const conf_lower = mean !== null && std !== null ? mean - std : null;
-        const conf_upper = mean !== null && std !== null ? mean + std : null;
-        const band =
-            conf_lower !== null && conf_upper !== null
-                ? conf_upper - conf_lower
-                : 0;
-        return {
-            ...d,
-            conf_lower,
-            conf_upper,
-            band,
-            anomaly_point: d.is_anomaly ? d.total_increments : null,
-        };
-    });
+    const chartData = useMemo(() => {
+        return data.map((d) => {
+            const mean = d.mean ?? null;
+            const std = d.std ?? null;
+            const conf_lower =
+                mean !== null && std !== null ? mean - std : null;
+            const conf_upper =
+                mean !== null && std !== null ? mean + std : null;
+            const band =
+                conf_lower !== null && conf_upper !== null
+                    ? conf_upper - conf_lower
+                    : 0;
+            return {
+                ...d,
+                conf_lower,
+                conf_upper,
+                band,
+                anomaly_point: d.is_anomaly ? d.total_increments : null,
+            };
+        });
+    }, [data]);
 
     const CustomAnomalyDot = (props: CustomAnomalyDotProps) => {
         const { cx, cy, payload } = props;
@@ -61,18 +98,33 @@ const TotalIncrementsChartComponent = ({ data }: TotalIncrementsChartProps) => {
     };
 
     return (
-        <div className="w-full h-[400px]">
+        <div className="w-full h-[400px] select-none">
             <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart
                     data={chartData}
                     margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+                    onMouseDown={(e) =>
+                        e?.activeLabel && setRefAreaLeft(Number(e.activeLabel))
+                    }
+                    onMouseMove={(e) => {
+                        if (refAreaLeft !== null && e?.activeLabel) {
+                            const newRight = Number(e.activeLabel);
+                            if (newRight !== refAreaRight) {
+                                setRefAreaRight(newRight);
+                            }
+                        }
+                    }}
+                    onMouseUp={handleZoom}
                 >
                     <CartesianGrid
                         strokeDasharray="3 3"
                         className="stroke-muted"
                     />
                     <XAxis
-                        dataKey="timestamp"
+                        dataKey="timestampMs"
+                        type="number"
+                        domain={domain || ["dataMin", "dataMax"]}
+                        allowDataOverflow={true}
                         tickFormatter={(value) => {
                             const date = new Date(value);
                             return date.toLocaleTimeString([], {
@@ -191,6 +243,15 @@ const TotalIncrementsChartComponent = ({ data }: TotalIncrementsChartProps) => {
                         activeDot={false}
                         isAnimationActive={false}
                     />
+                    {refAreaLeft !== null && refAreaRight !== null && (
+                        <ReferenceArea
+                            x1={refAreaLeft}
+                            x2={refAreaRight}
+                            strokeOpacity={0.4}
+                            fill="#8884d8"
+                            fillOpacity={0.5}
+                        />
+                    )}
                 </ComposedChart>
             </ResponsiveContainer>
         </div>
