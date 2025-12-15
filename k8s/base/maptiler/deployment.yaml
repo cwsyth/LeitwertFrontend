@@ -30,6 +30,8 @@ spec:
               value: "https://dev-maptiler.univ.leitwert.net"
             - name: HOST
               value: "0.0.0.0"
+          args:
+            - "--cors"
           volumeMounts:
             - name: maptiler-data
               mountPath: /data
