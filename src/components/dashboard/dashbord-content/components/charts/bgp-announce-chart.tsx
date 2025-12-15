@@ -1,10 +1,16 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect, useMemo, useDeferredValue } from "react";
+import {
+    useState,
+    useEffect,
+    useMemo,
+    useDeferredValue,
+    useCallback,
+} from "react";
 import { BoxPlotChart, BoxPlotData } from "./boxplot-chart";
 import { TotalIncrementsChart } from "./total-increments-chart";
-import { Play, Pause, SkipBack, SkipForward } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, ZoomOut } from "lucide-react";
 
 import {
     Card,
@@ -23,8 +29,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import {API_BASE_URL} from "@/lib/config";
-import Router from "next/dist/shared/lib/router/router";
+import { API_BASE_URL } from "@/lib/config";
 
 // Configuration from env
 const CONFIG = {
@@ -211,7 +216,7 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
 
     // Pre-process data to include timestampMs for faster filtering
     const processedData = useMemo(() => {
-        if (!data) return [];
+        if (!data || !Array.isArray(data)) return [];
         return data.map((d) => ({
             ...d,
             timestampMs: new Date(d.timestamp).getTime(),
@@ -233,13 +238,11 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
 
     // Calculate view range dates (Immediate for UI)
     const viewStart = useMemo(
-        () =>
-            new Date(from.getTime() + (totalDuration * viewRange[0]) / 100),
+        () => new Date(from.getTime() + (totalDuration * viewRange[0]) / 100),
         [from, totalDuration, viewRange]
     );
     const viewEnd = useMemo(
-        () =>
-            new Date(from.getTime() + (totalDuration * viewRange[1]) / 100),
+        () => new Date(from.getTime() + (totalDuration * viewRange[1]) / 100),
         [from, totalDuration, viewRange]
     );
     const viewDuration = viewEnd.getTime() - viewStart.getTime();
@@ -325,11 +328,29 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
         setIsPlaying(false);
     };
 
+    const handleZoomCallback = useCallback(
+        (startMs: number, endMs: number) => {
+            const startPercent = Math.max(
+                0,
+                ((startMs - from.getTime()) / totalDuration) * 100
+            );
+            const endPercent = Math.min(
+                100,
+                ((endMs - from.getTime()) / totalDuration) * 100
+            );
+            setViewRange([startPercent, endPercent]);
+        },
+        [from, totalDuration]
+    );
+
     return (
         <Card className="w-full">
             <CardHeader className="space-y-4 pb-4">
                 <div className="flex flex-col space-y-1.5">
-                    <CardTitle>BGP Announcements (Boxplot) for <span className="text-blue-500">AS-{router}</span></CardTitle>
+                    <CardTitle>
+                        BGP Announcements (Boxplot) for{" "}
+                        <span className="text-blue-500">AS-{router}</span>
+                    </CardTitle>
                     <CardDescription>
                         Verteilung der BGP Announcements für{" "}
                         {mode === "as" ? "AS" : "Country Code"} {identifier}
@@ -427,96 +448,138 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                             Fehler beim Laden der Daten.
                         </div>
                     ) : !data ||
+                      !Array.isArray(data) ||
                       (data.length === 0 && !isLoading && !isFetching) ? (
                         <div className="h-[400px] flex items-center justify-center text-muted-foreground">
                             Keine Daten vorhanden.
                         </div>
-                    ) : range === "small" ? (
-                        <div className="relative w-full h-[400px]">
-                            <TotalIncrementsChart data={filteredData} />
-                            <div
-                                className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
-                                style={{
-                                    left: `calc(50px + (100% - 50px - 20px) * ${
-                                        currentTimePercent / 100
-                                    })`,
-                                }}
-                            >
-                                {(isInteracting || isPlaying) &&
-                                    currentDataPoint && (
-                                        <div
-                                            className="absolute top-0"
-                                            style={{
-                                                left:
-                                                    currentTimePercent > 50
-                                                        ? "auto"
-                                                        : "100%",
-                                                right:
-                                                    currentTimePercent > 50
-                                                        ? "100%"
-                                                        : "auto",
-                                                marginLeft:
-                                                    currentTimePercent > 50
-                                                        ? 0
-                                                        : "8px",
-                                                marginRight:
-                                                    currentTimePercent > 50
-                                                        ? "8px"
-                                                        : 0,
-                                            }}
-                                        >
-                                            <ChartTooltip
-                                                key={currentDataPoint.timestamp}
-                                                data={currentDataPoint}
-                                                type="line"
-                                            />
-                                        </div>
-                                    )}
-                            </div>
-                        </div>
                     ) : (
-                        <div className="relative w-full h-[400px]">
-                            <BoxPlotChart data={filteredData} />
-                            <div
-                                className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
-                                style={{
-                                    left: `calc(50px + (100% - 50px - 20px) * ${
-                                        currentTimePercent / 100
-                                    })`,
-                                }}
-                            >
-                                {(isInteracting || isPlaying) &&
-                                    currentDataPoint && (
-                                        <div
-                                            className="absolute top-0"
-                                            style={{
-                                                left:
-                                                    currentTimePercent > 50
-                                                        ? "auto"
-                                                        : "100%",
-                                                right:
-                                                    currentTimePercent > 50
-                                                        ? "100%"
-                                                        : "auto",
-                                                marginLeft:
-                                                    currentTimePercent > 50
-                                                        ? 0
-                                                        : "8px",
-                                                marginRight:
-                                                    currentTimePercent > 50
-                                                        ? "8px"
-                                                        : 0,
-                                            }}
-                                        >
-                                            <ChartTooltip
-                                                key={currentDataPoint.timestamp}
-                                                data={currentDataPoint}
-                                                type="boxplot"
-                                            />
-                                        </div>
-                                    )}
-                            </div>
-                        </div>
+                        <>
+                            {range === "small" ? (
+                                <div className="relative w-full h-[400px]">
+                                    <TotalIncrementsChart
+                                        data={filteredData}
+                                        onZoom={handleZoomCallback}
+                                        domain={[
+                                            deferredViewStart.getTime(),
+                                            deferredViewEnd.getTime(),
+                                        ]}
+                                    />
+                                    <div
+                                        className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
+                                        style={{
+                                            left: `calc(50px + (100% - 50px - 20px) * ${
+                                                currentTimePercent / 100
+                                            })`,
+                                        }}
+                                    >
+                                        {(isInteracting || isPlaying) &&
+                                            currentDataPoint && (
+                                                <div
+                                                    className="absolute top-0"
+                                                    style={{
+                                                        left:
+                                                            currentTimePercent >
+                                                            50
+                                                                ? "auto"
+                                                                : "100%",
+                                                        right:
+                                                            currentTimePercent >
+                                                            50
+                                                                ? "100%"
+                                                                : "auto",
+                                                        marginLeft:
+                                                            currentTimePercent >
+                                                            50
+                                                                ? 0
+                                                                : "8px",
+                                                        marginRight:
+                                                            currentTimePercent >
+                                                            50
+                                                                ? "8px"
+                                                                : 0,
+                                                    }}
+                                                >
+                                                    <ChartTooltip
+                                                        key={
+                                                            currentDataPoint.timestamp
+                                                        }
+                                                        data={currentDataPoint}
+                                                        type="line"
+                                                    />
+                                                </div>
+                                            )}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="relative w-full h-[400px]">
+                                    <BoxPlotChart
+                                        data={filteredData}
+                                        onZoom={handleZoomCallback}
+                                        domain={[
+                                            deferredViewStart.getTime(),
+                                            deferredViewEnd.getTime(),
+                                        ]}
+                                    />
+                                    <div
+                                        className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
+                                        style={{
+                                            left: `calc(50px + (100% - 50px - 20px) * ${
+                                                currentTimePercent / 100
+                                            })`,
+                                        }}
+                                    >
+                                        {(isInteracting || isPlaying) &&
+                                            currentDataPoint && (
+                                                <div
+                                                    className="absolute top-0"
+                                                    style={{
+                                                        left:
+                                                            currentTimePercent >
+                                                            50
+                                                                ? "auto"
+                                                                : "100%",
+                                                        right:
+                                                            currentTimePercent >
+                                                            50
+                                                                ? "100%"
+                                                                : "auto",
+                                                        marginLeft:
+                                                            currentTimePercent >
+                                                            50
+                                                                ? 0
+                                                                : "8px",
+                                                        marginRight:
+                                                            currentTimePercent >
+                                                            50
+                                                                ? "8px"
+                                                                : 0,
+                                                    }}
+                                                >
+                                                    <ChartTooltip
+                                                        key={
+                                                            currentDataPoint.timestamp
+                                                        }
+                                                        data={currentDataPoint}
+                                                        type="boxplot"
+                                                    />
+                                                </div>
+                                            )}
+                                    </div>
+                                </div>
+                            )}
+                            {(viewRange[0] > 0 || viewRange[1] < 100) && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="absolute top-2 right-2 z-20 bg-background/80 hover:bg-background"
+                                    onClick={() => setViewRange([0, 100])}
+                                >
+                                    <ZoomOut className="h-4 w-4 mr-2" />
+                                    Reset Zoom
+                                </Button>
+                            )}
+                        </>
                     )}
                 </div>
 

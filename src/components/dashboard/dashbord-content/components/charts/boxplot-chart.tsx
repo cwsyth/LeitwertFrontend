@@ -6,12 +6,13 @@ import {
     Bar,
     BarChart,
     CartesianGrid,
+    ReferenceArea,
     ResponsiveContainer,
     Tooltip,
     XAxis,
     YAxis,
 } from "recharts";
-import { memo } from "react";
+import { memo, useState } from "react";
 
 export interface BoxPlotData {
     as_path_entry: string;
@@ -191,17 +192,67 @@ const CustomTooltip = ({ active, payload }: any) => {
     return null;
 };
 
-const BoxPlotChartComponent = ({ data }: { data: BoxPlotData[] }) => {
+const BoxPlotChartComponent = ({
+    data,
+    onZoom,
+    domain,
+}: {
+    data: BoxPlotData[];
+    onZoom?: (startMs: number, endMs: number) => void;
+    domain?: [number, number];
+}) => {
+    const [refAreaLeft, setRefAreaLeft] = useState<number | null>(null);
+    const [refAreaRight, setRefAreaRight] = useState<number | null>(null);
+
+    const handleZoom = () => {
+        if (
+            refAreaLeft === null ||
+            refAreaRight === null ||
+            refAreaLeft === refAreaRight
+        ) {
+            setRefAreaLeft(null);
+            setRefAreaRight(null);
+            return;
+        }
+
+        let startMs = refAreaLeft;
+        let endMs = refAreaRight;
+
+        if (startMs > endMs) {
+            [startMs, endMs] = [endMs, startMs];
+        }
+
+        onZoom?.(startMs, endMs);
+        setRefAreaLeft(null);
+        setRefAreaRight(null);
+    };
+
     return (
-        <div className="w-full h-[400px]">
+        <div className="w-full h-[400px] select-none">
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     data={data}
                     margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+                    onMouseDown={(e) =>
+                        e?.activeLabel &&
+                        setRefAreaLeft(Number(e.activeLabel))
+                    }
+                    onMouseMove={(e) => {
+                        if (refAreaLeft !== null && e?.activeLabel) {
+                            const newRight = Number(e.activeLabel);
+                            if (newRight !== refAreaRight) {
+                                setRefAreaRight(newRight);
+                            }
+                        }
+                    }}
+                    onMouseUp={handleZoom}
                 >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis
-                        dataKey="timestamp"
+                        dataKey="timestampMs"
+                        type="number"
+                        domain={domain || ["dataMin", "dataMax"]}
+                        allowDataOverflow={true}
                         tickFormatter={(value) =>
                             new Date(value).toLocaleDateString(undefined, {
                                 month: "short",
@@ -227,6 +278,15 @@ const BoxPlotChartComponent = ({ data }: { data: BoxPlotData[] }) => {
                         shape={<CustomBoxPlot />}
                         isAnimationActive={false}
                     />
+                    {refAreaLeft !== null && refAreaRight !== null && (
+                        <ReferenceArea
+                            x1={refAreaLeft}
+                            x2={refAreaRight}
+                            strokeOpacity={0.4}
+                            fill="#8884d8"
+                            fillOpacity={0.5}
+                        />
+                    )}
                 </BarChart>
             </ResponsiveContainer>
         </div>
