@@ -288,8 +288,8 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
         )
     }
 
-    if (loading) {
-        return (
+    return (
+        <div className='h-full rounded-lg border bg-card p-6 shadow-sm'>
             <div className='w-full space-y-4'>
                 <div className='rounded-md border bg-white'>
                     {loading ? (
@@ -341,124 +341,101 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
                             sensors={sensors}
                         >
                             <Table>
-                                {/* ... existing table content ... */}
+                                <TableHeader>
+                                    {table.getHeaderGroups().map(headerGroup => (
+                                        <TableRow key={headerGroup.id} className='bg-muted/50 [&>th]:border-t-0'>
+                                            <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
+                                                {headerGroup.headers.map(header => (
+                                                    <DraggableTableHeader key={header.id} header={header} />
+                                                ))}
+                                            </SortableContext>
+                                        </TableRow>
+                                    ))}
+                                </TableHeader>
+                                <TableBody>
+                                    {table.getRowModel().rows?.length ? (
+                                        table.getRowModel().rows.map(row => (
+                                            <TableRow key={row.id}>
+                                                {row.getVisibleCells().map(cell => (
+                                                    <SortableContext key={cell.id} items={columnOrder} strategy={horizontalListSortingStrategy}>
+                                                        <DragAlongCell key={cell.id} cell={cell} />
+                                                    </SortableContext>
+                                                ))}
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={columns.length} className='h-24 text-center'>
+                                                No network data available for {selectedCountry}
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
                             </Table>
                         </DndContext>
                     )}
                 </div>
                 <div className='flex items-center justify-between'>
-                    {/* ... existing pagination ... */}
-                </div>
-            </div>
-        )
-    }
+                    <p className='text-muted-foreground text-sm'>
+                        Einträge {((currentPage - 1) * itemsPerPage) + 1} bis {Math.min(currentPage * itemsPerPage, totalEntries)} von {totalEntries}
+                    </p>
 
-    return (
-        <div className='h-full rounded-lg border bg-card p-6 shadow-sm'>
-            <div className='w-full space-y-4'>
-            <div className='rounded-md border bg-white'>
-                <DndContext
-                    id={dndContextId}
-                    collisionDetection={closestCenter}
-                    modifiers={[restrictToHorizontalAxis]}
-                    onDragEnd={handleDragEnd}
-                    sensors={sensors}
-                >
-                    <Table>
-                        <TableHeader>
-                            {table.getHeaderGroups().map(headerGroup => (
-                                <TableRow key={headerGroup.id} className='bg-muted/50 [&>th]:border-t-0'>
-                                    <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
-                                        {headerGroup.headers.map(header => (
-                                            <DraggableTableHeader key={header.id} header={header} />
-                                        ))}
-                                    </SortableContext>
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-                        <TableBody>
-                            {table.getRowModel().rows?.length ? (
-                                table.getRowModel().rows.map(row => (
-                                    <TableRow key={row.id}>
-                                        {row.getVisibleCells().map(cell => (
-                                            <SortableContext key={cell.id} items={columnOrder} strategy={horizontalListSortingStrategy}>
-                                                <DragAlongCell key={cell.id} cell={cell} />
-                                            </SortableContext>
-                                        ))}
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={columns.length} className='h-24 text-center'>
-                                        No network data available for {selectedCountry}
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </DndContext>
-            </div>
-            <div className='flex items-center justify-between'>
-                <p className='text-muted-foreground text-sm'>
-                    Einträge {((currentPage - 1) * itemsPerPage) + 1} bis {Math.min(currentPage * itemsPerPage, totalEntries)} von {totalEntries}
-                </p>
-
-                <Pagination>
-                    <PaginationContent>
-                        <PaginationItem>
-                            <PaginationPrevious
-                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                            />
-                        </PaginationItem>
-
-                        {getPageNumbers().map((page, index) => (
-                            <PaginationItem key={index}>
-                                {page === 'ellipsis' ? (
-                                    <PaginationEllipsis />
-                                ) : (
-                                    <PaginationLink
-                                        onClick={() => setCurrentPage(page)}
-                                        isActive={currentPage === page}
-                                        className='cursor-pointer'
-                                    >
-                                        {page}
-                                    </PaginationLink>
-                                )}
+                    <Pagination>
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                                />
                             </PaginationItem>
-                        ))}
 
-                        <PaginationItem>
-                            <PaginationNext
-                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                            />
-                        </PaginationItem>
-                    </PaginationContent>
-                </Pagination>
+                            {getPageNumbers().map((page, index) => (
+                                <PaginationItem key={index}>
+                                    {page === 'ellipsis' ? (
+                                        <PaginationEllipsis />
+                                    ) : (
+                                        <PaginationLink
+                                            onClick={() => setCurrentPage(page)}
+                                            isActive={currentPage === page}
+                                            className='cursor-pointer'
+                                        >
+                                            {page}
+                                        </PaginationLink>
+                                    )}
+                                </PaginationItem>
+                            ))}
 
-                <div className='flex items-center gap-2'>
-                    <span className='text-muted-foreground text-sm'>Anzahl pro Seite:</span>
-                    <Select
-                        value={String(itemsPerPage)}
-                        onValueChange={(value) => {
-                            setItemsPerPage(Number(value))
-                            setCurrentPage(1)
-                        }}
-                    >
-                        <SelectTrigger className='h-8 w-[70px]'>
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value='10'>10</SelectItem>
-                            <SelectItem value='25'>25</SelectItem>
-                            <SelectItem value='50'>50</SelectItem>
-                            <SelectItem value='100'>100</SelectItem>
-                        </SelectContent>
-                    </Select>
+                            <PaginationItem>
+                                <PaginationNext
+                                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
+
+                    <div className='flex items-center gap-2'>
+                        <span className='text-muted-foreground text-sm'>Anzahl pro Seite:</span>
+                        <Select
+                            value={String(itemsPerPage)}
+                            onValueChange={(value) => {
+                                setItemsPerPage(Number(value))
+                                setCurrentPage(1)
+                            }}
+                        >
+                            <SelectTrigger className='h-8 w-[70px]'>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value='10'>10</SelectItem>
+                                <SelectItem value='25'>25</SelectItem>
+                                <SelectItem value='50'>50</SelectItem>
+                                <SelectItem value='100'>100</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
             </div>
-        </div>
         </div>
     )
 }
