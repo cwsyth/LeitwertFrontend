@@ -273,8 +273,56 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
 
     if (!selectedCountry || selectedCountry.code === 'world') {
         return (
-            <div className='flex h-[400px] items-center justify-center rounded-md border bg-white'>
-                <p className='text-muted-foreground'>Select a country to view network details</p>
+            <div className='h-full rounded-lg border bg-card p-6 shadow-sm'>
+                <h2 className='mb-4 text-xl font-semibold'>Übersicht Autonome Systeme</h2>
+                <div className='relative w-full space-y-4'>
+                    <div className='rounded-md border bg-white blur-sm pointer-events-none'>
+                        <Table>
+                            <TableHeader>
+                                <TableRow className='bg-muted/50'>
+                                    {columns.map(column => (
+                                        <TableHead key={column.id} className='h-10'>
+                                            <div className='flex items-center gap-2'>
+                                                <div className='h-4 w-4 rounded bg-muted' />
+                                                <div className='h-4 w-24 bg-muted' />
+                                                <div className='ml-auto h-4 w-4 rounded bg-muted' />
+                                            </div>
+                                        </TableHead>
+                                    ))}
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {Array.from({ length: 10 }).map((_, i) => (
+                                    <TableRow key={i}>
+                                        {columns.map((column, colIndex) => (
+                                            <TableCell key={column.id}>
+                                                {colIndex === 0 ? (
+                                                    <div className='h-4 w-16 bg-muted' />
+                                                ) : colIndex === 1 ? (
+                                                    <div className='h-4 w-32 bg-muted' />
+                                                ) : colIndex === 3 || colIndex === 4 ? (
+                                                    <div className='h-5 w-20 rounded-full bg-muted' />
+                                                ) : colIndex === 7 ? (
+                                                    <div className='space-y-1'>
+                                                        <div className='h-3 w-28 bg-muted' />
+                                                        <div className='h-3 w-16 bg-muted' />
+                                                    </div>
+                                                ) : (
+                                                    <div className='h-4 w-12 mx-auto bg-muted' />
+                                                )}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                    <div className='absolute inset-0 flex items-center justify-center'>
+                        <div className='rounded-lg bg-white/95 px-4 py-3 shadow-lg border'>
+                            <p className='text-foreground text-sm font-medium'>Bitte nach einem Land filtern!</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         )
     }
