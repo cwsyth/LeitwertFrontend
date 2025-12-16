@@ -35,7 +35,8 @@ export const columns: ColumnDef<NetworkDetail>[] = [
         header: 'ASN',
         accessorKey: 'asn',
         cell: ({ row }) => <div className='font-mono font-medium'>AS{row.getValue('asn')}</div>,
-        sortDescFirst: false
+        sortDescFirst: false,
+        enableSorting: false
     },
     {
         id: 'name',
@@ -53,7 +54,8 @@ export const columns: ColumnDef<NetworkDetail>[] = [
         cell: ({ row }) => {
             const registry = row.getValue('registry') as string
             return <div className='uppercase'>{registry}</div>
-        }
+        },
+        enableSorting: false
     },
     {
         id: 'status',
@@ -76,7 +78,8 @@ export const columns: ColumnDef<NetworkDetail>[] = [
                     {config.label}
                 </Badge>
             )
-        }
+        },
+        enableSorting: false
     },
     {
         id: 'status2',
@@ -86,7 +89,8 @@ export const columns: ColumnDef<NetworkDetail>[] = [
             const status = row.getValue('status2') as AllocationStatus
             const config = allocationStatusConfig[status] || allocationStatusConfig.allocated
             return <Badge variant={config.variant}>{config.label}</Badge>
-        }
+        },
+        enableSorting: false
     },
     {
         id: 'routers',
@@ -95,7 +99,8 @@ export const columns: ColumnDef<NetworkDetail>[] = [
         cell: ({ row }) => {
             const routers = row.getValue('routers') as number
             return <div className='text-center'>{routers}</div>
-        }
+        },
+        enableSorting: false
     },
     {
         id: 'anomalies',
