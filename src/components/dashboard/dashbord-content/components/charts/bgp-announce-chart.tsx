@@ -532,8 +532,23 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                         <div className="flex justify-between text-xs text-muted-foreground">
                             <span>View Range (Von/Bis)</span>
                             <span>
-                                {viewStart.toLocaleDateString()} -{" "}
-                                {viewEnd.toLocaleDateString()}
+                                {viewStart.toLocaleString("de-DE", {
+                                    weekday: "short",
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                })}{" "}
+                                -{" "}
+                                {viewEnd.toLocaleString("de-DE", {
+                                    weekday: "short",
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                })}
                             </span>
                         </div>
                         <Slider
@@ -541,7 +556,7 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                             onValueChange={setViewRange}
                             max={100}
                             step={1}
-                            minStepsBetweenThumbs={5}
+                            minStepsBetweenThumbs={2.5}
                         />
                     </div>
                 </div>
