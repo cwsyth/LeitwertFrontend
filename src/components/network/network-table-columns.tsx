@@ -58,30 +58,6 @@ export const columns: ColumnDef<NetworkDetail>[] = [
         enableSorting: false
     },
     {
-        id: 'status',
-        header: 'Health Status',
-        accessorKey: 'status',
-        cell: ({ row }) => {
-            const status = row.getValue('status') as NetworkStatus
-            const config = statusConfig[status] || statusConfig.unknown
-            const color = getStatusColor(status)
-
-            return (
-                <Badge
-                    variant='outline'
-                    style={{
-                        borderColor: color,
-                        color: color,
-                        backgroundColor: `${color}10`
-                    }}
-                >
-                    {config.label}
-                </Badge>
-            )
-        },
-        enableSorting: false
-    },
-    {
         id: 'status2',
         header: 'Allocation',
         accessorKey: 'status2',
