@@ -8,9 +8,10 @@ import {
     useDeferredValue,
     useCallback,
 } from "react";
+import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { BoxPlotChart, BoxPlotData } from "./boxplot-chart";
 import { TotalIncrementsChart } from "./total-increments-chart";
-import { Play, Pause, SkipBack, SkipForward, ZoomOut } from "lucide-react";
+import { ZoomOut } from "lucide-react";
 
 import {
     Card,
@@ -19,30 +20,20 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { API_BASE_URL } from "@/lib/config";
 
 // Configuration from env
-const CONFIG = {
+export const CONFIG = {
     small: {
-        days: Number(process.env.NEXT_PUBLIC_BGP_ANNOUNCE_SMALL || 1),
         window: Number(process.env.NEXT_PUBLIC_AGG_TIME_WINDOW_SMALL || 60),
     },
     medium: {
-        days: Number(process.env.NEXT_PUBLIC_BGP_ANNOUNCE_MEDIUM || 7),
         window: Number(process.env.NEXT_PUBLIC_AGG_TIME_WINDOW_MEDIUM || 3600),
     },
     large: {
-        days: Number(process.env.NEXT_PUBLIC_BGP_ANNOUNCE_LARGE || 14),
         window: Number(process.env.NEXT_PUBLIC_AGG_TIME_WINDOW_LARGE || 86400),
     },
 };
@@ -54,21 +45,15 @@ async function fetchBoxPlotData(
     range: TimeRange,
     mode: QueryMode,
     identifier: string,
-    endDate: string
+    from: Date,
+    to: Date
 ): Promise<BoxPlotData[]> {
-    const config = CONFIG[range];
-    // Temporary workaround: Use provided end date until continuous data is available
-    const to = endDate ? new Date(endDate) : new Date();
-    to.setUTCHours(0, 0, 0, 0);
-
-    const from = new Date(to.getTime() - config.days * 24 * 60 * 60 * 1000);
-
     let url = "";
 
     if (mode === "as") {
         url = `${API_BASE_URL}/v1/bgp/announce-as-count-per-as?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&as-path-entry=${identifier}`;
     } else {
-        url = `${API_BASE_URL}/v1/bgp/announce-cc-count-per-cc?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&country-code=${identifier}`;
+        url = `${API_BASE_URL}/v1/bgp/announce-cc-count-per-cc?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&cc=${identifier}`;
     }
 
     const response = await fetch(url);
@@ -154,27 +139,32 @@ interface BgpAnnounceChartProps {
     router: string | undefined;
 }
 
+// Main component
 export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
     const DEBOUNCE_TIME = 500;
-    const [range, setRange] = useState<TimeRange>("small");
+
+    // Global Time Store
+    const { timeRange, windowSize, isPlaying, playbackPosition } =
+        useTimeRangeStore();
+
     const [mode, setMode] = useState<QueryMode>("as");
     const [identifier, setIdentifier] = useState("");
     const [debouncedIdentifier, setDebouncedIdentifier] = useState(identifier);
-    // Temporary workaround: Custom end date state
-    const [customEndDate, setCustomEndDate] = useState(
-        new Date().toISOString().split("T")[0]
-    );
-    const [debouncedEndDate, setDebouncedEndDate] = useState(customEndDate);
 
-    // Timeline state
-    const [currentTimePercent, setCurrentTimePercent] = useState(100); // 0-100% of the VIEW range
-    const [viewRange, setViewRange] = useState([0, 100]); // 0-100% of the FETCHED range
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [playbackSpeed, setPlaybackSpeed] = useState(1);
-    const [isInteracting, setIsInteracting] = useState(false);
+    // Timeline state for LOCAL ZOOM only
+    // 0-100% of the FETCHED range (global time range)
+    const [viewRange, setViewRange] = useState([0, 100]);
 
     // Defer state updates for smoother UI
     const deferredViewRange = useDeferredValue(viewRange);
+
+    // Initial router setup
+    useEffect(() => {
+        if (router) {
+            setIdentifier(router);
+            setDebouncedIdentifier(router);
+        }
+    }, [router]);
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -186,30 +176,30 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
         };
     }, [identifier]);
 
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedEndDate(customEndDate);
-        }, DEBOUNCE_TIME);
+    // Reset view range when global time range changes drastically
+    const startMs = timeRange.start.getTime();
+    const endMs = timeRange.end.getTime();
 
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [customEndDate]);
+    useEffect(() => {
+        setViewRange([0, 100]);
+    }, [startMs, endMs]);
 
     const { data, isLoading, error, isFetching } = useQuery({
         queryKey: [
             "bgp-announce-data",
-            range,
+            windowSize, // Use windowSize as range/resolution key
             mode,
             debouncedIdentifier,
-            debouncedEndDate,
+            timeRange.start.toISOString(),
+            timeRange.end.toISOString(),
         ],
         queryFn: () =>
             fetchBoxPlotData(
-                range,
+                windowSize as TimeRange,
                 mode,
                 debouncedIdentifier,
-                debouncedEndDate
+                timeRange.start,
+                timeRange.end
             ),
         enabled: debouncedIdentifier.length > 0,
     });
@@ -223,17 +213,8 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
         }));
     }, [data]);
 
-    // Calculate dates
-    const { from, to } = useMemo(() => {
-        const config = CONFIG[range];
-        // Temporary workaround: Use provided end date until continuous data is available
-        const t = debouncedEndDate ? new Date(debouncedEndDate) : new Date();
-        // t.setUTCFullYear(2025, 9, 7); // Hardcoded as in original
-        t.setUTCHours(0, 0, 0, 0);
-        const f = new Date(t.getTime() - config.days * 24 * 60 * 60 * 1000);
-        return { from: f, to: t };
-    }, [range, debouncedEndDate]);
-
+    const from = timeRange.start;
+    const to = timeRange.end;
     const totalDuration = to.getTime() - from.getTime();
 
     // Calculate view range dates (Immediate for UI)
@@ -245,12 +226,15 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
         () => new Date(from.getTime() + (totalDuration * viewRange[1]) / 100),
         [from, totalDuration, viewRange]
     );
-    const viewDuration = viewEnd.getTime() - viewStart.getTime();
 
-    // Calculate current time (Immediate for UI)
-    const currentDate = new Date(
-        viewStart.getTime() + (viewDuration * currentTimePercent) / 100
-    );
+    // Determine current time to display logic
+    // If playback is active or we have a specific position, use that.
+    // Otherwise fallback to end of range (or end of view).
+    const currentTimestampMs = playbackPosition
+        ? playbackPosition.getTime()
+        : to.getTime();
+
+    const currentDate = new Date(currentTimestampMs);
 
     // Calculate view range dates (Deferred for Chart)
     const deferredViewStart = new Date(
@@ -277,10 +261,6 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
     const currentDataPoint = useMemo(() => {
         if (!filteredData || filteredData.length === 0) return null;
 
-        // Calculate current timestamp based on immediate view range (to match slider position)
-        const currentTimestampMs =
-            viewStart.getTime() + (viewDuration * currentTimePercent) / 100;
-
         // Find closest data point
         let closest = filteredData[0];
         let minDiff = Math.abs(closest.timestampMs - currentTimestampMs);
@@ -295,38 +275,27 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
             }
         }
         return closest;
-    }, [filteredData, viewStart, viewDuration, currentTimePercent]);
+    }, [filteredData, currentTimestampMs]);
 
-    // Playback logic
-    useEffect(() => {
-        let interval: NodeJS.Timeout;
-        if (isPlaying) {
-            interval = setInterval(() => {
-                setCurrentTimePercent((prev) => {
-                    if (prev >= 100) {
-                        setIsPlaying(false);
-                        return 100;
-                    }
-                    return prev + 0.5 * playbackSpeed;
-                });
-            }, 50);
-        }
-        return () => clearInterval(interval);
-    }, [isPlaying, playbackSpeed]);
+    // Handlers for playback control
 
-    const formatLabel = (days: number) => {
-        return days === 1 ? "1 Tag" : `${days} Tage`;
-    };
+    // Calculate position for vertical line:
+    // It should be relative to the view range if we are zoomed in?
+    // Actually the line shows the "current global time".
+    // If we are zoomed in, and the current time is outside, we might not see it or we clamp it.
+    // For now, let's render it if it's within the VIEW range.
 
-    const handleSkipBack = () => {
-        setCurrentTimePercent(0);
-        setIsPlaying(false);
-    };
+    // We need to map `currentTimestampMs` to a percentage within the `viewStart` to `viewEnd`.
+    const viewDurationMs = viewEnd.getTime() - viewStart.getTime();
+    const timeInViewMs = currentTimestampMs - viewStart.getTime();
 
-    const handleSkipForward = () => {
-        setCurrentTimePercent(100);
-        setIsPlaying(false);
-    };
+    // This is 0-100 relative to the CURRENT VIEW
+    const currentTimePercentInView =
+        viewDurationMs > 0 ? (timeInViewMs / viewDurationMs) * 100 : 0;
+
+    const isCurrentTimeInView =
+        currentTimestampMs >= viewStart.getTime() &&
+        currentTimestampMs <= viewEnd.getTime();
 
     const handleZoomCallback = useCallback(
         (startMs: number, endMs: number) => {
@@ -391,47 +360,6 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                             }
                         />
                     </div>
-
-                    <div className="flex items-center gap-2">
-                        {/* Temporary workaround: Date input for end date */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                End-Datum:
-                            </span>
-                            <input
-                                type="date"
-                                value={customEndDate}
-                                onChange={(e) =>
-                                    setCustomEndDate(e.target.value)
-                                }
-                                className="flex h-10 w-min rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            />
-                        </div>
-
-                        <Select
-                            value={range}
-                            onValueChange={(val) => {
-                                setRange(val as TimeRange);
-                                setViewRange([0, 100]); // Reset view range on range change
-                                setCurrentTimePercent(100); // Reset current time
-                            }}
-                        >
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Zeitraum wählen" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="small">
-                                    {formatLabel(CONFIG.small.days)}
-                                </SelectItem>
-                                <SelectItem value="medium">
-                                    {formatLabel(CONFIG.medium.days)}
-                                </SelectItem>
-                                <SelectItem value="large">
-                                    {formatLabel(CONFIG.large.days)}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
                 </div>
             </CardHeader>
             <CardContent className="relative min-h-[400px] flex flex-col gap-4">
@@ -448,14 +376,14 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                             Fehler beim Laden der Daten.
                         </div>
                     ) : !data ||
-                      !Array.isArray(data) ||
-                      (data.length === 0 && !isLoading && !isFetching) ? (
+                        !Array.isArray(data) ||
+                        (data.length === 0 && !isLoading && !isFetching) ? (
                         <div className="h-[400px] flex items-center justify-center text-muted-foreground">
                             Keine Daten vorhanden.
                         </div>
                     ) : (
                         <>
-                            {range === "small" ? (
+                            {windowSize === "small" ? (
                                 <div className="relative w-full h-[400px]">
                                     <TotalIncrementsChart
                                         data={filteredData}
@@ -468,47 +396,48 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                                     <div
                                         className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
                                         style={{
-                                            left: `calc(50px + (100% - 50px - 20px) * ${
-                                                currentTimePercent / 100
-                                            })`,
+                                            left: `calc(50px + (100% - 50px - 20px) * ${currentTimePercentInView / 100
+                                                })`,
+                                            display: isCurrentTimeInView
+                                                ? "block"
+                                                : "none",
                                         }}
                                     >
-                                        {(isInteracting || isPlaying) &&
-                                            currentDataPoint && (
-                                                <div
-                                                    className="absolute top-0"
-                                                    style={{
-                                                        left:
-                                                            currentTimePercent >
+                                        {isPlaying && currentDataPoint && (
+                                            <div
+                                                className="absolute top-0"
+                                                style={{
+                                                    left:
+                                                        currentTimePercentInView >
                                                             50
-                                                                ? "auto"
-                                                                : "100%",
-                                                        right:
-                                                            currentTimePercent >
+                                                            ? "auto"
+                                                            : "100%",
+                                                    right:
+                                                        currentTimePercentInView >
                                                             50
-                                                                ? "100%"
-                                                                : "auto",
-                                                        marginLeft:
-                                                            currentTimePercent >
+                                                            ? "100%"
+                                                            : "auto",
+                                                    marginLeft:
+                                                        currentTimePercentInView >
                                                             50
-                                                                ? 0
-                                                                : "8px",
-                                                        marginRight:
-                                                            currentTimePercent >
+                                                            ? 0
+                                                            : "8px",
+                                                    marginRight:
+                                                        currentTimePercentInView >
                                                             50
-                                                                ? "8px"
-                                                                : 0,
-                                                    }}
-                                                >
-                                                    <ChartTooltip
-                                                        key={
-                                                            currentDataPoint.timestamp
-                                                        }
-                                                        data={currentDataPoint}
-                                                        type="line"
-                                                    />
-                                                </div>
-                                            )}
+                                                            ? "8px"
+                                                            : 0,
+                                                }}
+                                            >
+                                                <ChartTooltip
+                                                    key={
+                                                        currentDataPoint.timestamp
+                                                    }
+                                                    data={currentDataPoint}
+                                                    type="line"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ) : (
@@ -524,47 +453,48 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                                     <div
                                         className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
                                         style={{
-                                            left: `calc(50px + (100% - 50px - 20px) * ${
-                                                currentTimePercent / 100
-                                            })`,
+                                            left: `calc(50px + (100% - 50px - 20px) * ${currentTimePercentInView / 100
+                                                })`,
+                                            display: isCurrentTimeInView
+                                                ? "block"
+                                                : "none",
                                         }}
                                     >
-                                        {(isInteracting || isPlaying) &&
-                                            currentDataPoint && (
-                                                <div
-                                                    className="absolute top-0"
-                                                    style={{
-                                                        left:
-                                                            currentTimePercent >
+                                        {isPlaying && currentDataPoint && (
+                                            <div
+                                                className="absolute top-0"
+                                                style={{
+                                                    left:
+                                                        currentTimePercentInView >
                                                             50
-                                                                ? "auto"
-                                                                : "100%",
-                                                        right:
-                                                            currentTimePercent >
+                                                            ? "auto"
+                                                            : "100%",
+                                                    right:
+                                                        currentTimePercentInView >
                                                             50
-                                                                ? "100%"
-                                                                : "auto",
-                                                        marginLeft:
-                                                            currentTimePercent >
+                                                            ? "100%"
+                                                            : "auto",
+                                                    marginLeft:
+                                                        currentTimePercentInView >
                                                             50
-                                                                ? 0
-                                                                : "8px",
-                                                        marginRight:
-                                                            currentTimePercent >
+                                                            ? 0
+                                                            : "8px",
+                                                    marginRight:
+                                                        currentTimePercentInView >
                                                             50
-                                                                ? "8px"
-                                                                : 0,
-                                                    }}
-                                                >
-                                                    <ChartTooltip
-                                                        key={
-                                                            currentDataPoint.timestamp
-                                                        }
-                                                        data={currentDataPoint}
-                                                        type="boxplot"
-                                                    />
-                                                </div>
-                                            )}
+                                                            ? "8px"
+                                                            : 0,
+                                                }}
+                                            >
+                                                <ChartTooltip
+                                                    key={
+                                                        currentDataPoint.timestamp
+                                                    }
+                                                    data={currentDataPoint}
+                                                    type="boxplot"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -586,59 +516,6 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                 {/* Timeline Controls */}
                 <div className="border-t pt-4 space-y-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={handleSkipBack}
-                            >
-                                <SkipBack className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => setIsPlaying(!isPlaying)}
-                            >
-                                {isPlaying ? (
-                                    <Pause className="h-4 w-4" />
-                                ) : (
-                                    <Play className="h-4 w-4" />
-                                )}
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={handleSkipForward}
-                            >
-                                <SkipForward className="h-4 w-4" />
-                            </Button>
-                            <div className="flex items-center gap-2 ml-2">
-                                <span className="text-xs text-muted-foreground">
-                                    Speed:
-                                </span>
-                                <ToggleGroup
-                                    type="single"
-                                    value={playbackSpeed.toString()}
-                                    onValueChange={(val) =>
-                                        val && setPlaybackSpeed(Number(val))
-                                    }
-                                    size="sm"
-                                >
-                                    <ToggleGroupItem
-                                        value="0.5"
-                                        aria-label="0.5x"
-                                    >
-                                        0.5x
-                                    </ToggleGroupItem>
-                                    <ToggleGroupItem value="1" aria-label="1x">
-                                        1x
-                                    </ToggleGroupItem>
-                                    <ToggleGroupItem value="2" aria-label="2x">
-                                        2x
-                                    </ToggleGroupItem>
-                                </ToggleGroup>
-                            </div>
-                        </div>
                         <div className="text-sm font-medium">
                             {currentDate.toLocaleString("de-DE", {
                                 weekday: "short",
@@ -648,27 +525,6 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                                 hour: "2-digit",
                                 minute: "2-digit",
                             })}
-                        </div>
-                    </div>
-
-                    <div className="space-y-1">
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>Current Time</span>
-                        </div>
-                        <div
-                            onPointerDown={() => setIsInteracting(true)}
-                            onPointerUp={() => setIsInteracting(false)}
-                            onPointerLeave={() => setIsInteracting(false)}
-                        >
-                            <Slider
-                                value={[currentTimePercent]}
-                                onValueChange={(val) => {
-                                    setCurrentTimePercent(val[0]);
-                                    setIsPlaying(false);
-                                }}
-                                max={100}
-                                step={0.1}
-                            />
                         </div>
                     </div>
 
