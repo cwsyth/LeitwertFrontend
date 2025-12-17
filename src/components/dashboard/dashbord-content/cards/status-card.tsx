@@ -142,7 +142,7 @@ export function StatusCard({ title, description, apiEndpoint, className, selecte
                     )}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="p-3 pt-1 flex gap-3">
+            <CardContent className="p-3 pt-1 flex justify-between w-full">
                 {isLoading ? (
                     <>
                         <Skeleton className="h-16 w-20" />
@@ -160,7 +160,7 @@ export function StatusCard({ title, description, apiEndpoint, className, selecte
                     </div>
                 ) : (
                     <>
-                        <div className="flex items-center justify-center min-w-[80px]">
+                        <div className="flex-1 flex items-center justify-center min-w-[80px]">
                             <div className="text-center">
                                 <div className="text-3xl font-bold leading-none">
                                     {currentData?.count.toLocaleString('de-DE')}
@@ -169,11 +169,11 @@ export function StatusCard({ title, description, apiEndpoint, className, selecte
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-1 min-w-[120px] flex-1 justify-center">
+                        <div className="flex flex-col gap-1 min-w-[120px] flex-1 justify-center items-center ">
                             {statusItems.map((item) => (
                                 <Badge
                                     key={item.status}
-                                    className="w-full justify-between px-2 py-1 text-[10px] font-medium border-0"
+                                    className="flex-1 w-[150px] justify-between px-2 py-1 text-[10px] font-medium border-0"
                                     style={{
                                         backgroundColor: getStatusColor(item.status),
                                         color: '#ffffff'
