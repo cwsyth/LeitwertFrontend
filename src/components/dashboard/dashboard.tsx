@@ -14,7 +14,6 @@ import {
 import { BgpAnnounceChart } from "./dashbord-content/components/charts/bgp-announce-chart";
 import dynamic from "next/dynamic";
 import {Skeleton} from "@/components/ui/skeleton";
-import {NetworkTable} from "@/components/network/network-table";
 
 export default function Dashboard() {
     const [mode, setMode] = useState<DashboardContentMode>("street");
