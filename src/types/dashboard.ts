@@ -46,3 +46,8 @@ export interface Router {
     },
     status: EntityStatus
 }
+
+export interface Location {
+    id: string;
+    description: string;
+}
