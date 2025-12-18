@@ -6,12 +6,22 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 
-import { Check, ChevronUp } from "lucide-react";
+import { Check, ChevronUp, Route } from "lucide-react";
 
 import { countries as countriesData } from "countries-list";
 import { CircleFlag } from "react-circle-flags";
 
-import { Country } from "@/types/dashboard";
+import { Country, Location } from "@/types/dashboard";
+
+import { useQuery } from "@tanstack/react-query";
+import { API_BASE_URL } from "@/lib/config";
+import { useLocationStore } from "@/lib/stores/location-store";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useEffect } from "react";
 
 const worldCountry: Country = {
     code: 'world',
@@ -33,6 +43,26 @@ interface DashboardHeaderFilterProps {
 export default function DashboardHeaderFilter({ selectedCountry, setSelectedCountry }: DashboardHeaderFilterProps) {
     const [open, setOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+
+    const { selectedLocationId, setSelectedLocationId } = useLocationStore();
+    const [locationOpen, setLocationOpen] = useState(false);
+
+    const { data: locationData } = useQuery<Location[]>({
+        queryKey: ["locations"],
+        queryFn: async () => {
+            const res = await fetch(`${API_BASE_URL}/v1/meta/locations`);
+            if (!res.ok) throw new Error("Failed to fetch locations");
+            return res.json();
+        }
+    });
+
+    useEffect(() => {
+        if (locationData && locationData.length > 0 && !selectedLocationId) {
+            setSelectedLocationId(locationData[0].id);
+        }
+    }, [locationData, selectedLocationId, setSelectedLocationId]);
+
+    const selectedLocation = locationData?.find(l => l.id === selectedLocationId);
 
     const filteredCountries = searchQuery
         ? countries.filter(country =>
@@ -69,9 +99,8 @@ export default function DashboardHeaderFilter({ selectedCountry, setSelectedCoun
                                         <span>{selectedCountry?.name || "Select country..."}</span>
                                     </div>
                                     <ChevronUp
-                                        className={`h-4 w-4 shrink-0 transition-transform duration-300 ${
-                                            open ? "rotate-180" : ""
-                                        }`}
+                                        className={`h-4 w-4 shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""
+                                            }`}
                                     />
                                 </Button>
                             </PopoverTrigger>
@@ -105,9 +134,8 @@ export default function DashboardHeaderFilter({ selectedCountry, setSelectedCoun
                                                     className="relative flex cursor-pointer select-none items-center px-4 py-2 text-sm hover:bg-accent hover:text-popover-foreground"
                                                 >
                                                     <Check
-                                                        className={`mr-4 h-4 w-4 ${
-                                                            selectedCountry?.code === country.code ? "opacity-100" : "opacity-0"
-                                                        }`}
+                                                        className={`mr-4 h-4 w-4 ${selectedCountry?.code === country.code ? "opacity-100" : "opacity-0"
+                                                            }`}
                                                     />
                                                     <div className="flex items-center justify-center w-5 h-5 rounded-full">
                                                         {country.code === 'world' ? (
@@ -118,6 +146,61 @@ export default function DashboardHeaderFilter({ selectedCountry, setSelectedCoun
                                                     </div>
                                                     {country.name}
                                                 </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+
+                        <Popover open={locationOpen} onOpenChange={setLocationOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={locationOpen}
+                                    className="w-full justify-between"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <Route className="h-4 w-4" />
+                                        <span>{selectedLocation?.id || "Select location..."}</span>
+                                    </div>
+                                    <ChevronUp
+                                        className={`h-4 w-4 shrink-0 transition-transform duration-300 ${locationOpen ? "rotate-180" : ""
+                                            }`}
+                                    />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-68 p-0 overflow-hidden" align="start">
+                                <div className="flex flex-col">
+                                    <div className="max-h-[300px] overflow-y-auto bg-popover">
+                                        {!locationData || locationData.length === 0 ? (
+                                            <div className="py-6 text-center text-sm text-muted-foreground">
+                                                No locations found.
+                                            </div>
+                                        ) : (
+                                            locationData.map((location) => (
+                                                <Tooltip key={location.id} delayDuration={0}>
+                                                    <TooltipTrigger asChild>
+                                                        <div
+                                                            onClick={() => {
+                                                                setSelectedLocationId(location.id);
+                                                                setLocationOpen(false);
+                                                            }}
+                                                            className="relative flex cursor-pointer select-none items-center px-4 py-2 text-sm hover:bg-accent hover:text-popover-foreground"
+                                                        >
+                                                            <Check
+                                                                className={`mr-4 h-4 w-4 ${selectedLocationId === location.id ? "opacity-100" : "opacity-0"
+                                                                    }`}
+                                                            />
+                                                            <Route className="mr-2 h-4 w-4 text-muted-foreground" />
+                                                            {location.id}
+                                                        </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="right">
+                                                        <p>{location.description}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
                                             ))
                                         )}
                                     </div>

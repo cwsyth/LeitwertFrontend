@@ -31,7 +31,7 @@ export interface Country {
     name: string;
 }
 
-type router_status =  "good" | "degraded" | "down" | "unknown";
+type router_status = "good" | "degraded" | "down" | "unknown";
 
 export interface Router {
     router_id: string;
@@ -45,4 +45,9 @@ export interface Router {
         region: string
     },
     status: router_status
+}
+
+export interface Location {
+    id: string;
+    description: string;
 }
