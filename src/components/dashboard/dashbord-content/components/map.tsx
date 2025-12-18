@@ -120,6 +120,12 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
 
         const clusterId = feature?.properties?.cluster_id;
         const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
+        let statusCounts: Record<EntityStatus, number> = {
+            healthy: 0,
+            warning: 0,
+            critical: 0,
+            unknown: 0
+        };
 
         if (isWorld) {
             const properties = feature.properties as WorldCustomProperties;
@@ -129,11 +135,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                 ? JSON.parse(properties.router_count_status)
                 : properties.router_count_status;
 
-            const statusCounts: Record<EntityStatus, number> = {
-                healthy: 0,
-                warning: 0,
-                critical: 0,
-                unknown: 0,
+            statusCounts = {
                 ...parsedRouterCountStatus
             };
 
@@ -159,12 +161,6 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
             // Country view: fetch cluster leaves and calculate status counts
             try {
                 const leaves: Feature[] = await geojsonSource.getClusterLeaves(clusterId, Infinity, 0);
-                const statusCounts: Record<EntityStatus, number> = {
-                    healthy: 0,
-                    warning: 0,
-                    critical: 0,
-                    unknown: 0
-                };
 
                 leaves.forEach((leaf: Feature) => {
                     const router = leaf.properties as Router;
@@ -183,8 +179,20 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                 console.error('Error fetching cluster leaves:', error);
                 setHoverInfo(null);
             }
+        } else if (!isWorld) {
+            // single unclustered point in country view
+            const router = feature.properties as Router;
+            statusCounts[router.status] = 1;
+
+            setHoverInfo({
+                location: router.geohash || "",
+                x: event.point.x,
+                y: event.point.y,
+                totalRouters: 1,
+                statusCounts: statusCounts
+            });
         } else {
-            // single unclustered point
+            // single unclustered point in world view (already handled above)
             setHoverInfo(null);
         }
     };
@@ -318,7 +326,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.unknown.toLocaleString()}
+                                    {hoverInfo.statusCounts.unknown.toLocaleString('de-DE')}
                                 </span>
                             </div>
                         </div>

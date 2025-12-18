@@ -29,7 +29,15 @@ export const countryView = {
     source: 'points',
     filter: ['!', ['has', 'point_count']],
     paint: {
-      'circle-color': '#11b4da',
+      'circle-color': [
+        'match',
+        ['get', 'status'],
+        'healthy', '#10b981',   // emerald-500
+        'warning', '#f97316',   // orange-500
+        'critical', '#ef4444',  // red-500
+        'unknown', '#64748b',   // slate-500
+        '#11b4da'               // default fallback
+      ],
       'circle-radius': 5,
       'circle-stroke-width': 1,
       'circle-stroke-color': '#fff'
