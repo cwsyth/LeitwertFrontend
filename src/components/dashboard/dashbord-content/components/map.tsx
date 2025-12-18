@@ -11,16 +11,31 @@ import type { Country, Router } from '@/types/dashboard';
 import type { CountryCustomProperties, CountryFeatureCollection, WorldCustomProperties, WorldFeatureCollection } from '@/types/geojson';
 import type { CountryMiddlepointFeature } from '@/data/country_middlepoints';
 import type { Feature } from 'geojson';
+import { countries as countriesData } from "countries-list";
 
 interface DashboardContentMapProps {
     selectedCountry: Country;
     setRouters: React.Dispatch<React.SetStateAction<Router[]>>
 }
 
+interface HoverInfo {
+    location: string;
+    x: number;
+    y: number;
+    totalRouters: number;
+    statusCounts: {
+        good: number;
+        degraded: number;
+        offline: number;
+        unknown: number;
+    };
+}
+
 export default function DashboardContentMap({ selectedCountry, setRouters }: DashboardContentMapProps) {
     const mapRef = useRef<MapRef>(null);
     const queryClient = useQueryClient();
     const [isClickLoading, setIsClickLoading] = useState(false);
+    const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
     let [longitude, latitude] = [10.426171427430804, 51.08304539800482]; // default to Germany
 
     const isWorld = !selectedCountry || selectedCountry.code === 'world';
@@ -102,60 +117,132 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
     });
     console.log('Map Data:', mapData);
 
+    const onMouseMove = async (event: MapMouseEvent) => {
+        const feature = event?.features?.[0];
+        if (!feature) {
+            setHoverInfo(null);
+            return;
+        }
+
+        const clusterId = feature?.properties?.cluster_id;
+        const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
+
+        if (isWorld) {
+            const properties = feature.properties as WorldCustomProperties;
+
+            // parse router_count_status because maplibre returns it as string
+            const routerCountStatus = typeof properties.router_count_status === 'string'
+                ? JSON.parse(properties.router_count_status)
+                : properties.router_count_status;
+
+            const countries: Country[] = Object.entries(countriesData).map(([code, data]) => ({
+                code: code.toLowerCase(),
+                name: data.name
+            }));
+
+            setHoverInfo({
+                location: countries.find(c => c.code === properties.country_code.toLowerCase())?.name || "",
+                x: event.point.x,
+                y: event.point.y,
+                totalRouters: properties.router_count_total,
+                statusCounts: {
+                    good: routerCountStatus.good || 0,
+                    degraded: routerCountStatus.degraded || 0,
+                    offline: routerCountStatus.down || 0,
+                    unknown: routerCountStatus.unknown || 0
+                }
+            });
+
+        } else if (clusterId && geojsonSource) {
+            // Country view: fetch cluster leaves and calculate status counts
+            try {
+                const leaves: Feature[] = await geojsonSource.getClusterLeaves(clusterId, Infinity, 0);
+                const statusCounts = { good: 0, degraded: 0, offline: 0, unknown: 0 };
+
+                leaves.forEach((leaf: Feature) => {
+                    const router = leaf.properties as Router;
+                    if (router.status === 'good') statusCounts.good++;
+                    else if (router.status === 'degraded') statusCounts.degraded++;
+                    else if (router.status === 'down') statusCounts.offline++;
+                    else statusCounts.unknown++;
+                });
+
+                setHoverInfo({
+                    location: leaves[0]?.properties?.geohash || "",
+                    x: event.point.x,
+                    y: event.point.y,
+                    totalRouters: leaves.length,
+                    statusCounts
+                });
+            } catch (error) {
+                console.error('Error fetching cluster leaves:', error);
+                setHoverInfo(null);
+            }
+        } else {
+            // Single unclustered point
+            setHoverInfo(null);
+        }
+    };
+
+    const onMouseLeave = () => {
+        setHoverInfo(null);
+    };
+
     const onClick = async (event: MapMouseEvent) => {
         const feature = event?.features?.[0];
         if (!feature) return;
 
+        setHoverInfo(null);
         setIsClickLoading(true);
         try {
             const clusterId = feature?.properties?.cluster_id;
             const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
 
-        if (clusterId) {
-            // expand cluster
-            const zoom = await geojsonSource.getClusterExpansionZoom(clusterId);
+            if (clusterId) {
+                // expand cluster
+                const zoom = await geojsonSource.getClusterExpansionZoom(clusterId);
 
-            if (feature?.geometry && 'coordinates' in feature.geometry) {
-                mapRef?.current?.easeTo({
-                    center: feature.geometry.coordinates as [number, number],
-                    zoom,
-                    duration: 500
-                });
-            }
-
-            // get all points in the cluster & filter out router properties
-            const leaves: Feature[] = await geojsonSource.getClusterLeaves(clusterId, Infinity, 0);
-            const routers = leaves.map((leaf: Feature) => leaf.properties as Router);
-            console.log(routers);
-            setRouters(routers);
-        } else {
-            // handle single point click
-            if (!isWorld) {
-                const router = feature.properties as Router;
-                console.log(router);
-                setRouters([router]);
-                return;
-            }
-
-            // fetch country feature collection using tanstack query cache
-            const countryCode = feature.properties?.country_code;
-            if (!countryCode) return;
-
-            const data = await queryClient.fetchQuery({
-                queryKey: ['country-feature-collection', countryCode],
-                queryFn: async () => {
-                    const response = await fetch(`${baseUrl}/map?view=country&country=${countryCode}`);
-                    if (!response.ok) {
-                        throw new Error('Failed to fetch country data');
-                    }
-                    return response.json();
+                if (feature?.geometry && 'coordinates' in feature.geometry) {
+                    mapRef?.current?.easeTo({
+                        center: feature.geometry.coordinates as [number, number],
+                        zoom,
+                        duration: 500
+                    });
                 }
-            });
 
-            const routers = data[0]?.routers || [];
-            console.log(routers);
-            setRouters(routers);
-        }
+                // get all points in the cluster & filter out router properties
+                const leaves: Feature[] = await geojsonSource.getClusterLeaves(clusterId, Infinity, 0);
+                const routers = leaves.map((leaf: Feature) => leaf.properties as Router);
+                console.log(routers);
+                setRouters(routers);
+            } else {
+                // handle single point click
+                if (!isWorld) {
+                    const router = feature.properties as Router;
+                    console.log(router);
+                    setRouters([router]);
+                    return;
+                }
+
+                // fetch country feature collection using tanstack query cache
+                const countryCode = feature.properties?.country_code;
+                if (!countryCode) return;
+
+                const data = await queryClient.fetchQuery({
+                    queryKey: ['country-feature-collection', countryCode],
+                    queryFn: async () => {
+                        const response = await fetch(`${baseUrl}/map?view=country&country=${countryCode}`);
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch country data');
+                        }
+                        return response.json();
+                    }
+                });
+
+                const routers = data[0]?.routers || [];
+                console.log(routers);
+                setRouters(routers);
+            }
         } finally {
             setIsClickLoading(false);
         }
@@ -171,6 +258,71 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                     </div>
                 </div>
             )}
+            {hoverInfo && (
+                <div
+                    className="absolute z-20 pointer-events-none"
+                    style={{
+                        left: hoverInfo.x + 15,
+                        top: hoverInfo.y + 15,
+                    }}
+                >
+                    <div className="bg-white rounded-lg shadow-xl border border-slate-200 p-4 min-w-[175px]">
+                        <div className="text-sm font-semibold text-slate-700 mb-2">
+                            Router Status in
+                            <div className="flex items-center gap-1">
+                                <div className="text-blue-500 font-bold">{ hoverInfo.location }</div>
+                                <div className="text-xs text-slate-500">{ isWorld ? "(Country)" : "(Geohash)" }</div>
+                            </div>
+                        </div>
+                        <div className="text-2xl font-bold text-slate-900 mb-3">
+                            {hoverInfo.totalRouters.toLocaleString('de-DE')}
+                            <span className="text-xs font-normal text-slate-500 ml-1">Gesamt</span>
+                        </div>
+                        <div className="space-y-1.5">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-16 h-6 bg-emerald-500 rounded text-white text-xs font-medium flex items-center justify-center">
+                                        Healthy
+                                    </div>
+                                </div>
+                                <span className="text-sm font-semibold text-slate-700">
+                                    {hoverInfo.statusCounts.good.toLocaleString('de-DE')}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-16 h-6 bg-orange-500 rounded text-white text-xs font-medium flex items-center justify-center">
+                                        Warning
+                                    </div>
+                                </div>
+                                <span className="text-sm font-semibold text-slate-700">
+                                    {hoverInfo.statusCounts.degraded.toLocaleString('de-DE')}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-16 h-6 bg-red-500 rounded text-white text-xs font-medium flex items-center justify-center">
+                                        Critical
+                                    </div>
+                                </div>
+                                <span className="text-sm font-semibold text-slate-700">
+                                    {hoverInfo.statusCounts.offline.toLocaleString('de-DE')}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-16 h-6 bg-slate-500 rounded text-white text-xs font-medium flex items-center justify-center">
+                                        Unknown
+                                    </div>
+                                </div>
+                                <span className="text-sm font-semibold text-slate-700">
+                                    {hoverInfo.statusCounts.unknown.toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
            <Map
                 initialViewState={{ // default to Germany
                     latitude,
@@ -180,6 +332,8 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                 mapStyle="https://dev-maptiler.univ.leitwert.net/styles/dark-basic/style.json"
                 interactiveLayerIds={isWorld ? [worldView.unclusteredPointLayer.id!] : [countryView.clusterLayer.id!, countryView.unclusteredPointLayer.id!]}
                 onClick={onClick}
+                onMouseMove={onMouseMove}
+                onMouseLeave={onMouseLeave}
                 ref={mapRef}
                 attributionControl={false}
                 maxZoom={14}
