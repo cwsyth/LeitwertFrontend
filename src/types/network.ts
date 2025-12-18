@@ -6,6 +6,7 @@
  */
 
 import { ReactNode } from "react";
+import { EntityStatus } from "./dashboard";
 
 export interface CountryData {
     code: string;
@@ -60,7 +61,7 @@ export interface CountryAsResponse {
     };
 }
 
-export type NetworkStatus = 'healthy' | 'warning' | 'critical' | 'unknown';
+export type NetworkStatus = EntityStatus;
 
 interface CountryMetadata {
     asCount: number;

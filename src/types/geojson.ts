@@ -1,18 +1,13 @@
 import { TCountryCode } from 'countries-list';
 import type { FeatureCollection, Feature, Point } from 'geojson';
-import type { Router } from './dashboard';
+import type { EntityStatus, Router } from './dashboard';
 
 export type CountryCustomProperties = Router;
 
 export interface WorldCustomProperties {
   country_code: TCountryCode;
   router_count_total: number;
-  router_count_status: {
-    good: number;
-    degraded: number;
-    down: number;
-    unknown: number;
-  }
+  router_count_status: Record<EntityStatus, number>;
 }
 
 // Create typed GeoJSON types

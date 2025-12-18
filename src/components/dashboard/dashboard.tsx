@@ -71,13 +71,13 @@ export default function Dashboard() {
                     setRouters={setRouters}
                     setSelectedCountry={setSelectedCountry}
                 />
-                {viewVisibility.bgpAnnouncements && <BgpAnnounceChart router={selectedRouter?.asn} />}
                 <DashboardFooter
                     viewVisibility={viewVisibility}
                     selectedCountry={selectedCountry}
                     routers={routers}
                     setSelectedRouter={setSelectedRouter}
                 />
+                {viewVisibility.bgpAnnouncements && <BgpAnnounceChart router={selectedRouter?.asn} />}
             </div>
         </div>
     );

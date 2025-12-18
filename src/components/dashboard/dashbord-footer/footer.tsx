@@ -12,6 +12,7 @@ interface DashboardFooterProps {
 export default function DashboardFooter({ viewVisibility, selectedCountry, routers, setSelectedRouter }: DashboardFooterProps) {
     return (
         <div className="dashboard-footer w-full rounded-[var(--radius)] flex flex-col gap-3">
+            <NetworkTable selectedCountry={selectedCountry} />
             {(viewVisibility.searchResults || viewVisibility.globalStats) && (
                 <div className="flex gap-3 h-[500px]">
                     {viewVisibility.searchResults && (
@@ -19,7 +20,6 @@ export default function DashboardFooter({ viewVisibility, selectedCountry, route
                     )}
                 </div>
             )}
-            <NetworkTable selectedCountry={selectedCountry} />
         </div>
     );
 }

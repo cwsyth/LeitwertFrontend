@@ -7,7 +7,7 @@ import geohash from 'ngeohash';
 
 import { countryView, worldView } from './layers';
 import { countryMiddlepoints } from '@/data/country_middlepoints';
-import type { Country, Router } from '@/types/dashboard';
+import type { Country, EntityStatus, Router } from '@/types/dashboard';
 import type { CountryCustomProperties, CountryFeatureCollection, WorldCustomProperties, WorldFeatureCollection } from '@/types/geojson';
 import type { CountryMiddlepointFeature } from '@/data/country_middlepoints';
 import type { Feature } from 'geojson';
@@ -23,12 +23,7 @@ interface HoverInfo {
     x: number;
     y: number;
     totalRouters: number;
-    statusCounts: {
-        good: number;
-        degraded: number;
-        offline: number;
-        unknown: number;
-    };
+    statusCounts: Record<EntityStatus, number>;
 }
 
 export default function DashboardContentMap({ selectedCountry, setRouters }: DashboardContentMapProps) {
@@ -115,7 +110,6 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
             }
         }
     });
-    console.log('Map Data:', mapData);
 
     const onMouseMove = async (event: MapMouseEvent) => {
         const feature = event?.features?.[0];
@@ -131,9 +125,17 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
             const properties = feature.properties as WorldCustomProperties;
 
             // parse router_count_status because maplibre returns it as string
-            const routerCountStatus = typeof properties.router_count_status === 'string'
+            const parsedRouterCountStatus = typeof properties.router_count_status === 'string'
                 ? JSON.parse(properties.router_count_status)
                 : properties.router_count_status;
+
+            const statusCounts: Record<EntityStatus, number> = {
+                healthy: 0,
+                warning: 0,
+                critical: 0,
+                unknown: 0,
+                ...parsedRouterCountStatus
+            };
 
             const countries: Country[] = Object.entries(countriesData).map(([code, data]) => ({
                 code: code.toLowerCase(),
@@ -145,26 +147,28 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                 x: event.point.x,
                 y: event.point.y,
                 totalRouters: properties.router_count_total,
-                statusCounts: {
-                    good: routerCountStatus.good || 0,
-                    degraded: routerCountStatus.degraded || 0,
-                    offline: routerCountStatus.down || 0,
-                    unknown: routerCountStatus.unknown || 0
-                }
+                statusCounts: statusCounts
             });
+
+            /* just because I can: Object.fromEntries(
+                        Object.entries(parsedRouterCountStatus)
+                            .map(([status, count]) => [status,count ?? 0,])
+                    ) as Record<EntityStatus, number> */
 
         } else if (clusterId && geojsonSource) {
             // Country view: fetch cluster leaves and calculate status counts
             try {
                 const leaves: Feature[] = await geojsonSource.getClusterLeaves(clusterId, Infinity, 0);
-                const statusCounts = { good: 0, degraded: 0, offline: 0, unknown: 0 };
+                const statusCounts: Record<EntityStatus, number> = {
+                    healthy: 0,
+                    warning: 0,
+                    critical: 0,
+                    unknown: 0
+                };
 
                 leaves.forEach((leaf: Feature) => {
                     const router = leaf.properties as Router;
-                    if (router.status === 'good') statusCounts.good++;
-                    else if (router.status === 'degraded') statusCounts.degraded++;
-                    else if (router.status === 'down') statusCounts.offline++;
-                    else statusCounts.unknown++;
+                    statusCounts[router.status]++;
                 });
 
                 setHoverInfo({
@@ -172,14 +176,15 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                     x: event.point.x,
                     y: event.point.y,
                     totalRouters: leaves.length,
-                    statusCounts
+                    statusCounts: statusCounts
                 });
+
             } catch (error) {
                 console.error('Error fetching cluster leaves:', error);
                 setHoverInfo(null);
             }
         } else {
-            // Single unclustered point
+            // single unclustered point
             setHoverInfo(null);
         }
     };
@@ -213,13 +218,11 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                 // get all points in the cluster & filter out router properties
                 const leaves: Feature[] = await geojsonSource.getClusterLeaves(clusterId, Infinity, 0);
                 const routers = leaves.map((leaf: Feature) => leaf.properties as Router);
-                console.log(routers);
                 setRouters(routers);
             } else {
                 // handle single point click
                 if (!isWorld) {
                     const router = feature.properties as Router;
-                    console.log(router);
                     setRouters([router]);
                     return;
                 }
@@ -240,7 +243,6 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                 });
 
                 const routers = data[0]?.routers || [];
-                console.log(routers);
                 setRouters(routers);
             }
         } finally {
@@ -286,7 +288,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.good.toLocaleString('de-DE')}
+                                    {hoverInfo.statusCounts.healthy.toLocaleString('de-DE')}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between gap-3">
@@ -296,7 +298,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.degraded.toLocaleString('de-DE')}
+                                    {hoverInfo.statusCounts.warning.toLocaleString('de-DE')}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between gap-3">
@@ -306,7 +308,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.offline.toLocaleString('de-DE')}
+                                    {hoverInfo.statusCounts.critical.toLocaleString('de-DE')}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between gap-3">
