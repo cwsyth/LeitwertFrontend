@@ -7,20 +7,12 @@
 
 import type { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
-import type { NetworkDetail, NetworkStatus, AllocationStatus } from '@/types/network'
-import {getStatusColor} from "@/lib/statusColors";
+import type { NetworkDetail, AllocationStatus } from '@/types/network'
 import {
     Tooltip, TooltipContent,
     TooltipProvider,
     TooltipTrigger
 } from "@/components/ui/tooltip";
-
-const statusConfig: Record<NetworkStatus, { label: string }> = {
-    critical: { label: 'Critical' },
-    warning: { label: 'Warning' },
-    healthy: { label: 'Healthy' },
-    unknown: { label: 'Unknown' }
-}
 
 const allocationStatusConfig: Record<AllocationStatus, { variant: 'default' | 'destructive' | 'outline' | 'secondary'; label: string }> = {
     allocated: { variant: 'default', label: 'Allocated' },

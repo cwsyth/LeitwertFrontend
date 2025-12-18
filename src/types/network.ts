@@ -159,7 +159,6 @@ export interface NetworkDetail {
     country: string
     registry: NetworkRegistry
     status2: AllocationStatus
-    status: NetworkStatus
     ipv4_cidrs: string[]
     routers: number
     anomalies: {
