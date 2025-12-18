@@ -23,14 +23,6 @@ const allocationStatusConfig: Record<AllocationStatus, { variant: 'default' | 'd
 
 export const columns: ColumnDef<NetworkDetail>[] = [
     {
-        id: 'asn',
-        header: 'ASN',
-        accessorKey: 'asn',
-        cell: ({ row }) => <div className='font-mono font-medium'>AS{row.getValue('asn')}</div>,
-        sortDescFirst: false,
-        enableSorting: false
-    },
-    {
         id: 'name',
         header: 'Name',
         accessorKey: 'name',
@@ -40,23 +32,12 @@ export const columns: ColumnDef<NetworkDetail>[] = [
         }
     },
     {
-        id: 'registry',
-        header: 'Registry',
-        accessorKey: 'registry',
-        cell: ({ row }) => {
-            const registry = row.getValue('registry') as string
-            return <div className='uppercase'>{registry}</div>
-        }
-    },
-    {
-        id: 'status2',
-        header: 'Allocation',
-        accessorKey: 'status2',
-        cell: ({ row }) => {
-            const status = row.getValue('status2') as AllocationStatus
-            const config = allocationStatusConfig[status] || allocationStatusConfig.allocated
-            return <Badge variant={config.variant}>{config.label}</Badge>
-        }
+        id: 'asn',
+        header: 'ASN',
+        accessorKey: 'asn',
+        cell: ({ row }) => <div className='font-mono font-medium'>AS{row.getValue('asn')}</div>,
+        sortDescFirst: false,
+        enableSorting: false
     },
     {
         id: 'routers',
@@ -65,34 +46,6 @@ export const columns: ColumnDef<NetworkDetail>[] = [
         cell: ({ row }) => {
             const routers = row.getValue('routers') as number
             return <div className='text-center'>{routers}</div>
-        }
-    },
-    {
-        id: 'anomalies_as',
-        header: 'Anomalies (AS)',
-        accessorKey: 'anomalies.bgp',
-        cell: ({ row }) => {
-            const anomalies = row.original.anomalies.bgp
-
-            return (
-                <div className='text-center'>
-                    <span className='font-semibold'>{anomalies}</span>
-                </div>
-            )
-        }
-    },
-    {
-        id: 'anomalies_router',
-        header: 'Anomalies (Router)',
-        accessorKey: 'anomalies.ping',
-        cell: ({ row }) => {
-            const anomalies = row.original.anomalies.ping
-
-            return (
-                <div className='text-center'>
-                    <span className='font-semibold'>{anomalies}</span>
-                </div>
-            )
         }
     },
     {
@@ -145,5 +98,52 @@ export const columns: ColumnDef<NetworkDetail>[] = [
             )
         },
         enableSorting: false
+    },
+    {
+        id: 'anomalies_as',
+        header: 'Anomalies (AS)',
+        accessorKey: 'anomalies.bgp',
+        cell: ({ row }) => {
+            const anomalies = row.original.anomalies.bgp
+
+            return (
+                <div className='text-center'>
+                    <span className='font-semibold'>{anomalies}</span>
+                </div>
+            )
+        }
+    },
+    {
+        id: 'anomalies_router',
+        header: 'Anomalies (Router)',
+        accessorKey: 'anomalies.ping',
+        cell: ({ row }) => {
+            const anomalies = row.original.anomalies.ping
+
+            return (
+                <div className='text-center'>
+                    <span className='font-semibold'>{anomalies}</span>
+                </div>
+            )
+        }
+    },
+    {
+        id: 'status2',
+        header: 'Allocation',
+        accessorKey: 'status2',
+        cell: ({ row }) => {
+            const status = row.getValue('status2') as AllocationStatus
+            const config = allocationStatusConfig[status] || allocationStatusConfig.allocated
+            return <Badge variant={config.variant}>{config.label}</Badge>
+        }
+    },
+    {
+        id: 'registry',
+        header: 'Registry',
+        accessorKey: 'registry',
+        cell: ({ row }) => {
+            const registry = row.getValue('registry') as string
+            return <div className='uppercase'>{registry}</div>
+        }
     }
 ]
