@@ -162,7 +162,10 @@ export interface NetworkDetail {
     status: NetworkStatus
     ipv4_cidrs: string[]
     routers: number
-    anomalies: number
+    anomalies: {
+        bgp: number
+        ping: number
+    }
 }
 
 export interface NetworkDetailsResponse {

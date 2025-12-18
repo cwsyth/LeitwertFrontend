@@ -75,69 +75,32 @@ export const columns: ColumnDef<NetworkDetail>[] = [
         cell: ({ row }) => {
             const routers = row.getValue('routers') as number
             return <div className='text-center'>{routers}</div>
-            const routers = row.getValue('routers') as string[]
-
-            if (routers.length === 0) {
-                return <div className='text-muted-foreground'>-</div>
-            }
-
-            if (routers.length === 1) {
-                return <code className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{routers[0]}</code>
-            }
-
-            return (
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <div className='cursor-pointer'>
-                                <code className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{routers[0]}</code>
-                                <div className='text-muted-foreground text-xs mt-0.5'>+{routers.length - 1} more</div>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent
-                            side='left'
-                            align='start'
-                            className='max-w-xs border border-muted bg-white p-3 text-black shadow-lg'
-                        >
-                            <div className='flex flex-col'>
-                                <p className='mb-2 text-xs font-semibold text-black'>
-                                    Routers ({routers.length})
-                                </p>
-                                <div className='max-h-[200px] space-y-1.5 overflow-y-auto pr-2'>
-                                    {routers.map((router, index) => (
-                                        <code
-                                            key={index}
-                                            className='block cursor-text select-text rounded bg-gray-100 px-2 py-1 font-mono text-xs text-black hover:bg-gray-200'
-                                        >
-                                            {router}
-                                        </code>
-                                    ))}
-                                </div>
-                            </div>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            )
-        },
-        enableSorting: false
+        }
     },
     {
-        id: 'anomalies',
-        header: 'Anomalies',
-        accessorKey: 'anomalies',
+        id: 'anomalies_as',
+        header: 'Anomalies (AS)',
+        accessorKey: 'anomalies.bgp',
         cell: ({ row }) => {
-            const anomalies = row.getValue('anomalies') as number
-            const status = row.original.status
-            const color = getStatusColor(status)
+            const anomalies = row.original.anomalies.bgp
 
             return (
                 <div className='text-center'>
-          <span
-              className='font-semibold'
-              style={{ color: status === 'critical' || status === 'warning' ? color : undefined }}
-          >
-            {anomalies}
-          </span>
+                    <span className='font-semibold'>{anomalies}</span>
+                </div>
+            )
+        }
+    },
+    {
+        id: 'anomalies_router',
+        header: 'Anomalies (Router)',
+        accessorKey: 'anomalies.ping',
+        cell: ({ row }) => {
+            const anomalies = row.original.anomalies.ping
+
+            return (
+                <div className='text-center'>
+                    <span className='font-semibold'>{anomalies}</span>
                 </div>
             )
         }
