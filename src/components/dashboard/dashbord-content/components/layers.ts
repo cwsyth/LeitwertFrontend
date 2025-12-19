@@ -8,8 +8,19 @@ export const countryView = {
     source: 'points',
     filter: ['has', 'point_count'],
     /*paint: {
-      'circle-color': '#000000',
-      'circle-radius': ['step', ['get', 'point_count'], 22, 100, 27, 750, 32],
+      'circle-color': '#1e293b',  // slate-800 background
+      'circle-radius': [
+        'interpolate', ['linear'],
+        ['sqrt', ['get', 'point_count']],
+        0, 0,
+        1, 6,
+        2, 9,
+        3, 12,
+        5, 15,
+        10, 21,
+        20, 29,
+        50, 40
+      ],
       'circle-opacity': 0.8
     }*/
   } as LayerProps,
@@ -23,10 +34,19 @@ export const countryView = {
     paint: {
       'circle-color': '#10b981',  // emerald-500
       'circle-radius': [
-        'interpolate', ['linear'],
-        ['/', ['get', 'healthy_count'], ['get', 'point_count']],
-        0, 0,
-        1, ['step', ['get', 'point_count'], 20, 100, 25, 750, 30]
+        '*',
+        ['interpolate', ['linear'],
+          ['sqrt', ['get', 'point_count']],
+          0, 0,
+          1, 6,
+          2, 9,
+          3, 12,
+          5, 15,
+          10, 21,
+          20, 29,
+          50, 40
+        ],
+        ['/', ['get', 'healthy_count'], ['get', 'point_count']]
       ],
       'circle-opacity': 0.9
     }
@@ -41,10 +61,19 @@ export const countryView = {
     paint: {
       'circle-color': '#64748b',  // slate-500
       'circle-radius': [
-        'interpolate', ['linear'],
-        ['/', ['+', ['get', 'unknown_count'], ['get', 'warning_count'], ['get', 'critical_count']], ['get', 'point_count']],
-        0, 0,
-        1, ['step', ['get', 'point_count'], 20, 100, 25, 750, 30]
+        '*',
+        ['interpolate', ['linear'],
+          ['sqrt', ['get', 'point_count']],
+          0, 0,
+          1, 6,
+          2, 9,
+          3, 12,
+          5, 15,
+          10, 21,
+          20, 29,
+          50, 40
+        ],
+        ['/', ['+', ['get', 'unknown_count'], ['get', 'warning_count'], ['get', 'critical_count']], ['get', 'point_count']]
       ],
       'circle-opacity': 0.85
     }
@@ -59,10 +88,19 @@ export const countryView = {
     paint: {
       'circle-color': '#f97316',  // orange-500
       'circle-radius': [
-        'interpolate', ['linear'],
-        ['/', ['+', ['get', 'warning_count'], ['get', 'critical_count']], ['get', 'point_count']],
-        0, 0,
-        1, ['step', ['get', 'point_count'], 20, 100, 25, 750, 30]
+        '*',
+        ['interpolate', ['linear'],
+          ['sqrt', ['get', 'point_count']],
+          0, 0,
+          1, 6,
+          2, 9,
+          3, 12,
+          5, 15,
+          10, 21,
+          20, 29,
+          50, 40
+        ],
+        ['/', ['+', ['get', 'warning_count'], ['get', 'critical_count']], ['get', 'point_count']]
       ],
       'circle-opacity': 0.9
     }
@@ -77,10 +115,19 @@ export const countryView = {
     paint: {
       'circle-color': '#a10b0bff',  // red-500
       'circle-radius': [
-        'interpolate', ['linear'],
-        ['/', ['get', 'critical_count'], ['get', 'point_count']],
-        0, 0,
-        1, ['step', ['get', 'point_count'], 20, 100, 25, 750, 30]
+        '*',
+        ['interpolate', ['linear'],
+          ['sqrt', ['get', 'point_count']],
+          0, 0,
+          1, 6,
+          2, 9,
+          3, 12,
+          5, 15,
+          10, 21,
+          20, 29,
+          50, 40
+        ],
+        ['/', ['get', 'critical_count'], ['get', 'point_count']]
       ],
       'circle-opacity': 0.95
     }
@@ -94,7 +141,7 @@ export const countryView = {
     layout: {
       'text-field': '{point_count_abbreviated}',
       'text-size': 14,
-      'text-radial-offset': ['step', ['get', 'point_count'], 1.8, 10, 1.9, 750, 2.2],
+      'text-radial-offset': ['step', ['get', 'point_count'], 0.9, 3, 1, 5, 1.15, 10, 1.3, 20, 1.4, 50, 1.6, 100, 1.8, 500, 2.1, 1000, 2.5, 2500, 2.7],
       'text-anchor': 'top'
     },
     paint: {
@@ -136,7 +183,17 @@ export const worldView = {
     filter: ['!', ['has', 'point_count']],
     /*paint: {
       'circle-color': '#1e293b',  // slate-800 background
-      'circle-radius': ['step', ['get', 'router_count_total'], 22, 1000, 27, 10000, 32],
+      'circle-radius': [
+        'interpolate', ['linear'],
+        ['sqrt', ['get', 'router_count_total']],
+        0, 0,
+        5, 11,
+        10, 15,
+        20, 21,
+        50, 30,
+        100, 36,
+        200, 42
+      ],
       'circle-opacity': 0.8
     }*/
   } as LayerProps,
@@ -151,8 +208,17 @@ export const worldView = {
       'circle-color': '#10b981',  // emerald-500
       'circle-radius': [
         '*',
-        ['/', ['coalesce', ['get', 'healthy'], 0], ['max', ['get', 'router_count_total'], 1]],
-        ['step', ['get', 'router_count_total'], 20, 1000, 25, 10000, 30]
+        ['interpolate', ['linear'],
+          ['sqrt', ['get', 'router_count_total']],
+          0, 0,
+          5, 11,
+          10, 15,
+          20, 21,
+          50, 30,
+          100, 36,
+          200, 42
+        ],
+        ['/', ['coalesce', ['get', 'healthy'], 0], ['max', ['get', 'router_count_total'], 1]]
       ],
       'circle-opacity': 0.9
     }
@@ -168,8 +234,17 @@ export const worldView = {
       'circle-color': '#64748b',  // slate-500
       'circle-radius': [
         '*',
-        ['/', ['+', ['coalesce', ['get', 'unknown'], 0], ['coalesce', ['get', 'warning'], 0], ['coalesce', ['get', 'critical'], 0]], ['max', ['get', 'router_count_total'], 1]],
-        ['step', ['get', 'router_count_total'], 20, 1000, 25, 10000, 30]
+        ['interpolate', ['linear'],
+          ['sqrt', ['get', 'router_count_total']],
+          0, 0,
+          5, 11,
+          10, 15,
+          20, 21,
+          50, 30,
+          100, 36,
+          200, 42
+        ],
+        ['/', ['+', ['coalesce', ['get', 'unknown'], 0], ['coalesce', ['get', 'warning'], 0], ['coalesce', ['get', 'critical'], 0]], ['max', ['get', 'router_count_total'], 1]]
       ],
       'circle-opacity': 0.85
     }
@@ -185,8 +260,17 @@ export const worldView = {
       'circle-color': '#f97316',  // orange-500
       'circle-radius': [
         '*',
-        ['/', ['+', ['coalesce', ['get', 'warning'], 0], ['coalesce', ['get', 'critical'], 0]], ['max', ['get', 'router_count_total'], 1]],
-        ['step', ['get', 'router_count_total'], 20, 1000, 25, 10000, 30]
+        ['interpolate', ['linear'],
+          ['sqrt', ['get', 'router_count_total']],
+          0, 0,
+          5, 11,
+          10, 15,
+          20, 21,
+          50, 30,
+          100, 36,
+          200, 42
+        ],
+        ['/', ['+', ['coalesce', ['get', 'warning'], 0], ['coalesce', ['get', 'critical'], 0]], ['max', ['get', 'router_count_total'], 1]]
       ],
       'circle-opacity': 0.9
     }
@@ -202,8 +286,17 @@ export const worldView = {
       'circle-color': '#ef4444',  // red-500
       'circle-radius': [
         '*',
-        ['/', ['coalesce', ['get', 'critical'], 0], ['max', ['get', 'router_count_total'], 1]],
-        ['step', ['get', 'router_count_total'], 20, 1000, 25, 10000, 30]
+        ['interpolate', ['linear'],
+          ['sqrt', ['get', 'router_count_total']],
+          0, 0,
+          5, 11,
+          10, 15,
+          20, 21,
+          50, 30,
+          100, 36,
+          200, 42
+        ],
+        ['/', ['coalesce', ['get', 'critical'], 0], ['max', ['get', 'router_count_total'], 1]]
       ],
       'circle-opacity': 0.95
     }
@@ -217,7 +310,7 @@ export const worldView = {
     layout: {
       'text-field': ['get', 'router_count_total'],
       'text-size': 14,
-      'text-radial-offset': ['step', ['get', 'router_count_total'], 1.55, 1000, 1.85, 10000, 2.1],
+      'text-radial-offset': ['step', ['get', 'router_count_total'], 0.75, 10, 0.85, 20, 1, 50, 1.1, 100, 1.4, 200, 1.5, 500, 1.7, 1000, 2.2, 5000, 2.4, 10000, 2.6],
       'text-anchor': 'top',
       'text-allow-overlap': true,
       'text-ignore-placement': true
