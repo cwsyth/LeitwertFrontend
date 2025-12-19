@@ -319,7 +319,15 @@ export const worldView = {
       'text-color': '#ffffff',
       'text-halo-color': '#000000',
       'text-halo-width': 2.5,
-      'text-halo-blur': 0.5
+      'text-halo-blur': 0.5,
+      'text-opacity': [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        2, 0,
+        3, 0.3,
+        4, 1
+      ]
     }
   } as LayerProps
 };
