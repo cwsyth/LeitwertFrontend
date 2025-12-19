@@ -113,7 +113,7 @@ export const countryView = {
     source: 'points',
     filter: ['all', ['has', 'point_count'], ['>', ['get', 'critical_count'], 0]],
     paint: {
-      'circle-color': '#a10b0bff',  // red-500
+      'circle-color': '#b62b2bff',  // red-500
       'circle-radius': [
         '*',
         ['interpolate', ['linear'],
@@ -127,7 +127,7 @@ export const countryView = {
           20, 29,
           50, 40
         ],
-        ['/', ['get', 'critical_count'], ['get', 'point_count']]
+        ['*', 1.3, ['/', ['get', 'critical_count'], ['get', 'point_count']]]
       ],
       'circle-opacity': 0.95
     }
@@ -283,7 +283,7 @@ export const worldView = {
     source: 'points',
     filter: ['!', ['has', 'point_count']],
     paint: {
-      'circle-color': '#ef4444',  // red-500
+      'circle-color': '#b62b2bff',  // red-500
       'circle-radius': [
         '*',
         ['interpolate', ['linear'],
@@ -296,7 +296,7 @@ export const worldView = {
           100, 36,
           200, 42
         ],
-        ['/', ['coalesce', ['get', 'critical'], 0], ['max', ['get', 'router_count_total'], 1]]
+        ['*', 1.3, ['/', ['coalesce', ['get', 'critical'], 0], ['max', ['get', 'router_count_total'], 1]]]
       ],
       'circle-opacity': 0.95
     }
