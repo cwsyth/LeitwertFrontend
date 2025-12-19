@@ -59,7 +59,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
         if (mapRef.current) {
             mapRef.current.flyTo({
                 center: [longitude, latitude],
-                zoom: 4.5,
+                zoom: 5,
                 duration: 1000
             });
         }

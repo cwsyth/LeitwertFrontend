@@ -94,7 +94,7 @@ export const countryView = {
     layout: {
       'text-field': '{point_count_abbreviated}',
       'text-size': 14,
-      'text-offset': [0, 1.75],
+      'text-radial-offset': ['step', ['get', 'point_count'], 1.8, 10, 1.9, 750, 2.2],
       'text-anchor': 'top'
     },
     paint: {
@@ -217,7 +217,7 @@ export const worldView = {
     layout: {
       'text-field': ['get', 'router_count_total'],
       'text-size': 14,
-      'text-offset': [0, 1.75],
+      'text-radial-offset': ['step', ['get', 'router_count_total'], 1.55, 1000, 1.85, 10000, 2.1],
       'text-anchor': 'top',
       'text-allow-overlap': true,
       'text-ignore-placement': true
