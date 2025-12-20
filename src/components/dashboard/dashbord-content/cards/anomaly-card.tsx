@@ -185,7 +185,7 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
                                 </div>
                                 <div className="text-xs text-muted-foreground mt-1">Anomalien</div>
                             </div>
-                            <div className="text-4xl">
+                            <div className="text-4xl w-12 flex items-center justify-center">
                                 <TrendIcon trend={anomalyData.trend} />
                             </div>
                         </div>
