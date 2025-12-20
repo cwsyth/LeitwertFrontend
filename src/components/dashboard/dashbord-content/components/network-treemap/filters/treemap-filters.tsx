@@ -46,6 +46,10 @@ interface TreeMapFiltersProps {
     asMetric?: AsSizeMetric;
     onCountryMetricChange?: (metric: CountrySizeMetric) => void;
     onAsMetricChange?: (metric: AsSizeMetric) => void;
+
+    // Thresholds
+    thresholds: StatusThresholds;
+    onThresholdsChange: (thresholds: StatusThresholds) => void;
 }
 
 export function TreeMapFilters({
@@ -60,6 +64,8 @@ export function TreeMapFilters({
                                    asMetric,
                                    onCountryMetricChange,
                                    onAsMetricChange,
+                                   thresholds,
+                                   onThresholdsChange
                                }: TreeMapFiltersProps) {
     return (
         <div className="mb-6 p-4 border rounded-lg bg-card">
@@ -77,6 +83,8 @@ export function TreeMapFilters({
                     onCountryMetricChange={onCountryMetricChange}
                     onAsMetricChange={onAsMetricChange}
                 />
+
+                <ThresholdSettings thresholds={thresholds} onChange={onThresholdsChange} />
             </div>
         </div>
     );
