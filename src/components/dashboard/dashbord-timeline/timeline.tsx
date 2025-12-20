@@ -139,8 +139,7 @@ export default function TimeRangeSelector() {
         windowSize,
         setPreset,
         setTimeRange,
-        startPlayback,
-        pausePlayback,
+        togglePlayback,
         setPlaybackSpeed: setStorePlaybackSpeed,
         setPlaybackPosition,
         setWindowSize,
@@ -299,12 +298,8 @@ export default function TimeRangeSelector() {
     }, []);
 
     const handlePlayPause = useCallback(() => {
-        if (isPlaying) {
-            pausePlayback();
-        } else {
-            startPlayback();
-        }
-    }, [isPlaying, pausePlayback, startPlayback]);
+        togglePlayback();
+    }, [togglePlayback]);
 
     const handleSpeedChange = useCallback(() => {
         // Cycle through speed options

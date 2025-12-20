@@ -25,8 +25,7 @@ interface TimeRangeState {
     // Actions
     setTimeRange: (start: Date, end: Date) => void;
     setPreset: (preset: TimeRangePreset) => void;
-    startPlayback: () => void;
-    pausePlayback: () => void;
+    togglePlayback: () => void;
     setPlaybackSpeed: (speed: number) => void;
     setPlaybackPosition: (position: Date) => void;
     resetPlayback: () => void;
@@ -80,7 +79,7 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
             get().setTimeRange(start, now);
         },
 
-        startPlayback: () => {
+        togglePlayback: () => {
             const state = get();
 
             if (state._playbackTimer) {
@@ -127,31 +126,15 @@ export const useTimeRangeStore = create<TimeRangeState>((set, get) => {
         pausePlayback: () => {
             const state = get();
 
-            if (state._playbackTimer) {
-                clearInterval(state._playbackTimer);
-            }
-
-            set({
-                isPlaying: false,
-                _playbackTimer: null
-            });
-        },
-
-        setPlaybackSpeed: (speed) => {
-            const wasPlaying = get().isPlaying;
-            const currentPosition = get().playbackPosition;
-
-            set({ playbackSpeed: speed });
-
-            if (wasPlaying && currentPosition) {
-                get().pausePlayback();
-                setTimeout(() => get().startPlayback(), 10);
-            }
-        },
-
-        setPlaybackPosition: (position: Date) => {
-            if (get().isPlaying) {
-                get().pausePlayback();
+            // Pause if playing to allow manual scrubbing
+            if (state.isPlaying) {
+                if (state._playbackTimer) {
+                    clearInterval(state._playbackTimer);
+                }
+                set({
+                    isPlaying: false,
+                    _playbackTimer: null
+                });
             }
 
             set({ playbackPosition: position });
