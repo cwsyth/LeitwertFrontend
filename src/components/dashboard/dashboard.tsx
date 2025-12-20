@@ -12,8 +12,6 @@ import {
     Router,
 } from "@/types/dashboard";
 import { BgpAnnounceChart } from "./dashbord-content/components/charts/bgp-announce-chart";
-import dynamic from "next/dynamic";
-import {Skeleton} from "@/components/ui/skeleton";
 
 export default function Dashboard() {
     const [mode, setMode] = useState<DashboardContentMode>("street");
@@ -42,22 +40,9 @@ export default function Dashboard() {
 
     const [selectedRouter, setSelectedRouter] = useState<Router | null>(null);
 
-    const TimeRangeSelector = dynamic(
-        () => import('./dashbord-timeline/timeline'),
-        {
-            ssr: false,
-            loading: () => (
-                <div className="flex items-center justify-end w-full">
-                    <Skeleton className="h-9 w-55" />
-                </div>
-            )
-        }
-    );
-
     return (
         <div className="dashboard-wrapper h-full flex flex-col items-center justify-center p8">
             <div className="dashboard w-full h-full flex flex-col items-center gap-3">
-                <TimeRangeSelector />
                 <DashboardHeader
                     viewVisibility={viewVisibility}
                     toggleView={toggleView}
