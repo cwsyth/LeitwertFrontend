@@ -137,7 +137,10 @@ function ChartTooltip({
                         </span>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-[0.70rem] uppercase text-muted-foreground">
+                        <span
+                            className="text-[0.70rem] uppercase"
+                            style={{ color: "var(--primary)" }}
+                        >
                             {valueLabel}
                         </span>
                         <span className="font-bold">
@@ -146,8 +149,11 @@ function ChartTooltip({
                     </div>
                     {data.avg_ttl !== undefined && (
                         <div className="flex flex-col">
-                            <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                Avg TTL
+                            <span
+                                className="text-[0.70rem] uppercase"
+                                style={{ color: "#ef4444" }}
+                            >
+                                TTL
                             </span>
                             <span className="font-bold">
                                 {data.avg_ttl}
@@ -156,7 +162,10 @@ function ChartTooltip({
                     )}
                     {data.next_power_of_2 !== undefined && (
                         <div className="flex flex-col">
-                            <span className="text-[0.70rem] uppercase text-muted-foreground">
+                            <span
+                                className="text-[0.70rem] uppercase"
+                                style={{ color: "#16a34a" }}
+                            >
                                 Next Power of 2
                             </span>
                             <span className="font-bold">
@@ -488,6 +497,8 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                                         ]}
                                         dataKey={mode === "ip" ? "avg_rtt" : "total_increments"}
                                         valueLabel={mode === "ip" ? "Avg RTT" : "Increments"}
+                                        showAvgTtl={mode === "ip"}
+                                        showNextPowerOf2={mode === "ip"}
                                     />
                                     <div
                                         className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"

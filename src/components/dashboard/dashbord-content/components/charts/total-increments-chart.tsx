@@ -20,6 +20,8 @@ interface TotalIncrementsChartProps {
     domain?: [number, number];
     dataKey?: keyof BoxPlotData;
     valueLabel?: string;
+    showAvgTtl?: boolean;
+    showNextPowerOf2?: boolean;
 }
 
 interface CustomAnomalyDotProps {
@@ -36,6 +38,8 @@ const TotalIncrementsChartComponent = ({
     domain,
     dataKey = "total_increments",
     valueLabel = "Increments",
+    showAvgTtl = false,
+    showNextPowerOf2 = false,
 }: TotalIncrementsChartProps) => {
     const [refAreaLeft, setRefAreaLeft] = useState<number | null>(null);
     const [refAreaRight, setRefAreaRight] = useState<number | null>(null);
@@ -143,6 +147,20 @@ const TotalIncrementsChartComponent = ({
                         className="text-xs text-muted-foreground"
                         width={50}
                     />
+                    {(showAvgTtl || showNextPowerOf2) && (
+                        <YAxis
+                            yAxisId="right"
+                            orientation="right"
+                            className="text-xs text-muted-foreground"
+                            width={50}
+                            label={{
+                                value: "TTL",
+                                angle: -90,
+                                position: "insideRight",
+                                style: { fill: "#ef4444" } // red-500
+                            }}
+                        />
+                    )}
 
                     <Tooltip
                         isAnimationActive={false}
@@ -173,7 +191,10 @@ const TotalIncrementsChartComponent = ({
                                                 </div>
                                             </div>
                                             <div>
-                                                <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                                <span
+                                                    className="text-[0.70rem] uppercase"
+                                                    style={{ color: "var(--primary)" }}
+                                                >
                                                     {valueLabel}
                                                 </span>
                                                 <div className="font-bold">
@@ -209,8 +230,11 @@ const TotalIncrementsChartComponent = ({
                                             )}
                                             {item.avg_ttl !== undefined && (
                                                 <div>
-                                                    <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                                        Avg TTL
+                                                    <span
+                                                        className="text-[0.70rem] uppercase"
+                                                        style={{ color: "#ef4444" }}
+                                                    >
+                                                        TTL
                                                     </span>
                                                     <div className="font-bold">
                                                         {item.avg_ttl}
@@ -219,7 +243,10 @@ const TotalIncrementsChartComponent = ({
                                             )}
                                             {item.next_power_of_2 !== undefined && (
                                                 <div>
-                                                    <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                                    <span
+                                                        className="text-[0.70rem] uppercase"
+                                                        style={{ color: "#16a34a" }}
+                                                    >
                                                         Next Power of 2
                                                     </span>
                                                     <div className="font-bold">
@@ -260,6 +287,33 @@ const TotalIncrementsChartComponent = ({
                         activeDot={{ r: 4, strokeWidth: 0 }}
                         isAnimationActive={false}
                     />
+
+                    {showNextPowerOf2 && (
+                        <Line
+                            type="step"
+                            dataKey="next_power_of_2"
+                            stroke="#16a34a" // green-600
+                            strokeWidth={1}
+                            strokeDasharray="4 4"
+                            dot={false}
+                            activeDot={false}
+                            isAnimationActive={false}
+                            yAxisId="right"
+                        />
+                    )}
+
+                    {showAvgTtl && (
+                        <Line
+                            type="monotone"
+                            dataKey="avg_ttl"
+                            stroke="#ef4444" // red-500
+                            strokeWidth={1}
+                            dot={false}
+                            activeDot={{ r: 4, strokeWidth: 0 }}
+                            isAnimationActive={false}
+                            yAxisId="right"
+                        />
+                    )}
 
                     {/* Anomaly markers as custom dots */}
                     <Line
