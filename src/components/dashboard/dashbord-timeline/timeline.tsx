@@ -29,16 +29,18 @@ import {useTimeRangeStore} from "@/lib/stores/time-range-store";
 import {TimeRangePreset, WindowConfig} from "@/types/time-range";
 import {API_BASE_URL} from "@/lib/config";
 
-// Constants
+// Date range boundaries for calendar picker
 const MIN_DATE = new Date(new Date().getFullYear(), 9, 1); // Oct 1st
 const MAX_DATE = new Date(); // Today
 
+// Quick select preset buttons
 const PRESET_BUTTONS = [
     {preset: TimeRangePreset.SMALL, label: "-1 Tag"},
     {preset: TimeRangePreset.MEDIUM, label: "-7 Tage"},
     {preset: TimeRangePreset.LARGE, label: "-14 Tage"},
 ] as const;
 
+// Playback speed multipliers
 const SPEED_OPTIONS = [
     {value: 0.5, label: "0,5x"},
     {value: 1, label: "1x"},
@@ -65,7 +67,7 @@ interface TempDateTime {
     endMinute: string;
 }
 
-// Custom Hook for available time range
+// Fetches available time range from API (data confirmed to exist)
 function useAvailableTimeRange() {
     const [timeRange, setTimeRange] = useState<AvailableTimeRange | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -91,7 +93,7 @@ function useAvailableTimeRange() {
     return {timeRange, isLoading};
 }
 
-// Utility functions
+// Determines allowed window sizes based on time range duration
 function getWindowConfig(durationHours: number): WindowConfig {
     const durationDays = durationHours / 24;
 
@@ -116,6 +118,7 @@ function getWindowConfig(durationHours: number): WindowConfig {
     }
 }
 
+// Formats API time range for button label (e.g. "Mo. 16.12 00:00 Uhr - Di. 17.12 00:00 Uhr")
 function formatAvailableRangeLabel(range: AvailableTimeRange): string {
     const from = new Date(range.from);
     const to = new Date(range.to);
@@ -149,11 +152,11 @@ export default function TimeRangeSelector() {
         isLoading: isLoadingAvailableRange
     } = useAvailableTimeRange();
 
-    // UI State
+    // UI state for popover and tooltip
     const [isOpen, setIsOpen] = useState(false);
     const [showTooltip, setShowTooltip] = useState(false);
 
-    //
+    // Draft state for date/time picker - only committed to store on "Apply"
     const [tempDateTime, setTempDateTime] = useState<TempDateTime>(() => ({
         startDate: timeRange.start,
         endDate: timeRange.end,
@@ -163,17 +166,19 @@ export default function TimeRangeSelector() {
         endMinute: timeRange.end.getMinutes().toString().padStart(2, "0")
     }));
 
-    // Memoized calculations
+    // Calculate duration in hours (cached, only recalculates when timeRange changes)
     const timeRangeDuration = useMemo(() => {
         const durationMs = timeRange.end.getTime() - timeRange.start.getTime();
         return durationMs / (1000 * 60 * 60);
     }, [timeRange]);
 
+    // Determine which window sizes are allowed based on duration
     const windowConfig = useMemo(() =>
             getWindowConfig(timeRangeDuration),
         [timeRangeDuration]
     );
 
+    // Calculate slider position based on playback position (0-100%)
     const sliderValue = useMemo(() => {
         if (!playbackPosition) return 0;
         const totalDuration = timeRange.end.getTime() - timeRange.start.getTime();
@@ -181,6 +186,7 @@ export default function TimeRangeSelector() {
         return (elapsed / totalDuration) * 100;
     }, [playbackPosition, timeRange]);
 
+    // Button data for available time range (includes selected state)
     const availableRangeButton = useMemo(() => {
         if (!availableTimeRange) return null;
         return {
@@ -195,7 +201,7 @@ export default function TimeRangeSelector() {
         };
     }, [availableTimeRange, timeRange]);
 
-    // Sync temp state with store timeRange changes
+    // Sync temp state when store timeRange changes (e.g. from preset buttons)
     useEffect(() => {
         setTempDateTime({
             startDate: timeRange.start,
@@ -207,7 +213,7 @@ export default function TimeRangeSelector() {
         });
     }, [timeRange]);
 
-    // Auto-adjust window size based on duration
+    // Auto-adjust window size if current size becomes invalid
     useEffect(() => {
         if (!windowConfig.allowedSizes.includes(windowSize)) {
             setWindowSize(windowConfig.defaultSize);
@@ -255,6 +261,7 @@ export default function TimeRangeSelector() {
     }, [tempDateTime, setTimeRange, resetPlayback]);
 
     const handleCancel = useCallback(() => {
+        // Reset temp state to current store values
         setTempDateTime({
             startDate: timeRange.start,
             endDate: timeRange.end,
@@ -284,6 +291,7 @@ export default function TimeRangeSelector() {
     const handleTimeBlur = useCallback((
         field: keyof Pick<TempDateTime, 'startHour' | 'startMinute' | 'endHour' | 'endMinute'>
     ) => {
+        // Pad with leading zero on blur
         setTempDateTime(prev => ({
             ...prev,
             [field]: prev[field].padStart(2, "0")
@@ -299,12 +307,14 @@ export default function TimeRangeSelector() {
     }, [isPlaying, pausePlayback, startPlayback]);
 
     const handleSpeedChange = useCallback(() => {
+        // Cycle through speed options
         const currentIndex = SPEED_OPTIONS.findIndex(opt => opt.value === playbackSpeed);
         const nextIndex = (currentIndex + 1) % SPEED_OPTIONS.length;
         setStorePlaybackSpeed(SPEED_OPTIONS[nextIndex].value);
     }, [playbackSpeed, setStorePlaybackSpeed]);
 
     const handleSliderChange = useCallback((values: number[]) => {
+        // Convert slider percentage to actual timestamp
         const percentage = values[0];
         const totalDuration = timeRange.end.getTime() - timeRange.start.getTime();
         const elapsed = (percentage / 100) * totalDuration;
@@ -326,7 +336,8 @@ export default function TimeRangeSelector() {
                     {/* Available Data Range */}
                     {availableRangeButton && (
                         <div className="pb-4 border-b">
-                            <label className="text-sm font-medium block mb-2">
+                            <label
+                                className="text-sm font-medium block mb-2">
                                 Zeiträume mit gesicherten Daten
                             </label>
                             <Button
