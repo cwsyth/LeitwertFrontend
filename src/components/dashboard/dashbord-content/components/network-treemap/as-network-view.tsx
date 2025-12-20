@@ -7,21 +7,23 @@
 
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
-import { TreeMap } from '@/components/network/TreeMap';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
-    AsTreeMapProps,
+    TreeMap
+} from '@/components/dashboard/dashbord-content/components/network-treemap/tree-map';
+import {
+    AsNetworkViewProps,
     NetworkStatus,
+    OthersMetadata,
     TreeMapDataItem,
-    TreeMapOthersData,
-    OthersMetadata
+    TreeMapOthersData
 } from '@/types/network';
-import { networkApi } from '@/services/networkApi';
-import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, Globe, Hash, Network } from "lucide-react";
+import {networkApi} from '@/services/networkApi';
+import {Skeleton} from "@/components/ui/skeleton";
+import {AlertTriangle, Globe, Hash, Network} from "lucide-react";
 import {useTimeRangeStore} from "@/lib/stores/time-range-store";
 
-export function AsTreeMap({
+export function AsNetworkView({
                               countryCode,
                               limit = 10,
                               showLabels,
@@ -30,7 +32,7 @@ export function AsTreeMap({
                               statusFilter = 'all',
                               onStatusFilterChange,
                               onBackClick
-                          }: AsTreeMapProps) {
+                          }: AsNetworkViewProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
     const [countryName, setCountryName] = useState('');

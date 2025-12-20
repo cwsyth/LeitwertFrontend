@@ -7,16 +7,16 @@
 
 'use client';
 
-import { ResponsiveContainer, Tooltip, Treemap } from 'recharts';
-import { NetworkStatus, TreeMapDataItem, TreeMapProps } from '@/types/network';
+import {ResponsiveContainer, Tooltip, Treemap} from 'recharts';
+import {NetworkStatus, TreeMapDataItem, TreeMapProps} from '@/types/network';
 import {
     getGradientColor,
     getStatusColor,
     OTHERS_COLOR
 } from '@/lib/statusColors';
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {ArrowLeft} from "lucide-react";
 
 export function TreeMap({
                             data,

@@ -7,18 +7,23 @@
 
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { TreeMap } from '@/components/network/TreeMap';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
-    TreeMapDataItem, TreeMapOthersData, NetworkStatus,
-    CountriesTreeMapProps, OthersMetadata
+    TreeMap
+} from '@/components/dashboard/dashbord-content/components/network-treemap/tree-map';
+import {
+    CountriesViewProps,
+    NetworkStatus,
+    OthersMetadata,
+    TreeMapDataItem,
+    TreeMapOthersData
 } from '@/types/network';
-import { networkApi } from '@/services/networkApi';
-import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, Building2, Globe } from "lucide-react";
+import {networkApi} from '@/services/networkApi';
+import {Skeleton} from "@/components/ui/skeleton";
+import {AlertTriangle, Building2, Globe} from "lucide-react";
 import {useTimeRangeStore} from "@/lib/stores/time-range-store";
 
-export function CountriesTreeMap({
+export function CountriesView({
                                      limit = 50,
                                      onCountryClick,
                                      showLabels,
@@ -26,7 +31,7 @@ export function CountriesTreeMap({
                                      sizeMetric = 'as_count',
                                      statusFilter = 'all',
                                      onStatusFilterChange
-                                 }: CountriesTreeMapProps) {
+                                 }: CountriesViewProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
     const [isLoading, setIsLoading] = useState(true);
