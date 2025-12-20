@@ -62,10 +62,10 @@ export default function DashboardFooterSearch({ selectedCountry, routers, setSel
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="flex gap-1">
-                                    { router.status === "good" && <Badge variant="default" className="min-w-[60px] text-background justify-center text-xs bg-green-500">ok</Badge> }
-                                    { router.status === "degraded" && <Badge variant="secondary" className="min-w-[60px] text-background justify-center text-xs bg-yellow-500">warn</Badge> }
-                                    { router.status === "offline" && <Badge variant="destructive" className="min-w-[60px] text-background justify-center text-xs">down</Badge> }
-                                    { router.status === "unknown" && <Badge variant="outline" className="min-w-[60px] text-foreground justify-center text-xs">n/a</Badge> }
+                                    { <Badge variant="default" className="min-w-[60px] text-background justify-center text-xs bg-green-500">ok</Badge> }
+                                    { <Badge variant="secondary" className="min-w-[60px] text-background justify-center text-xs bg-yellow-500">warn</Badge> }
+                                    { <Badge variant="destructive" className="min-w-[60px] text-background justify-center text-xs">down</Badge> }
+                                    { <Badge variant="outline" className="min-w-[60px] text-foreground justify-center text-xs">n/a</Badge> }
                                 </CardContent>
                             </Card>
                         ))}

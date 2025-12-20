@@ -9,6 +9,7 @@ import {
     useCallback,
 } from "react";
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
+import { useLocationStore } from "@/lib/stores/location-store";
 import { BoxPlotChart, BoxPlotData } from "./boxplot-chart";
 import { TotalIncrementsChart } from "./total-increments-chart";
 import { ZoomOut } from "lucide-react";
@@ -45,15 +46,16 @@ async function fetchBoxPlotData(
     range: TimeRange,
     mode: QueryMode,
     identifier: string,
+    location: string,
     from: Date,
     to: Date
 ): Promise<BoxPlotData[]> {
     let url = "";
 
     if (mode === "as") {
-        url = `${API_BASE_URL}/v1/bgp/announce-as-count-per-as?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&as-path-entry=${identifier}`;
+        url = `${API_BASE_URL}/v1/bgp/announce-as-count-per-as?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&as-path-entry=${identifier}&location=${location}`;
     } else {
-        url = `${API_BASE_URL}/v1/bgp/announce-cc-count-per-cc?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&cc=${identifier}`;
+        url = `${API_BASE_URL}/v1/bgp/announce-cc-count-per-cc?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&cc=${identifier}&location=${location}`;
     }
 
     const response = await fetch(url);
@@ -147,6 +149,9 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
     const { timeRange, windowSize, isPlaying, playbackPosition } =
         useTimeRangeStore();
 
+    // Global Location Store
+    const { selectedLocationId } = useLocationStore();
+
     const [mode, setMode] = useState<QueryMode>("as");
     const [identifier, setIdentifier] = useState("");
     const [debouncedIdentifier, setDebouncedIdentifier] = useState(identifier);
@@ -190,6 +195,7 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
             windowSize, // Use windowSize as range/resolution key
             mode,
             debouncedIdentifier,
+            selectedLocationId,
             timeRange.start.toISOString(),
             timeRange.end.toISOString(),
         ],
@@ -198,10 +204,11 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                 windowSize as TimeRange,
                 mode,
                 debouncedIdentifier,
+                selectedLocationId || "",
                 timeRange.start,
                 timeRange.end
             ),
-        enabled: debouncedIdentifier.length > 0,
+        enabled: debouncedIdentifier.length > 0 && !!selectedLocationId,
     });
 
     // Pre-process data to include timestampMs for faster filtering

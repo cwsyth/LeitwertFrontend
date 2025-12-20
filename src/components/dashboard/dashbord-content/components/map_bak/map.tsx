@@ -59,7 +59,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
         if (mapRef.current) {
             mapRef.current.flyTo({
                 center: [longitude, latitude],
-                zoom: 5,
+                zoom: 4.5,
                 duration: 1000
             });
         }
@@ -87,14 +87,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                                     feature.properties.ISO.toLowerCase() === item.country_code.toLowerCase()
                                 )?.geometry.coordinates || [0, 0],
                         },
-                        properties: {
-                            ...item,
-                            // Flatten router_count_status for layer expressions
-                            healthy: item.router_count_status.healthy || 0,
-                            warning: item.router_count_status.warning || 0,
-                            critical: item.router_count_status.critical || 0,
-                            unknown: item.router_count_status.unknown || 0
-                        }
+                        properties: item
                     }))
                 };
                 return mapData;
@@ -347,24 +340,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                     zoom: 4.5
                 }}
                 mapStyle="https://dev-maptiler.univ.leitwert.net/styles/dark-basic/style.json"
-                interactiveLayerIds={isWorld
-                    ? [
-                        worldView.baseLayer.id!,
-                        worldView.healthyLayer.id!,
-                        worldView.unknownLayer.id!,
-                        worldView.warningLayer.id!,
-                        worldView.criticalLayer.id!
-                    ]
-                    : [
-                        countryView.clusterBaseLayer.id!,
-                        countryView.clusterHealthyLayer.id!,
-                        countryView.clusterUnknownLayer.id!,
-                        countryView.clusterWarningLayer.id!,
-                        countryView.clusterCriticalLayer.id!,
-
-                        countryView.unclusteredPointLayer.id!
-                    ]
-                }
+                interactiveLayerIds={isWorld ? [worldView.unclusteredPointLayer.id!] : [countryView.clusterLayer.id!, countryView.unclusteredPointLayer.id!]}
                 onClick={onClick}
                 onMouseMove={onMouseMove}
                 onMouseLeave={onMouseLeave}
@@ -380,26 +356,12 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                     cluster={!isWorld}
                     clusterMaxZoom={14}
                     clusterRadius={50}
-                    clusterProperties={{
-                        critical_count: ['+', ['case', ['==', ['get', 'status'], 'critical'], 1, 0]],
-                        warning_count: ['+', ['case', ['==', ['get', 'status'], 'warning'], 1, 0]],
-                        healthy_count: ['+', ['case', ['==', ['get', 'status'], 'healthy'], 1, 0]],
-                        unknown_count: ['+', ['case', ['==', ['get', 'status'], 'unknown'], 1, 0]]
-                    }}
                 >
                     {isWorld ? [
-                        <Layer key="world-base" {...worldView.baseLayer} />,
-                        <Layer key="world-healthy" {...worldView.healthyLayer} />,
-                        //<Layer key="world-unknown" {...worldView.unknownLayer} />,
-                        <Layer key="world-warning" {...worldView.warningLayer} />,
-                        <Layer key="world-critical" {...worldView.criticalLayer} />,
+                        <Layer key="world-unclustered-point" {...worldView.unclusteredPointLayer} />,
                         <Layer key="world-cluster-count" {...worldView.clusterCountLayer} />
                     ] : [
-                        <Layer key="country-clusters-base" {...countryView.clusterBaseLayer} />,
-                        <Layer key="country-clusters-healthy" {...countryView.clusterHealthyLayer} />,
-                        //<Layer key="country-clusters-unknown" {...countryView.clusterUnknownLayer} />,
-                        <Layer key="country-clusters-warning" {...countryView.clusterWarningLayer} />,
-                        <Layer key="country-clusters-critical" {...countryView.clusterCriticalLayer} />,
+                        <Layer key="country-clusters" {...countryView.clusterLayer} />,
                         <Layer key="country-cluster-count" {...countryView.clusterCountLayer} />,
                         <Layer key="country-unclustered-point" {...countryView.unclusteredPointLayer} />
                     ]}
