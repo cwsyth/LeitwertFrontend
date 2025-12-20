@@ -15,16 +15,14 @@ interface TimeSeriesAnomalyResponse {
     timestamps: string[];
 }
 
-interface AnomalyData {
-    current: number;
-    previous: number | null;
-    trend: 'increasing' | 'decreasing' | 'stable'
-}
+type Trend = 'increasing' | 'decreasing' | 'stable';
 
 export function AnomalyCard({ title, description, apiEndpoint, className, selectedCountry }: StatusCardProps) {
     const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesAnomalyResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(false);
+    const [currentAnomaly, setCurrentAnomaly] = useState(0);
+    const [trend, setTrend] = useState<Trend>('stable');
 
     const timeRange = useTimeRangeStore((state) => state.timeRange);
     const playbackPosition = useTimeRangeStore((state) => state.playbackPosition);
@@ -53,6 +51,8 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
 
                 const result: TimeSeriesAnomalyResponse = await response.json();
                 setTimeSeriesData(result);
+                setCurrentAnomaly(0);
+                setTrend('stable');
             } catch (err) {
                 console.error('Error fetching anomaly data:', err);
                 setError(true);
@@ -65,10 +65,8 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
     }, [apiEndpoint, selectedCountry, timeRange]);
 
     const getCurrentIndex = (): number => {
-        // No data available
-        if (!timeSeriesData || timeSeriesData.timestamps.length === 0) {
-            return 0;
-        }
+        if (!timeSeriesData || timeSeriesData.timestamps.length === 0) return 0;
+        if (!playbackPosition) return timeSeriesData.timestamps.length - 1;
 
         // Show latest value if no playback position is set
         if (!playbackPosition) {
@@ -96,34 +94,31 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
         return result;
     };
 
-    const getCurrentAnomalyData = (): AnomalyData | null => {
-        if (!timeSeriesData || timeSeriesData.anomalies.length === 0) return null;
+    useEffect(() => {
+        if (!timeSeriesData) return;
 
         const index = getCurrentIndex();
-        const current = timeSeriesData.anomalies[index];
-        const previous = index > 0 ? timeSeriesData.anomalies[index - 1] : null;
+        const newValue = timeSeriesData.anomalies[index];
 
-        let trend: 'increasing' | 'decreasing' | 'stable'
-        if (previous === null) {
-            trend = 'stable';
-        } else if (current > previous) {
-            trend = 'increasing';
-        } else if (current < previous) {
-            trend = 'decreasing';
+        if (newValue !== currentAnomaly) {
+            const newTrend: Trend = newValue > currentAnomaly ? 'increasing'
+                : newValue < currentAnomaly ? 'decreasing'
+                    : 'stable';
+
+            setTrend(newTrend);
+            setCurrentAnomaly(newValue);
         } else {
-            trend = 'stable';
+            setTrend('stable');
         }
-
-        return { current, previous, trend };
-    };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [playbackPosition, timeSeriesData]);
 
     const getAggregatedChartData = () => {
-        if (!timeSeriesData || timeSeriesData.anomalies.length === 0) return [];
+        if (!timeSeriesData) return [];
 
         const dataLength = timeSeriesData.anomalies.length;
         const targetPoints = 30;
 
-        // If we have fewer points, show all
         if (dataLength <= targetPoints) {
             return timeSeriesData.anomalies.map((value, index) => ({
                 value,
@@ -131,7 +126,6 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
             }));
         }
 
-        // Otherwise aggregate
         const step = Math.floor(dataLength / targetPoints);
         const aggregated: { value: number; timestamp: string }[] = [];
 
@@ -159,7 +153,6 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
         return <span className="text-muted-foreground">—</span>;
     };
 
-    const anomalyData = getCurrentAnomalyData();
     const chartData = getAggregatedChartData();
 
     const chartConfig = {
@@ -209,19 +202,24 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
                             <AlertCircle className="h-3 w-3" />
                             <span>Fehler beim Datenabruf!</span>
                         </div>
-                    ) : anomalyData ? (
-                        <div className="flex items-center justify-center gap-3 py-4">
+                    ) : (
+                        <div
+                            className="flex items-center justify-center gap-3 py-4">
                             <div className="text-center">
-                                <div className="text-5xl font-bold leading-none">
-                                    {anomalyData.current.toLocaleString('de-DE')}
+                                <div
+                                    className="text-5xl font-bold leading-none">
+                                    {currentAnomaly.toLocaleString('de-DE')}
                                 </div>
-                                <div className="text-xs text-muted-foreground mt-1">Anomalien</div>
+                                <div
+                                    className="text-xs text-muted-foreground mt-1">Anomalien
+                                </div>
                             </div>
-                            <div className="text-4xl w-12 flex items-center justify-center">
-                                <TrendIcon trend={anomalyData.trend} />
+                            <div
+                                className="text-4xl w-12 flex items-center justify-center">
+                                <TrendIcon trend={trend}/>
                             </div>
                         </div>
-                    ) : null}
+                    )}
                 </div>
             </CardContent>
         </Card>
