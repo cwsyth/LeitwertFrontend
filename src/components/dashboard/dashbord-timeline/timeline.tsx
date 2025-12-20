@@ -247,6 +247,17 @@ export default function TimeRangeSelector() {
         isAvailable: true
     } : null;
 
+    const isAvailableRangeSelected = (): boolean => {
+        if (!availableTimeRange) return false;
+
+        const apiStart = new Date(availableTimeRange.from).getTime();
+        const apiEnd = new Date(availableTimeRange.to).getTime();
+        const currentStart = timeRange.start.getTime();
+        const currentEnd = timeRange.end.getTime();
+
+        return apiStart === currentStart && apiEnd === currentEnd;
+    };
+
     const handleAvailableRangeClick = () => {
         if (!availableTimeRange) return;
 
@@ -303,7 +314,7 @@ export default function TimeRangeSelector() {
                         <div className="pb-4 border-b">
                             <label className="text-sm font-medium block mb-2">Zeiträume mit gesicherten Daten</label>
                             <Button
-                                variant="default"
+                                variant={isAvailableRangeSelected() ? "default" : "outline"}
                                 size="sm"
                                 onClick={handleAvailableRangeClick}
                                 disabled={isLoadingAvailableRange}
