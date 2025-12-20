@@ -49,13 +49,13 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
                 const response = await fetch(url);
                 if (!response.ok) {
                     const errorText = await response.text();
-                    throw new Error(`Failed to fetch status: ${response.status} ${errorText}`);
+                    throw new Error(`Failed to fetch anomaly data: ${response.status} ${errorText}`);
                 }
 
                 const result: TimeSeriesAnomalyResponse = await response.json();
                 setTimeSeriesData(result);
             } catch (err) {
-                console.error('Error fetching status data:', err);
+                console.error('Error fetching anomaly data:', err);
                 setError(true);
             } finally {
                 setIsLoading(false);
@@ -97,22 +97,39 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
         return result;
     };
 
-    const getCurrentStatusData = (): AnomalyData | null => {
-        if (!timeSeriesData) return null;
+    const getCurrentAnomalyData = (): AnomalyData | null => {
+        if (!timeSeriesData || timeSeriesData.anomalies.length === 0) return null;
 
         const index = getCurrentIndex();
+        const current = timeSeriesData.anomalies[index];
+        const previous = index > 0 ? timeSeriesData.anomalies[index - 1] : null;
 
-        return {
-            count: timeSeriesData.count[index],
-            healthy: timeSeriesData.healthy[index],
-            warning: timeSeriesData.warning[index],
-            critical: timeSeriesData.critical[index],
-            unknown: timeSeriesData.unknown[index],
-        };
+        let trend: 'increasing' | 'decreasing' | 'stable'
+        if (previous === null) {
+            trend = 'stable';
+        } else if (current > previous) {
+            trend = 'increasing';
+        } else if (current < previous) {
+            trend = 'decreasing';
+        } else {
+            trend = 'stable';
+        }
+
+        return { current, previous, trend };
+    };
+
+    const TrendIcon = ({ trend }: { trend: 'increasing' | 'decreasing' | 'stable' }) => {
+        if (trend === 'increasing') {
+            return <span className="text-red-500">↗</span>;
+        }
+        if (trend === 'decreasing') {
+            return <span className="text-green-500">↙</span>;
+        }
+        return <span className="text-muted-foreground">—</span>;
     };
 
     const getStatusItems = (): StatusItem[] => {
-        const data = getCurrentStatusData();
+        const data = getCurrentAnomalyData();
         if (!data) return [];
 
         return [
@@ -124,7 +141,7 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
     };
 
     const statusItems = getStatusItems();
-    const currentData = getCurrentStatusData();
+    const currentData = getCurrentAnomalyData();
 
     return (
         <Card className={`${className} flex-1`}>
