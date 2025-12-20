@@ -22,6 +22,37 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { TimeRangePreset, WindowSize, WindowConfig } from "@/types/time-range";
+import {API_BASE_URL} from "@/lib/config";
+
+interface AvailableTimeRange {
+    from: string;
+    to: string;
+}
+
+function useAvailableTimeRange() {
+    const [timeRange, setTimeRange] = useState<AvailableTimeRange | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchAvailableTimeRange() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/v1/bgp/usable-time-range`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setTimeRange(data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch usable time range:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        fetchAvailableTimeRange();
+    }, []);
+
+    return { timeRange, isLoading };
+}
 
 export default function TimeRangeSelector() {
     const {
@@ -40,6 +71,8 @@ export default function TimeRangeSelector() {
         setWindowSize,
         resetPlayback
     } = useTimeRangeStore();
+
+    const { timeRange: availableTimeRange, isLoading: isLoadingAvailableRange } = useAvailableTimeRange();
 
     const [isOpen, setIsOpen] = useState(false);
     const [sliderValue, setSliderValue] = useState(0);
@@ -199,6 +232,32 @@ export default function TimeRangeSelector() {
         setPlaybackPosition(newPosition);
     };
 
+    const formatAvailableRangeLabel = (range: AvailableTimeRange): string => {
+        const from = new Date(range.from);
+        const to = new Date(range.to);
+
+        const fromStr = format(from, "EEE dd.MM HH:mm", { locale: de });
+        const toStr = format(to, "EEE dd.MM HH:mm", { locale: de });
+
+        return `${fromStr} Uhr - ${toStr} Uhr`;
+    };
+
+    const availableRangeButton = availableTimeRange ? {
+        label: formatAvailableRangeLabel(availableTimeRange),
+        isAvailable: true
+    } : null;
+
+    const handleAvailableRangeClick = () => {
+        if (!availableTimeRange) return;
+
+        const start = new Date(availableTimeRange.from);
+        const end = new Date(availableTimeRange.to);
+
+        setTimeRange(start, end);
+        resetPlayback();
+        setIsOpen(false);
+    };
+
     return (
         <div className="flex items-center justify-end w-full gap-3">
             {/* Window Size Selector */}
@@ -239,6 +298,21 @@ export default function TimeRangeSelector() {
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-4" align="end">
+                    {/* Available Data Range */}
+                    {availableRangeButton && (
+                        <div className="pb-4 border-b">
+                            <label className="text-sm font-medium block mb-2">Zeiträume mit gesicherten Daten</label>
+                            <Button
+                                variant="default"
+                                size="sm"
+                                onClick={handleAvailableRangeClick}
+                                disabled={isLoadingAvailableRange}
+                            >
+                                {availableRangeButton.label}
+                            </Button>
+                        </div>
+                    )}
+
                     {/* Preset Buttons */}
                     <div className="pb-4 border-b">
                         <label className="text-sm font-medium block mb-2">Schnellwahl</label>
