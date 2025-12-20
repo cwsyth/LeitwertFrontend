@@ -66,6 +66,13 @@ interface NetworkTableProps {
     selectedCountry: Country
 }
 
+const COLUMN_TO_API_SORT: Record<string, 'name' | 'cidrs' | 'bgp-anomalies' | 'ping-anomalies'> = {
+    name: 'name',
+    ipv4_cidrs: 'cidrs',
+    anomalies_as: 'bgp-anomalies',
+    anomalies_router: 'ping-anomalies'
+}
+
 const DraggableTableHeader = ({ header }: { header: Header<NetworkDetail, unknown> }) => {
     const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({
         id: header.column.id
@@ -251,11 +258,14 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
             setError(null)
 
             try {
+                const sortColumn = sorting.length > 0 ? sorting[0].id : 'name'
+                const apiSortValue = COLUMN_TO_API_SORT[sortColumn] || 'name'
+
                 const response = await networkApi.getNetworkDetails({
                     cc: selectedCountry.code,
                     limit: itemsPerPage,
                     page: currentPage,
-                    sort: 'name'
+                    sort: apiSortValue
                 })
                 setData(response.details)
                 setTotalPages(Math.ceil(response.meta.total_entries / itemsPerPage))
