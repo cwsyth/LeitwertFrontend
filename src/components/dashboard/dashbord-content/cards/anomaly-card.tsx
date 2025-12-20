@@ -194,8 +194,9 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
                 {/* Foreground content */}
                 <div className="relative z-10">
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-8">
-                            <Skeleton className="h-20 w-32" />
+                        <div className="flex items-center justify-center gap-3 py-4">
+                            <Skeleton className="h-16 w-24" />
+                            <Skeleton className="h-12 w-12" />
                         </div>
                     ) : error ? (
                         <div className="w-full flex items-center justify-center gap-1.5 text-xs text-destructive py-4">
