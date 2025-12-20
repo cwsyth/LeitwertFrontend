@@ -2,14 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { StatusCardProps, StatusItem } from '@/types/card';
-import { getStatusColor } from '@/lib/statusColors';
-import { NetworkStatus } from '@/types/network';
+import { StatusCardProps } from '@/types/card';
 import { AlertCircle } from "lucide-react";
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { API_BASE_URL } from "@/lib/config";
+import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 
 interface TimeSeriesAnomalyResponse {
     anomalies: number[];
@@ -118,6 +116,15 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
         return { current, previous, trend };
     };
 
+    const getChartData = () => {
+        if (!timeSeriesData || timeSeriesData.anomalies.length === 0) return [];
+
+        return timeSeriesData.anomalies.map((value, index) => ({
+            value,
+            timestamp: timeSeriesData.timestamps[index]
+        }));
+    };
+
     const TrendIcon = ({ trend }: { trend: 'increasing' | 'decreasing' | 'stable' }) => {
         if (trend === 'increasing') {
             return <span className="text-red-500">↗</span>;
@@ -129,9 +136,10 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
     };
 
     const anomalyData = getCurrentAnomalyData();
+    const chartData = getChartData();
 
     return (
-        <Card className={`${className} flex-1`}>
+        <Card className={`${className} flex-1 relative overflow-hidden`}>
             <CardHeader>
                 <CardTitle>
                     {title}
@@ -140,29 +148,49 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
                     )}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="p-3 pt-1">
-                {isLoading ? (
-                    <div className="flex items-center justify-center py-8">
-                        <Skeleton className="h-20 w-32" />
+            <CardContent className="p-3 pt-1 relative">
+                {/* Background chart */}
+                {!isLoading && !error && chartData.length > 0 && (
+                    <div className="absolute inset-0 opacity-20 pointer-events-none">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={chartData}>
+                                <Area
+                                    type="monotone"
+                                    dataKey="value"
+                                    stroke="#8884d8"
+                                    fill="#8884d8"
+                                    strokeWidth={2}
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
                     </div>
-                ) : error ? (
-                    <div className="w-full flex items-center justify-center gap-1.5 text-xs text-destructive py-4">
-                        <AlertCircle className="h-3 w-3" />
-                        <span>Fehler beim Datenabruf!</span>
-                    </div>
-                ) : anomalyData ? (
-                    <div className="flex items-center justify-center gap-3 py-4">
-                        <div className="text-center">
-                            <div className="text-5xl font-bold leading-none">
-                                {anomalyData.current.toLocaleString('de-DE')}
+                )}
+
+                {/* Foreground content */}
+                <div className="relative z-10">
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                            <Skeleton className="h-20 w-32" />
+                        </div>
+                    ) : error ? (
+                        <div className="w-full flex items-center justify-center gap-1.5 text-xs text-destructive py-4">
+                            <AlertCircle className="h-3 w-3" />
+                            <span>Fehler beim Datenabruf!</span>
+                        </div>
+                    ) : anomalyData ? (
+                        <div className="flex items-center justify-center gap-3 py-4">
+                            <div className="text-center">
+                                <div className="text-5xl font-bold leading-none">
+                                    {anomalyData.current.toLocaleString('de-DE')}
+                                </div>
+                                <div className="text-xs text-muted-foreground mt-1">Anomalien</div>
                             </div>
-                            <div className="text-xs text-muted-foreground mt-1">Anomalien</div>
+                            <div className="text-4xl">
+                                <TrendIcon trend={anomalyData.trend} />
+                            </div>
                         </div>
-                        <div className="text-4xl">
-                            <TrendIcon trend={anomalyData.trend} />
-                        </div>
-                    </div>
-                ) : null}
+                    ) : null}
+                </div>
             </CardContent>
         </Card>
     );
