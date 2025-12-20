@@ -7,7 +7,8 @@ import { StatusCardProps } from '@/types/card';
 import { AlertCircle } from "lucide-react";
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { API_BASE_URL } from "@/lib/config";
-import { Area, AreaChart, ResponsiveContainer } from 'recharts';
+import { Area, AreaChart } from 'recharts';
+import { ChartContainer, ChartConfig } from '@/components/ui/chart';
 
 interface TimeSeriesAnomalyResponse {
     anomalies: number[];
@@ -116,13 +117,36 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
         return { current, previous, trend };
     };
 
-    const getChartData = () => {
+    const getAggregatedChartData = () => {
         if (!timeSeriesData || timeSeriesData.anomalies.length === 0) return [];
 
-        return timeSeriesData.anomalies.map((value, index) => ({
-            value,
-            timestamp: timeSeriesData.timestamps[index]
-        }));
+        const dataLength = timeSeriesData.anomalies.length;
+        const targetPoints = 30;
+
+        // If we have fewer points, show all
+        if (dataLength <= targetPoints) {
+            return timeSeriesData.anomalies.map((value, index) => ({
+                value,
+                timestamp: timeSeriesData.timestamps[index]
+            }));
+        }
+
+        // Otherwise aggregate
+        const step = Math.floor(dataLength / targetPoints);
+        const aggregated: { value: number; timestamp: string }[] = [];
+
+        for (let i = 0; i < dataLength; i += step) {
+            const end = Math.min(i + step, dataLength);
+            const chunk = timeSeriesData.anomalies.slice(i, end);
+            const avg = chunk.reduce((sum, val) => sum + val, 0) / chunk.length;
+
+            aggregated.push({
+                value: avg,
+                timestamp: timeSeriesData.timestamps[i]
+            });
+        }
+
+        return aggregated;
     };
 
     const TrendIcon = ({ trend }: { trend: 'increasing' | 'decreasing' | 'stable' }) => {
@@ -136,7 +160,14 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
     };
 
     const anomalyData = getCurrentAnomalyData();
-    const chartData = getChartData();
+    const chartData = getAggregatedChartData();
+
+    const chartConfig = {
+        value: {
+            label: "Anomalien",
+            color: "hsl(var(--chart-1))",
+        },
+    } satisfies ChartConfig;
 
     return (
         <Card className={`${className} flex-1 relative overflow-hidden`}>
@@ -152,17 +183,18 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
                 {/* Background chart */}
                 {!isLoading && !error && chartData.length > 0 && (
                     <div className="absolute inset-0 opacity-20 pointer-events-none">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ChartContainer config={chartConfig} className="h-full w-full">
                             <AreaChart data={chartData}>
                                 <Area
-                                    type="monotone"
+                                    type="basis"
                                     dataKey="value"
-                                    stroke="#8884d8"
-                                    fill="#8884d8"
+                                    fill="var(--color-value)"
+                                    stroke="var(--color-value)"
                                     strokeWidth={2}
+                                    fillOpacity={0.6}
                                 />
                             </AreaChart>
-                        </ResponsiveContainer>
+                        </ChartContainer>
                     </div>
                 )}
 
