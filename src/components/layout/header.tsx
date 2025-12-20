@@ -25,7 +25,7 @@ export default function Header() {
                     </div>
 
                     <h1 className="text-2xl font-bold text-white tracking-tight">
-                        Lagebild Dashboard
+                        Lagebild Dashboard Test
                     </h1>
                 </div>
 
