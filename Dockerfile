@@ -45,7 +45,6 @@ COPY components ./components
 COPY lib ./lib
 COPY hooks ./hooks
 COPY types ./types
-COPY styles ./styles
 
 # Set environment variables for build
 ENV NEXT_PUBLIC_APP_VERSION=$APP_VERSION
