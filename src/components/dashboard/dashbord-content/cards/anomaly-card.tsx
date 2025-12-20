@@ -141,7 +141,7 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
     };
 
     const statusItems = getStatusItems();
-    const currentData = getCurrentAnomalyData();
+    const anomalyData = getCurrentAnomalyData();
 
     return (
         <Card className={`${className} flex-1`}>
@@ -153,50 +153,29 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
                     )}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="p-3 pt-1 flex justify-between w-full">
+            <CardContent className="p-3 pt-1">
                 {isLoading ? (
-                    <>
-                        <Skeleton className="h-16 w-20" />
-                        <div className="flex flex-col gap-1 flex-1">
-                            <Skeleton className="h-5 w-full" />
-                            <Skeleton className="h-5 w-full" />
-                            <Skeleton className="h-5 w-full" />
-                            <Skeleton className="h-5 w-full" />
-                        </div>
-                    </>
+                    <div className="flex items-center justify-center py-8">
+                        <Skeleton className="h-20 w-32" />
+                    </div>
                 ) : error ? (
                     <div className="w-full flex items-center justify-center gap-1.5 text-xs text-destructive py-4">
                         <AlertCircle className="h-3 w-3" />
                         <span>Fehler beim Datenabruf!</span>
                     </div>
-                ) : (
-                    <>
-                        <div className="flex-1 flex items-center justify-center min-w-[80px]">
-                            <div className="text-center">
-                                <div className="text-3xl font-bold leading-none">
-                                    {currentData?.count.toLocaleString('de-DE')}
-                                </div>
-                                <div className="text-[10px] text-muted-foreground mt-0.5">Gesamt</div>
+                ) : anomalyData ? (
+                    <div className="flex items-center justify-center gap-3 py-4">
+                        <div className="text-center">
+                            <div className="text-5xl font-bold leading-none">
+                                {anomalyData.current.toLocaleString('de-DE')}
                             </div>
+                            <div className="text-xs text-muted-foreground mt-1">Anomalien</div>
                         </div>
-
-                        <div className="flex flex-col gap-1 min-w-[120px] flex-1 justify-center items-center ">
-                            {statusItems.map((item) => (
-                                <Badge
-                                    key={item.status}
-                                    className="flex-1 w-[150px] justify-between px-2 py-1 text-[10px] font-medium border-0"
-                                    style={{
-                                        backgroundColor: getStatusColor(item.status),
-                                        color: '#ffffff'
-                                    }}
-                                >
-                                    <span>{item.label}</span>
-                                    <span className="font-semibold">{item.count.toLocaleString('de-DE')}</span>
-                                </Badge>
-                            ))}
+                        <div className="text-4xl">
+                            <TrendIcon trend={anomalyData.trend} />
                         </div>
-                    </>
-                )}
+                    </div>
+                ) : null}
             </CardContent>
         </Card>
     );
