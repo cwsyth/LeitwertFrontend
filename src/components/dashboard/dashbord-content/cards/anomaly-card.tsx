@@ -157,7 +157,7 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
 
     const chartConfig = {
         value: {
-            label: "Anomalien",
+            label: "Anomalies",
             color: "hsl(var(--chart-1))",
         },
     } satisfies ChartConfig;
@@ -212,7 +212,7 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
                                     {currentAnomaly.toLocaleString('de-DE')}
                                 </div>
                                 <div
-                                    className="text-xs mt-1">Anomalien
+                                    className="text-xs mt-1">Anomalies
                                 </div>
                             </div>
                             <div
