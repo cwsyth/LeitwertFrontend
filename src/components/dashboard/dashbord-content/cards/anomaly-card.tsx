@@ -11,25 +11,19 @@ import { AlertCircle } from "lucide-react";
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { API_BASE_URL } from "@/lib/config";
 
-interface TimeSeriesStatusResponse {
-    count: number[];
-    healthy: number[];
-    warning: number[];
-    critical: number[];
-    unknown: number[];
+interface TimeSeriesAnomalyResponse {
+    anomalies: number[];
     timestamps: string[];
 }
 
-interface StatusData {
-    count: number;
-    healthy: number;
-    warning: number;
-    critical: number;
-    unknown: number;
+interface AnomalyData {
+    current: number;
+    previous: number | null;
+    trend: 'increasing' | 'decreasing' | 'stable'
 }
 
-export function StatusCard({ title, description, apiEndpoint, className, selectedCountry }: StatusCardProps) {
-    const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesStatusResponse | null>(null);
+export function AnomalyCard({ title, description, apiEndpoint, className, selectedCountry }: StatusCardProps) {
+    const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesAnomalyResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(false);
 
@@ -58,7 +52,7 @@ export function StatusCard({ title, description, apiEndpoint, className, selecte
                     throw new Error(`Failed to fetch status: ${response.status} ${errorText}`);
                 }
 
-                const result: TimeSeriesStatusResponse = await response.json();
+                const result: TimeSeriesAnomalyResponse = await response.json();
                 setTimeSeriesData(result);
             } catch (err) {
                 console.error('Error fetching status data:', err);
@@ -103,7 +97,7 @@ export function StatusCard({ title, description, apiEndpoint, className, selecte
         return result;
     };
 
-    const getCurrentStatusData = (): StatusData | null => {
+    const getCurrentStatusData = (): AnomalyData | null => {
         if (!timeSeriesData) return null;
 
         const index = getCurrentIndex();
