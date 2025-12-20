@@ -278,7 +278,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
         }
 
         fetchData()
-    }, [selectedCountry, currentPage, itemsPerPage])
+    }, [selectedCountry, currentPage, itemsPerPage, sorting])
 
     if (!selectedCountry || selectedCountry.code === 'world') {
         return (
