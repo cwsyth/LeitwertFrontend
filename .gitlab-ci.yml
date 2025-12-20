@@ -23,6 +23,7 @@ variables:
 
 validate:dev:
     stage: validate
+    <<: *registry_login
     variables:
         APP_VERSION: $CI_COMMIT_SHORT_SHA
         API_URL: "https://dev-api.univ.leitwert.net/api"
