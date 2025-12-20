@@ -129,12 +129,11 @@ const DraggableTableHeader = ({ header }: { header: Header<NetworkDetail, unknow
                         }}
                         aria-label='Toggle sorting'
                     >
-                        {{
-                            asc: <ChevronUp className='shrink-0 opacity-60' size={16} aria-hidden='true' />,
-                            desc: <ChevronDown className='shrink-0 opacity-60' size={16} aria-hidden='true' />
-                        }[header.column.getIsSorted() as string] ?? (
-                            <ChevronUp className='shrink-0 opacity-0 group-hover:opacity-60' size={16} aria-hidden='true' />
-                        )}
+                        <ChevronUp
+                            className={`shrink-0 ${header.column.getIsSorted() ? 'opacity-60' : 'opacity-0 group-hover:opacity-60'}`}
+                            size={16}
+                            aria-hidden='true'
+                        />
                     </Button>
                 )}
             </div>
@@ -188,7 +187,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
             sorting,
             columnOrder
         },
-        enableSortingRemoval: false
+        sortDescFirst: false
     })
 
     const sensors = useSensors(
