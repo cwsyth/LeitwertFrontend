@@ -37,7 +37,7 @@ const TotalIncrementsChartComponent = ({
     onZoom,
     domain,
     dataKey = "total_increments",
-    valueLabel = "Increments",
+    valueLabel = "Anzahl der Inkrementierungen",
     showAvgTtl = false,
     showNextPowerOf2 = false,
 }: TotalIncrementsChartProps) => {
@@ -182,7 +182,7 @@ const TotalIncrementsChartComponent = ({
                                         <div className="grid grid-cols-1 gap-2">
                                             <div>
                                                 <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                                    Time
+                                                    Zeitstempel
                                                 </span>
                                                 <div className="font-bold text-muted-foreground">
                                                     {new Date(
@@ -206,7 +206,7 @@ const TotalIncrementsChartComponent = ({
                                                 undefined && (
                                                     <div>
                                                         <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                                            Expected
+                                                            Erwarteter Wert
                                                         </span>
                                                         <div className="font-mono">
                                                             {item.conf_lower?.toFixed(
@@ -221,7 +221,7 @@ const TotalIncrementsChartComponent = ({
                                                 )}
                                             {item.is_anomaly && (
                                                 <div className="text-destructive font-medium">
-                                                    ⚠ Anomaly (score:{" "}
+                                                    ⚠ Abnormalität (score:{" "}
                                                     {item.anomaly_score?.toFixed(
                                                         2
                                                     )}
@@ -247,7 +247,7 @@ const TotalIncrementsChartComponent = ({
                                                         className="text-[0.70rem] uppercase"
                                                         style={{ color: "#16a34a" }}
                                                     >
-                                                        Next Power of 2
+                                                        Nächste Potenz von 2
                                                     </span>
                                                     <div className="font-bold">
                                                         {item.next_power_of_2}

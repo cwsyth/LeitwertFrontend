@@ -42,6 +42,30 @@ export const CONFIG = {
 
 type TimeRange = keyof typeof CONFIG;
 
+// Validation regex patterns
+const AS_REGEX = /^(AS|as)?[0-9]+$/;
+const CC_REGEX = /^[a-zA-Z]{2}$/;
+// Simple IPv4 regex
+const IPV4_REGEX = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+// Comprehensive IPv6 regex
+const IPV6_REGEX = /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/;
+
+function isValidInput(mode: QueryMode, value: string): boolean {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) return false;
+
+    switch (mode) {
+        case "as":
+            return AS_REGEX.test(trimmed);
+        case "cc":
+            return CC_REGEX.test(trimmed);
+        case "ip":
+            return IPV4_REGEX.test(trimmed) || IPV6_REGEX.test(trimmed);
+        default:
+            return false;
+    }
+}
+
 async function fetchBoxPlotData(
     range: TimeRange,
     mode: QueryMode,
@@ -50,6 +74,10 @@ async function fetchBoxPlotData(
     from: Date,
     to: Date
 ): Promise<BoxPlotData[]> {
+    if (!isValidInput(mode, identifier)) {
+        return [];
+    }
+
     let url = "";
 
     if (mode === "as") {
@@ -119,7 +147,7 @@ function ChartTooltip({
     mode?: QueryMode;
 }) {
     // Determine labels based on mode
-    const valueLabel = mode === "ip" ? "Avg RTT" : "Increments";
+    const valueLabel = mode === "ip" ? "Ping RTT" : "Anzahl der Inkrementierungen";
 
     if (type === "line") {
         // Line chart
@@ -290,7 +318,7 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                 timeRange.start,
                 timeRange.end
             ),
-        enabled: debouncedIdentifier.length > 0 && !!selectedLocationId,
+        enabled: isValidInput(mode, debouncedIdentifier) && !!selectedLocationId,
     });
 
     // Pre-process data to include timestampMs for faster filtering
@@ -402,13 +430,15 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
     );
 
     const getTitle = () => {
-        if (mode === "ip") return <><span className="text-blue-500">Ping RTT</span> for IP {identifier}</>;
-        return <>BGP Announcements (Boxplot) for <span className="text-blue-500">AS-{router || identifier}</span></>;
+        if (mode === "ip") return <>Ping RTT für <span className="text-blue-500">IP {identifier}</span></>;
+        if (mode === "cc") return <>BGP Announcements (Boxplot) für <span className="text-blue-500">Ländercode {identifier}</span></>;
+        return <>BGP Announcements (Boxplot) für <span className="text-blue-500">AS-{router || identifier}</span></>;
     };
 
     const getDescription = () => {
-        if (mode === "ip") return `Ping latency statistics for IP ${identifier}`;
-        return `Verteilung der BGP Announcements für ${mode === "as" ? "AS" : "Country Code"} ${identifier}`;
+        if (mode === "ip") return `Ping Latenz-Statistiken für IP ${identifier}`;
+        if (mode === "cc") return `BGP Announcements (Boxplot) für Ländercode ${identifier}`;
+        return `BGP Announcements (Boxplot) für AS-${router || identifier}`;
     };
 
     return (
@@ -453,7 +483,10 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                             type="text"
                             value={identifier}
                             onChange={(e) => setIdentifier(e.target.value)}
-                            className="flex h-10 w-48 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            className={`flex h-10 w-48 rounded-md border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${identifier.length > 0 && !isValidInput(mode, identifier)
+                                    ? "border-red-500 focus-visible:ring-red-500"
+                                    : "border-input"
+                                }`}
                             placeholder={
                                 mode === "as"
                                     ? "AS Number"
@@ -496,7 +529,7 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                                             deferredViewEnd.getTime(),
                                         ]}
                                         dataKey={mode === "ip" ? "avg_rtt" : "total_increments"}
-                                        valueLabel={mode === "ip" ? "Avg RTT" : "Increments"}
+                                        valueLabel={mode === "ip" ? "Ping RTT" : "Anzahl der Inkrementierungen"}
                                         showAvgTtl={mode === "ip"}
                                         showNextPowerOf2={mode === "ip"}
                                     />
@@ -614,7 +647,7 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                                     onClick={() => setViewRange([0, 100])}
                                 >
                                     <ZoomOut className="h-4 w-4 mr-2" />
-                                    Reset Zoom
+                                    Zurücksetzen
                                 </Button>
                             )}
                         </>
@@ -638,7 +671,7 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
 
                     <div className="space-y-1">
                         <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>View Range (Von/Bis)</span>
+                            <span>Angezeigter Zeitraum (Von/Bis)</span>
                             <span>
                                 {viewStart.toLocaleString("de-DE", {
                                     weekday: "short",
