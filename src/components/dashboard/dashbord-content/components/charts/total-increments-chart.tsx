@@ -12,12 +12,14 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
-import { BoxPlotData } from "./boxplot-chart";
+import { BoxPlotData } from "@/types/dashboard";
 
 interface TotalIncrementsChartProps {
     data: BoxPlotData[];
     onZoom?: (startMs: number, endMs: number) => void;
     domain?: [number, number];
+    dataKey?: keyof BoxPlotData;
+    valueLabel?: string;
 }
 
 interface CustomAnomalyDotProps {
@@ -32,6 +34,8 @@ const TotalIncrementsChartComponent = ({
     data,
     onZoom,
     domain,
+    dataKey = "total_increments",
+    valueLabel = "Increments",
 }: TotalIncrementsChartProps) => {
     const [refAreaLeft, setRefAreaLeft] = useState<number | null>(null);
     const [refAreaRight, setRefAreaRight] = useState<number | null>(null);
@@ -72,15 +76,16 @@ const TotalIncrementsChartComponent = ({
                 conf_lower !== null && conf_upper !== null
                     ? conf_upper - conf_lower
                     : 0;
+            const val = d[dataKey] as number;
             return {
                 ...d,
                 conf_lower,
                 conf_upper,
                 band,
-                anomaly_point: d.is_anomaly ? d.total_increments : null,
+                anomaly_point: d.is_anomaly ? val : null,
             };
         });
-    }, [data]);
+    }, [data, dataKey]);
 
     const CustomAnomalyDot = (props: CustomAnomalyDotProps) => {
         const { cx, cy, payload } = props;
@@ -152,6 +157,8 @@ const TotalIncrementsChartComponent = ({
                                         anomaly_score?: number;
                                     };
 
+                                const val = item[dataKey] as number;
+
                                 return (
                                     <div className="rounded-lg border bg-background p-2 shadow-sm">
                                         <div className="grid grid-cols-1 gap-2">
@@ -167,10 +174,10 @@ const TotalIncrementsChartComponent = ({
                                             </div>
                                             <div>
                                                 <span className="text-[0.70rem] uppercase text-muted-foreground">
-                                                    Increments
+                                                    {valueLabel}
                                                 </span>
                                                 <div className="font-bold">
-                                                    {item.total_increments}
+                                                    {val}
                                                 </div>
                                             </div>
                                             {item.conf_lower !== undefined &&
@@ -200,6 +207,26 @@ const TotalIncrementsChartComponent = ({
                                                     )
                                                 </div>
                                             )}
+                                            {item.avg_ttl !== undefined && (
+                                                <div>
+                                                    <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                                        Avg TTL
+                                                    </span>
+                                                    <div className="font-bold">
+                                                        {item.avg_ttl}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {item.next_power_of_2 !== undefined && (
+                                                <div>
+                                                    <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                                        Next Power of 2
+                                                    </span>
+                                                    <div className="font-bold">
+                                                        {item.next_power_of_2}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -226,7 +253,7 @@ const TotalIncrementsChartComponent = ({
                     {/* Main line */}
                     <Line
                         type="monotone"
-                        dataKey="total_increments"
+                        dataKey={dataKey}
                         stroke="var(--primary)"
                         strokeWidth={2}
                         dot={false}

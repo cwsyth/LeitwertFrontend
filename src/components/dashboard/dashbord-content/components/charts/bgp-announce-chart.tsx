@@ -10,7 +10,8 @@ import {
 } from "react";
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { useLocationStore } from "@/lib/stores/location-store";
-import { BoxPlotChart, BoxPlotData } from "./boxplot-chart";
+import { BoxPlotData, PingDataResponse, QueryMode } from "@/types/dashboard";
+import { BoxPlotChart } from "./boxplot-chart";
 import { TotalIncrementsChart } from "./total-increments-chart";
 import { ZoomOut } from "lucide-react";
 
@@ -40,7 +41,6 @@ export const CONFIG = {
 };
 
 type TimeRange = keyof typeof CONFIG;
-type QueryMode = "as" | "cc";
 
 async function fetchBoxPlotData(
     range: TimeRange,
@@ -54,24 +54,77 @@ async function fetchBoxPlotData(
 
     if (mode === "as") {
         url = `${API_BASE_URL}/v1/bgp/announce-as-count-per-as?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&as-path-entry=${identifier}&location=${location}`;
-    } else {
+    } else if (mode === "cc") {
         url = `${API_BASE_URL}/v1/bgp/announce-cc-count-per-cc?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&cc=${identifier}&location=${location}`;
+    } else if (mode === "ip") {
+        // Ping data endpoint
+        // http://localhost:5000/api/v1/ping/data
+        url = `${API_BASE_URL}/v1/ping/data?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&target_ip=${identifier}&location=${location}`;
     }
 
     const response = await fetch(url);
     if (!response.ok) throw new Error("Network response was not ok");
-    return response.json();
+    const json = await response.json();
+
+    if (mode === "ip") {
+        // Map Ping data to BoxPlotData structure
+        return json.map((item: PingDataResponse) => {
+            if (range === "small") {
+                // Return item as is, but we might want to ensure it matches parts of BoxPlotData if strictness is required.
+                // However, TotalIncrementsChart uses 'avg_rtt' via dataKey, so we just pass the object through.
+                // We add timestampMs for completeness if done elsewhere, but here just raw mapping.
+                return {
+                    ...item,
+                    timestamp: item.timestamp,
+                    // Map avg_rtt to total_increments as a fallback if not using dataKey, 
+                    // but we ARE using dataKey.
+                    total_increments: item.avg_rtt || 0,
+                    avg_rtt: item.avg_rtt,
+                    avg_ttl: item.avg_ttl,
+                    next_power_of_2: item.next_power_of_2,
+                } as unknown as BoxPlotData;
+            } else {
+                // Map percentiles for boxplot
+                return {
+                    timestamp: item.timestamp,
+                    // Ping data uses p99, p95, p75. BoxPlotChart expects p099, p095, p075.
+                    p01: item.p01,
+                    p05: item.p05,
+                    p25: item.p25,
+                    p50: item.p50,
+                    p075: item.p75,
+                    p095: item.p95,
+                    p099: item.p99,
+
+                    // Fill required fields with dummies if needed, or rely on undefined
+                    total_increments: 0,
+                    as_path_entry: identifier,
+                    avg_ttl: item.avg_ttl,
+                    next_power_of_2: item.next_power_of_2,
+                } as BoxPlotData;
+            }
+        });
+    }
+
+    return json;
 }
 
 function ChartTooltip({
     data,
     type,
+    mode = "as", // 'as' | 'cc' | 'ip'
 }: {
     data: BoxPlotData;
     type: "boxplot" | "line";
+    mode?: QueryMode;
 }) {
+    // Determine labels based on mode
+    const valueLabel = mode === "ip" ? "Avg RTT" : "Increments";
+
     if (type === "line") {
         // Line chart
+        const val = mode === "ip" ? (data.avg_rtt ?? 0) : data.total_increments;
+
         return (
             <div className="rounded-lg border bg-background p-2 shadow-sm text-xs w-48">
                 <div className="flex flex-col gap-2">
@@ -85,12 +138,32 @@ function ChartTooltip({
                     </div>
                     <div className="flex flex-col">
                         <span className="text-[0.70rem] uppercase text-muted-foreground">
-                            Increments
+                            {valueLabel}
                         </span>
                         <span className="font-bold">
-                            {data.total_increments}
+                            {typeof val === 'number' ? val.toFixed(2) : val}
                         </span>
                     </div>
+                    {data.avg_ttl !== undefined && (
+                        <div className="flex flex-col">
+                            <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                Avg TTL
+                            </span>
+                            <span className="font-bold">
+                                {data.avg_ttl}
+                            </span>
+                        </div>
+                    )}
+                    {data.next_power_of_2 !== undefined && (
+                        <div className="flex flex-col">
+                            <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                Next Power of 2
+                            </span>
+                            <span className="font-bold">
+                                {data.next_power_of_2}
+                            </span>
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -319,18 +392,22 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
         [from, totalDuration]
     );
 
+    const getTitle = () => {
+        if (mode === "ip") return <><span className="text-blue-500">Ping RTT</span> for IP {identifier}</>;
+        return <>BGP Announcements (Boxplot) for <span className="text-blue-500">AS-{router || identifier}</span></>;
+    };
+
+    const getDescription = () => {
+        if (mode === "ip") return `Ping latency statistics for IP ${identifier}`;
+        return `Verteilung der BGP Announcements für ${mode === "as" ? "AS" : "Country Code"} ${identifier}`;
+    };
+
     return (
         <Card className="w-full">
             <CardHeader className="space-y-4 pb-4">
                 <div className="flex flex-col space-y-1.5">
-                    <CardTitle>
-                        BGP Announcements (Boxplot) for{" "}
-                        <span className="text-blue-500">AS-{router}</span>
-                    </CardTitle>
-                    <CardDescription>
-                        Verteilung der BGP Announcements für{" "}
-                        {mode === "as" ? "AS" : "Country Code"} {identifier}
-                    </CardDescription>
+                    <CardTitle>{getTitle()}</CardTitle>
+                    <CardDescription>{getDescription()}</CardDescription>
                 </div>
 
                 <div className="flex flex-wrap gap-4 items-center justify-between">
@@ -355,15 +432,25 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                             >
                                 CC
                             </ToggleGroupItem>
+                            <ToggleGroupItem
+                                value="ip"
+                                className="px-3 py-1 text-sm"
+                            >
+                                IP
+                            </ToggleGroupItem>
                         </ToggleGroup>
 
                         <input
                             type="text"
                             value={identifier}
                             onChange={(e) => setIdentifier(e.target.value)}
-                            className="flex h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="flex h-10 w-48 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             placeholder={
-                                mode === "as" ? "AS Number" : "Country Code"
+                                mode === "as"
+                                    ? "AS Number"
+                                    : mode === "cc"
+                                        ? "Country Code"
+                                        : "IP Address"
                             }
                         />
                     </div>
@@ -399,6 +486,8 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                                             deferredViewStart.getTime(),
                                             deferredViewEnd.getTime(),
                                         ]}
+                                        dataKey={mode === "ip" ? "avg_rtt" : "total_increments"}
+                                        valueLabel={mode === "ip" ? "Avg RTT" : "Increments"}
                                     />
                                     <div
                                         className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
@@ -442,6 +531,7 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                                                     }
                                                     data={currentDataPoint}
                                                     type="line"
+                                                    mode={mode}
                                                 />
                                             </div>
                                         )}

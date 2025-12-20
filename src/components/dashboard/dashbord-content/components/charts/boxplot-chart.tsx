@@ -13,29 +13,13 @@ import {
     YAxis,
 } from "recharts";
 import { memo, useState } from "react";
+import { BoxPlotData } from "@/types/dashboard";
 
-export interface BoxPlotData {
-    as_path_entry: string;
-    p01: number;
-    p05: number;
-    p075: number;
-    p095: number;
-    p099: number;
-    p25: number;
-    p50: number;
-    timestamp: string;
-    total_increments: number;
-    // Optional analysis fields (integrated from backend)
-    mean?: number;
-    std?: number;
-    is_anomaly?: boolean;
-    anomaly_score?: number;
-    // Computed fields for charting
-    timestampMs?: number;
-    conf_lower?: number;
-    conf_upper?: number;
-    band?: number;
-    anomaly_point?: number | null;
+interface CustomTooltipProps {
+    active?: boolean;
+    payload?: Array<{
+        payload: BoxPlotData;
+    }>;
 }
 
 interface CustomBoxPlotProps {
@@ -145,8 +129,7 @@ const CustomBoxPlot = (props: CustomBoxPlotProps) => {
     );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const CustomTooltip = ({ active, payload }: any) => {
+const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
         const data = payload[0].payload as BoxPlotData;
         return (
