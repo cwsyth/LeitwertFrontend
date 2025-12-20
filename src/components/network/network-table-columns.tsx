@@ -138,8 +138,7 @@ export const columns: ColumnDef<NetworkDetail>[] = [
                     </Tooltip>
                 </TooltipProvider>
             )
-        },
-        enableSorting: false
+        }
     },
     {
         id: 'anomalies_as',
