@@ -128,19 +128,6 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
         return <span className="text-muted-foreground">—</span>;
     };
 
-    const getStatusItems = (): StatusItem[] => {
-        const data = getCurrentAnomalyData();
-        if (!data) return [];
-
-        return [
-            { status: 'healthy' as NetworkStatus, count: data.healthy, label: 'Healthy' },
-            { status: 'warning' as NetworkStatus, count: data.warning, label: 'Warning' },
-            { status: 'critical' as NetworkStatus, count: data.critical, label: 'Critical' },
-            { status: 'unknown' as NetworkStatus, count: data.unknown, label: 'Unknown' }
-        ];
-    };
-
-    const statusItems = getStatusItems();
     const anomalyData = getCurrentAnomalyData();
 
     return (
