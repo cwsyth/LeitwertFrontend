@@ -212,7 +212,7 @@ export function AnomalyCard({ title, description, apiEndpoint, className, select
                                     {currentAnomaly.toLocaleString('de-DE')}
                                 </div>
                                 <div
-                                    className="text-xs text-muted-foreground mt-1">Anomalien
+                                    className="text-xs mt-1">Anomalien
                                 </div>
                             </div>
                             <div
