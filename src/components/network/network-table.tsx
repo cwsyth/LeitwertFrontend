@@ -66,6 +66,7 @@ import {createColumns} from "@/components/network/network-table-columns";
 interface NetworkTableProps {
     selectedCountry: Country
     routers: Router[];
+    setSelectedRouter: (router: Router | null) => void
 }
 
 const COLUMN_TO_API_SORT: Record<string, 'name' | 'cidrs' | 'bgp-anomalies' | 'ping-anomalies'> = {
@@ -164,13 +165,13 @@ const DragAlongCell = ({ cell }: { cell: Cell<NetworkDetail, unknown> }) => {
     )
 }
 
-export function NetworkTable({ selectedCountry, routers }: NetworkTableProps) {
+export function NetworkTable({ selectedCountry, routers, setSelectedRouter }: NetworkTableProps) {
     const [data, setData] = useState<NetworkDetail[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [sorting, setSorting] = useState<SortingState>([])
 
-    const columns = createColumns(routers)
+    const columns = createColumns(routers, setSelectedRouter)
     const [columnOrder, setColumnOrder] = useState<string[]>(columns.map(column => column.id as string))
 
     const [currentPage, setCurrentPage] = useState(1)

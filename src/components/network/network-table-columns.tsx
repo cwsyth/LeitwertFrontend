@@ -23,7 +23,12 @@ const allocationStatusConfig: Record<AllocationStatus, { variant: 'default' | 'd
     available: { variant: 'outline', label: 'Available' }
 }
 
-export const createColumns = (routers: Router[]): ColumnDef<NetworkDetail>[] => [
+export const createColumns = (
+    routers: Router[],
+    setSelectedRouter: (router: Router | null) => void
+): ColumnDef<NetworkDetail>[] => {
+
+    return [
         {
             id: 'name',
             header: 'Name',
@@ -64,7 +69,10 @@ export const createColumns = (routers: Router[]): ColumnDef<NetworkDetail>[] => 
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <code className='cursor-pointer rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>
+                                    <code
+                                        className='cursor-pointer rounded bg-muted px-1.5 py-0.5 font-mono text-xs'
+                                        onClick={() => setSelectedRouter(router)}
+                                    >
                                         {router.router_id}
                                     </code>
                                 </TooltipTrigger>
@@ -124,7 +132,10 @@ export const createColumns = (routers: Router[]): ColumnDef<NetworkDetail>[] => 
                                         <TooltipProvider key={index}>
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
-                                                    <code className='block cursor-pointer select-text rounded bg-gray-100 px-2 py-1 font-mono text-xs text-black hover:bg-gray-200'>
+                                                    <code
+                                                        className='block cursor-pointer select-text rounded bg-gray-100 px-2 py-1 font-mono text-xs text-black hover:bg-gray-200'
+                                                        onClick={() => setSelectedRouter(router)}
+                                                    >
                                                         {router.router_id}
                                                     </code>
                                                 </TooltipTrigger>
@@ -271,4 +282,5 @@ export const createColumns = (routers: Router[]): ColumnDef<NetworkDetail>[] => 
             },
             enableSorting: false
         }
-]
+    ]
+}

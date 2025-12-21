@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import DashboardHeader from "./dashbord-header/header";
 import DashboardNav from "./dashbord-nav/nav";
 import DashboardContent from "./dashbord-content/content";
@@ -63,7 +63,7 @@ export default function Dashboard() {
             </div>
             <div className="w-2/5 h-full flex flex-col gap-3">
                 <div className="flex-1 min-h-0 overflow-auto">
-                    <NetworkTable selectedCountry={selectedCountry} routers={routers} />
+                    <NetworkTable selectedCountry={selectedCountry} routers={routers} setSelectedRouter={setSelectedRouter} />
                 </div>
                 {viewVisibility.bgpAnnouncements &&
                     <div className="flex-1 min-h-0 overflow-auto">
