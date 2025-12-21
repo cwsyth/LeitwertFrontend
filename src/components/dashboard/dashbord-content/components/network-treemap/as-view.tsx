@@ -21,7 +21,7 @@ import {networkApi} from '@/services/networkApi';
 import {Skeleton} from "@/components/ui/skeleton";
 import {AlertTriangle, Globe, Hash, Network} from "lucide-react";
 import {useTimeRangeStore} from "@/lib/stores/time-range-store";
-import {determineStatus} from "@/lib/anomaly-status";
+import {determineStatus, STATUS_COLOR_CLASSES} from "@/lib/anomaly-status";
 
 export function AsView({
                               countryCode,
@@ -153,12 +153,7 @@ export function AsView({
 
         const dataItem = item as TreeMapDataItem;
 
-        const statusColor = {
-            healthy: 'bg-green-100 text-green-700 border-green-200',
-            warning: 'bg-amber-100 text-amber-700 border-amber-200',
-            critical: 'bg-red-100 text-red-700 border-red-200',
-            unknown: 'bg-gray-100 text-gray-700 border-gray-200'
-        }[dataItem.status];
+        const statusColor = STATUS_COLOR_CLASSES[dataItem.status];
 
         return (
             <div className="space-y-3">
