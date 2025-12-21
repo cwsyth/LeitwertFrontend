@@ -13,10 +13,10 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Settings2 } from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {Label} from "@/components/ui/label";
+import {Input} from "@/components/ui/input";
+import {Settings2} from "lucide-react";
 
 interface StatusThresholds {
     healthy: { min: number; max: number };
@@ -29,7 +29,10 @@ interface ThresholdSettingsProps {
     onChange: (thresholds: StatusThresholds) => void;
 }
 
-export function ThresholdSettings({ thresholds, onChange }: ThresholdSettingsProps) {
+export function ThresholdSettings({
+                                      thresholds,
+                                      onChange
+                                  }: ThresholdSettingsProps) {
     const [localThresholds, setLocalThresholds] = useState(thresholds);
     const [isOpen, setIsOpen] = useState(false);
 
@@ -49,7 +52,7 @@ export function ThresholdSettings({ thresholds, onChange }: ThresholdSettingsPro
         const numValue = value === '' ? 0 : Math.min(Math.max(parseInt(value) || 0, 0), 999);
         setLocalThresholds({
             ...localThresholds,
-            [status]: { ...localThresholds[status], [field]: numValue }
+            [status]: {...localThresholds[status], [field]: numValue}
         });
     };
 
@@ -57,7 +60,7 @@ export function ThresholdSettings({ thresholds, onChange }: ThresholdSettingsPro
         <Popover open={isOpen} onOpenChange={handleOpenChange}>
             <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
-                    <Settings2 className="h-4 w-4" />
+                    <Settings2 className="h-4 w-4"/>
                     Schwellwerte
                 </Button>
             </PopoverTrigger>
@@ -67,7 +70,8 @@ export function ThresholdSettings({ thresholds, onChange }: ThresholdSettingsPro
 
                     {/* Healthy */}
                     <div className="space-y-1.5">
-                        <Label className="text-xs text-green-600 font-semibold whitespace-nowrap">Healthy</Label>
+                        <Label
+                            className="text-xs text-green-600 font-semibold whitespace-nowrap">Healthy</Label>
                         <div className="flex gap-2 items-center">
                             <Input
                                 type="number"
@@ -77,7 +81,8 @@ export function ThresholdSettings({ thresholds, onChange }: ThresholdSettingsPro
                                 onChange={(e) => handleChange('healthy', 'min', e.target.value)}
                                 className="h-8 w-16 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
-                            <span className="text-sm text-muted-foreground">bis</span>
+                            <span
+                                className="text-sm text-muted-foreground">bis</span>
                             <Input
                                 type="number"
                                 min={0}
@@ -91,7 +96,8 @@ export function ThresholdSettings({ thresholds, onChange }: ThresholdSettingsPro
 
                     {/* Warning */}
                     <div className="space-y-1.5">
-                        <Label className="text-xs text-amber-600 font-semibold whitespace-nowrap">Warning</Label>
+                        <Label
+                            className="text-xs text-amber-600 font-semibold whitespace-nowrap">Warning</Label>
                         <div className="flex gap-2 items-center">
                             <Input
                                 type="number"
@@ -101,7 +107,8 @@ export function ThresholdSettings({ thresholds, onChange }: ThresholdSettingsPro
                                 onChange={(e) => handleChange('warning', 'min', e.target.value)}
                                 className="h-8 w-16 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
-                            <span className="text-sm text-muted-foreground">bis</span>
+                            <span
+                                className="text-sm text-muted-foreground">bis</span>
                             <Input
                                 type="number"
                                 min={0}
@@ -115,9 +122,11 @@ export function ThresholdSettings({ thresholds, onChange }: ThresholdSettingsPro
 
                     {/* Critical */}
                     <div className="space-y-1.5">
-                        <Label className="text-xs text-red-600 font-semibold whitespace-nowrap">Critical</Label>
+                        <Label
+                            className="text-xs text-red-600 font-semibold whitespace-nowrap">Critical</Label>
                         <div className="flex gap-2 items-center">
-                            <span className="text-sm text-muted-foreground">ab</span>
+                            <span
+                                className="text-sm text-muted-foreground">ab</span>
                             <Input
                                 type="number"
                                 min={0}

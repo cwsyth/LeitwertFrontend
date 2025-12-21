@@ -68,7 +68,7 @@ export function TreeMap({
     }
 
     const CustomizedContent = (props: CustomContentProps) => {
-        const { x, y, width, height, name, id, status, anomalyCount } = props;
+        const {x, y, width, height, name, id, status, anomalyCount} = props;
 
         if (x === undefined || y === undefined || width === undefined ||
             height === undefined || !name || !id) {
@@ -102,7 +102,7 @@ export function TreeMap({
         return (
             <g
                 onClick={handleClick}
-                style={{ cursor: id === 'others' ? 'default' : 'pointer' }}
+                style={{cursor: id === 'others' ? 'default' : 'pointer'}}
             >
                 <rect
                     x={x}
@@ -118,16 +118,16 @@ export function TreeMap({
                 />
                 {showLabels && width > 50 && height > 30 && (() => {
                     const estimatedTextWidth = name.length * 8;
-                    const textFitsWidth  = estimatedTextWidth < width - 10; // 10px Padding
+                    const textFitsWidth = estimatedTextWidth < width - 10; // 10px Padding
 
-                    return textFitsWidth  ? (
+                    return textFitsWidth ? (
                         <text
                             x={x + width / 2}
                             y={y + height / 2}
                             textAnchor="middle"
                             fill="#fff"
                             fontSize={14}
-                            style={{ fontWeight: "lighter" }}
+                            style={{fontWeight: "lighter"}}
                         >
                             {name}
                         </text>
@@ -144,7 +144,7 @@ export function TreeMap({
         }>;
     }
 
-    const CustomTooltip = ({ active, payload }: TooltipProps) => {
+    const CustomTooltip = ({active, payload}: TooltipProps) => {
         if (active && payload && payload.length) {
             const data = payload[0].payload;
             return (
@@ -167,7 +167,7 @@ export function TreeMap({
                         onClick={onBackClick}
                         className="gap-2"
                     >
-                        <ArrowLeft className="h-4 w-4" />
+                        <ArrowLeft className="h-4 w-4"/>
                         Zurück
                     </Button>
                 )}
@@ -180,7 +180,7 @@ export function TreeMap({
                         dataKey="value"
                         stroke="#fff"
                         fill="#8884d8"
-                        content={<CustomizedContent />}
+                        content={<CustomizedContent/>}
                         isAnimationActive={false}
                     >
                         <Tooltip content={<CustomTooltip/>}/>

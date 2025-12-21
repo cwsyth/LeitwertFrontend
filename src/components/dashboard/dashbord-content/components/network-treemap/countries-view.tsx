@@ -13,24 +13,29 @@ import {
 } from '@/components/dashboard/dashbord-content/components/network-treemap/tree-map';
 import {
     CountriesViewProps,
-    OthersMetadata,
     TreeMapDataItem,
     TreeMapOthersData
 } from '@/types/network';
 import {networkApi} from '@/services/networkApi';
 import {Skeleton} from "@/components/ui/skeleton";
-import {AlertTriangle, Building2, Globe} from "lucide-react";
 import {useTimeRangeStore} from "@/lib/stores/time-range-store";
-import {determineStatus, STATUS_COLOR_CLASSES} from "@/lib/anomaly-status";
+import {determineStatus} from "@/lib/anomaly-status";
+import {
+    OthersTooltip
+} from "@/components/dashboard/dashbord-content/components/network-treemap/tooltips/others-tooltip";
+import {
+    CountryTooltip
+} from "@/components/dashboard/dashbord-content/components/network-treemap/tooltips/country-tooltip";
+import {isOthersData} from "@/lib/type-guards";
 
 export function CountriesView({
-                                     limit = 50,
-                                     onCountryClick,
-                                     showLabels,
-                                     useGradient,
-                                     sizeMetric = 'as_count',
-                                     thresholds
-                                 }: CountriesViewProps) {
+                                  limit = 50,
+                                  onCountryClick,
+                                  showLabels,
+                                  useGradient,
+                                  sizeMetric = 'as_count',
+                                  thresholds
+                              }: CountriesViewProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
     const [isLoading, setIsLoading] = useState(true);
@@ -84,7 +89,10 @@ export function CountriesView({
                 value: othersValue === 0 ? 1 : othersValue,
                 count: response.others.countryCount,
                 totalAnomalyCount: response.others.totalAnomalyCount,
-                items: response.others.countries.map(c => ({ id: c.code, name: c.name }))
+                items: response.others.countries.map(c => ({
+                    id: c.code,
+                    name: c.name
+                }))
             };
 
             setData(transformedData);
@@ -101,103 +109,19 @@ export function CountriesView({
     }, [loadData]);
 
     const renderTooltip = (item: TreeMapDataItem | TreeMapOthersData) => {
-        const isOthersData = (
-            item: TreeMapDataItem | TreeMapOthersData
-        ): item is TreeMapDataItem & { metadata: OthersMetadata } => {
-            return ('metadata' in item &&
-                item.metadata !== undefined &&
-                'isOthers' in item.metadata && item.metadata.isOthers);
-        };
-
         if (isOthersData(item)) {
-            const othersData = item.metadata;
-            return (
-                <div className="space-y-3">
-                    <div className="flex items-center gap-2 border-b pb-2">
-                        <Globe className="h-4 w-4 text-muted-foreground" />
-                        <p className="font-bold text-base">Other Countries</p>
-                    </div>
-
-                    <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2">
-                            <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span className="text-muted-foreground">Countries:</span>
-                            <span className="font-semibold ml-auto">{othersData.count}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                            <span className="text-muted-foreground">Total Anomalies:</span>
-                            <span className="font-semibold ml-auto">{othersData.totalAnomalyCount.toLocaleString()}</span>
-                        </div>
-                    </div>
-
-                    <div className="mt-3 pt-2 border-t max-h-40 overflow-y-auto">
-                        <p className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wide">
-                            Included Countries
-                        </p>
-                        <ul className="text-sm space-y-1">
-                            {othersData.items.map(country => (
-                                <li key={country.id} className="text-muted-foreground">
-                                    {country.name}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
-            );
+            return <OthersTooltip data={item.metadata} type="country"/>;
         }
-
-        const dataItem = item as TreeMapDataItem;
-
-        const statusColor = STATUS_COLOR_CLASSES[dataItem.status];
-
-        return (
-            <div className="space-y-3">
-                <div className="flex items-center justify-between gap-3 border-b pb-2">
-                    <p className="font-bold text-base">{dataItem.name}</p>
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium border ${statusColor}`}>
-                    {dataItem.status}
-                </span>
-                </div>
-
-                <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                        <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-muted-foreground">AS Count:</span>
-                        <span className="font-semibold ml-auto">
-                            {dataItem.metadata && 'asCount' in dataItem.metadata
-                                ? dataItem.metadata.asCount.toLocaleString()
-                                : 'N/A'}
-                        </span>
-                    </div>
-
-                    {dataItem.anomalyCount !== undefined && (
-                        <div className="flex items-center gap-2">
-                            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-                            <span className="text-muted-foreground">Anomalies:</span>
-                            <span className="font-semibold ml-auto">{dataItem.anomalyCount.toLocaleString()}</span>
-                        </div>
-                    )}
-
-                    {dataItem.metadata && 'ipCount' in dataItem.metadata && (
-                        <div className="flex items-center gap-2">
-                            <Globe className="h-3.5 w-3.5 text-blue-500" />
-                            <span className="text-muted-foreground">IP Count:</span>
-                            <span className="font-semibold ml-auto">{dataItem.metadata.ipCount.toLocaleString()}</span>
-                        </div>
-                    )}
-                </div>
-            </div>
-        );
+        return <CountryTooltip data={item as TreeMapDataItem}/>;
     };
 
     if (isLoading) {
         return (
             <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                    <Skeleton className="h-8 w-48" />
+                    <Skeleton className="h-8 w-48"/>
                 </div>
-                <Skeleton className="h-96 w-full" />
+                <Skeleton className="h-96 w-full"/>
             </div>
         );
     }
