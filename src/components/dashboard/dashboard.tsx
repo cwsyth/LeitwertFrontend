@@ -67,7 +67,7 @@ export default function Dashboard() {
                 </div>
                 {viewVisibility.bgpAnnouncements &&
                     <div className="flex-1 min-h-0 overflow-auto">
-                        <BgpAnnounceChart router={selectedRouter?.asn} />
+                        <BgpAnnounceChart router={selectedRouter?.asn} selectedCountry={selectedCountry} />
                     </div>
                 }
             </div>
