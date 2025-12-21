@@ -52,7 +52,7 @@ export default function Dashboard() {
                 <div className="w-full flex-shrink-0">
                     <DashboardNav mode={mode} setMode={setMode} />
                 </div>
-                <div className="w-full flex-grow min-h-0">
+                <div className="w-full flex-grow">
                     <DashboardContent
                         mode={mode}
                         selectedCountry={selectedCountry}
