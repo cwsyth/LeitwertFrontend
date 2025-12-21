@@ -59,7 +59,7 @@ export const createColumns = (
                     <Badge
                         variant='default'
                         className='cursor-pointer bg-black text-white hover:bg-black/90'
-                        onClick={() => setSelectedAs(Number(row.original.asn))}
+                        onClick={() => setSelectedAs(0)} // Clear selection on click
                     >
                         AS{row.getValue('asn')}
                     </Badge>
@@ -126,20 +126,21 @@ export const createColumns = (
                 )
             }
         },
-        {
-            id: 'anomalies_router',
-            header: 'Anomalies (Router)',
-            accessorFn: (row) => 0,
-            cell: ({row}) => {
-                const anomalies = 0 // TODO: Replace with real data from map request
-
-                return (
-                    <div className='text-center'>
-                        <span className='font-semibold'>{anomalies}</span>
-                    </div>
-                )
-            }
-        },
+        // Disable router anomalies as data is not yet provided by the API
+        // {
+        //     id: 'anomalies_router',
+        //     header: 'Anomalies (Router)',
+        //     accessorFn: (row) => 0,
+        //     cell: ({row}) => {
+        //         const anomalies = 0 // TODO: Replace with real data from map request
+        //
+        //         return (
+        //             <div className='text-center'>
+        //                 <span className='font-semibold'>{anomalies}</span>
+        //             </div>
+        //         )
+        //     }
+        // },
         {
             id: 'status',
             header: 'Allocation',

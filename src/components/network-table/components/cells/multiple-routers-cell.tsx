@@ -14,10 +14,11 @@ import {
 } from "@/components/ui/tooltip"
 import type {Router} from "@/types/dashboard"
 import {RouterDetailTooltip} from "./router-detail-tooltip"
+import {getStatusColor} from "@/lib/statusColors"
 
 interface MultipleRoutersCellProps {
     routers: Router[]
-    onRouterClick: (router: Router) => void
+    onRouterClick: (router: null | Router) => void
     selectedRouter: Router | null
 }
 
@@ -32,16 +33,22 @@ export function MultipleRoutersCell({
         <Popover>
             <PopoverTrigger asChild>
                 <div className='cursor-pointer'>
-                    <code
-                        className={`rounded px-1.5 py-0.5 font-mono text-xs ${
-                            isFirstSelected
-                                ? 'bg-black text-white'
-                                : 'bg-muted'
-                        }`}
-                    >
-                        {routers[0].router_id}
-                    </code>
-                    <div className='text-muted-foreground text-xs mt-0.5'>
+                    <div className='flex items-center gap-1.5'>
+                        <div
+                            className='h-2 w-2 rounded-full flex-shrink-0'
+                            style={{backgroundColor: getStatusColor(routers[0].status)}}
+                        />
+                        <code
+                            className={`rounded px-1.5 py-0.5 font-mono text-xs ${
+                                isFirstSelected
+                                    ? 'bg-black text-white'
+                                    : 'bg-muted'
+                            }`}
+                        >
+                            {routers[0].router_id}
+                        </code>
+                    </div>
+                    <div className='text-muted-foreground text-xs mt-0.5 ml-3.5'>
                         +{routers.length - 1} more
                     </div>
                 </div>
@@ -63,16 +70,22 @@ export function MultipleRoutersCell({
                                 <TooltipProvider key={index}>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
-                                            <code
-                                                className={`block cursor-pointer select-text rounded px-2 py-1 font-mono text-xs hover:bg-gray-200 ${
-                                                    isSelected
-                                                        ? 'bg-black text-white'
-                                                        : 'bg-gray-100 text-black'
-                                                }`}
-                                                onClick={() => onRouterClick(router)}
-                                            >
-                                                {router.router_id}
-                                            </code>
+                                            <div className='flex items-center gap-1.5'>
+                                                <div
+                                                    className='h-2 w-2 rounded-full flex-shrink-0'
+                                                    style={{backgroundColor: getStatusColor(router.status)}}
+                                                />
+                                                <code
+                                                    className={`block cursor-pointer select-text rounded px-2 py-1 font-mono text-xs hover:bg-gray-200 flex-1 ${
+                                                        isSelected
+                                                            ? 'bg-black text-white'
+                                                            : 'bg-gray-100 text-black'
+                                                    }`}
+                                                    onClick={() => onRouterClick(isSelected ? null : router)}
+                                                >
+                                                    {router.router_id}
+                                                </code>
+                                            </div>
                                         </TooltipTrigger>
                                         <TooltipContent
                                             side='left'
