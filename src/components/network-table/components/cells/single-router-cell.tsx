@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/tooltip"
 import type {Router} from "@/types/dashboard"
 import {RouterDetailTooltip} from "./router-detail-tooltip"
+import {getStatusColor} from "@/lib/statusColors"
 
 interface SingleRouterCellProps {
     router: Router
@@ -32,16 +33,22 @@ export function SingleRouterCell({
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <code
-                        className={`cursor-pointer rounded px-1.5 py-0.5 font-mono text-xs ${
-                            isSelected
-                                ? 'bg-black text-white'
-                                : 'bg-muted'
-                        }`}
-                        onClick={() => onRouterClick(isSelected ? null : router)} // Toggle selection
-                    >
-                        {router.router_id}
-                    </code>
+                    <div className='flex items-center gap-1.5'>
+                        <div
+                            className='h-2 w-2 rounded-full flex-shrink-0'
+                            style={{backgroundColor: getStatusColor(router.status)}}
+                        />
+                        <code
+                            className={`cursor-pointer rounded px-1.5 py-0.5 font-mono text-xs ${
+                                isSelected
+                                    ? 'bg-black text-white'
+                                    : 'bg-muted'
+                            }`}
+                            onClick={() => onRouterClick(isSelected ? null : router)}
+                        >
+                            {router.router_id}
+                        </code>
+                    </div>
                 </TooltipTrigger>
                 <TooltipContent
                     side='left'
