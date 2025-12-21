@@ -288,7 +288,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                         </div>
                         <div className="text-2xl font-bold text-slate-900 mb-3">
                             {hoverInfo.totalRouters.toLocaleString(runtimeConfig.locale)}
-                            <span className="text-xs font-normal text-slate-500 ml-1">Gesamt</span>
+                            <span className="text-xs font-normal text-slate-500 ml-1">Total</span>
                         </div>
                         <div className="space-y-1.5">
                             <div className="flex items-center justify-between gap-3">

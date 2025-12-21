@@ -41,7 +41,7 @@ export function MetricSelector({
     return (
         <div className="flex items-center gap-2">
             <Label htmlFor="size-metric" className="whitespace-nowrap">
-                Sortierung
+                Order
             </Label>
             {isCountryView ? (
                 <Select

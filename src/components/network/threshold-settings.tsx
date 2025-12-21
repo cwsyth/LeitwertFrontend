@@ -61,12 +61,12 @@ export function ThresholdSettings({
             <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
                     <Settings2 className="h-4 w-4"/>
-                    Schwellwerte
+                    Thresholds
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-fit p-3">
                 <div className="space-y-3">
-                    <h4 className="font-medium text-sm whitespace-nowrap">Status-Schwellwerte</h4>
+                    <h4 className="font-medium text-sm whitespace-nowrap">Status Thresholds</h4>
 
                     {/* Healthy */}
                     <div className="space-y-1.5">
@@ -82,7 +82,7 @@ export function ThresholdSettings({
                                 className="h-8 w-16 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <span
-                                className="text-sm text-muted-foreground">bis</span>
+                                className="text-sm text-muted-foreground">to</span>
                             <Input
                                 type="number"
                                 min={0}
@@ -108,7 +108,7 @@ export function ThresholdSettings({
                                 className="h-8 w-16 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <span
-                                className="text-sm text-muted-foreground">bis</span>
+                                className="text-sm text-muted-foreground">to</span>
                             <Input
                                 type="number"
                                 min={0}
@@ -126,7 +126,7 @@ export function ThresholdSettings({
                             className="text-xs text-red-600 font-semibold whitespace-nowrap">Critical</Label>
                         <div className="flex gap-2 items-center">
                             <span
-                                className="text-sm text-muted-foreground">ab</span>
+                                className="text-sm text-muted-foreground">from</span>
                             <Input
                                 type="number"
                                 min={0}

@@ -28,7 +28,7 @@ export default function DashboardHeaderViews({
     return (
         <Card className="w-full h-full">
             <CardHeader>
-                <CardTitle>Ansichten</CardTitle>
+                <CardTitle>Views</CardTitle>
                 <CardDescription>
                     <div className="flex flex-wrap gap-2 mt-2">
                         <Badge

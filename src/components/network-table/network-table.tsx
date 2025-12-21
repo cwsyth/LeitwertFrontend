@@ -186,8 +186,7 @@ export function NetworkTable({
 
     return (
         <div className='h-full rounded-lg border bg-card p-6 shadow-sm overflow-scroll'>
-            <h2 className='mb-4 text-l font-semibold'>Übersicht Autonome
-                Systeme - {selectedCountry.name}</h2>
+            <h2 className='mb-4 text-l font-semibold'>AS Overview - {selectedCountry.name}</h2>
             <div className='w-full space-y-4'>
                 <div className='rounded-md border bg-white'>
                     {loading ? (

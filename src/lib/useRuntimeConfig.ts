@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { RuntimeConfig } from "@/types/RuntimeConfig";
 
 export function useRuntimeConfig() {
-    const [cfg, setCfg] = useState<RuntimeConfig>({locale: "de-DE", timezone: "Europe/Berlin"}); // Fallback
+    const [cfg, setCfg] = useState<RuntimeConfig>({locale: "en-GB", timezone: "Europe/Berlin"}); // Fallback
 
     useEffect(() => {
         let cancelled = false;

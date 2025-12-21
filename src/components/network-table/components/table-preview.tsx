@@ -24,8 +24,7 @@ interface TablePreviewProps {
 export function TablePreview({columns}: TablePreviewProps) {
     return (
         <div className='h-full rounded-lg border bg-card p-6 shadow-sm'>
-            <h2 className='mb-4 text-xl font-semibold'>Übersicht Autonome
-                Systeme</h2>
+            <h2 className='mb-4 text-xl font-semibold'>AS Overview</h2>
             <div className='w-full space-y-4'>
                 <div className='relative rounded-md border bg-white'>
                     <div className='opacity-50'>
@@ -62,8 +61,7 @@ export function TablePreview({columns}: TablePreviewProps) {
                         className='absolute inset-0 flex items-center justify-center'>
                         <div
                             className='rounded-lg bg-white/95 px-4 py-3 shadow-lg border'>
-                            <p className='text-foreground text-sm font-medium'>Bitte
-                                nach einem Land filtern!</p>
+                            <p className='text-foreground text-sm font-medium'>Please select a country!</p>
                         </div>
                     </div>
                 </div>
