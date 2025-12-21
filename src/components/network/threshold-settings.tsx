@@ -7,7 +7,7 @@
 
 'use client';
 
-import React from 'react';
+import React, {useState} from 'react';
 import {
     Popover,
     PopoverContent,
@@ -30,16 +30,31 @@ interface ThresholdSettingsProps {
 }
 
 export function ThresholdSettings({ thresholds, onChange }: ThresholdSettingsProps) {
+    const [localThresholds, setLocalThresholds] = useState(thresholds);
+    const [isOpen, setIsOpen] = useState(false);
+
+    const handleOpenChange = (open: boolean) => {
+        setIsOpen(open);
+
+        if (open) {
+            // Reset to current values when opening
+            setLocalThresholds(thresholds);
+        } else {
+            // Apply changes when closing
+            onChange(localThresholds);
+        }
+    };
+
     const handleChange = (status: 'healthy' | 'warning' | 'critical', field: 'min' | 'max', value: string) => {
         const numValue = value === '' ? 0 : Math.min(Math.max(parseInt(value) || 0, 0), 999);
-        onChange({
-            ...thresholds,
-            [status]: { ...thresholds[status], [field]: numValue }
+        setLocalThresholds({
+            ...localThresholds,
+            [status]: { ...localThresholds[status], [field]: numValue }
         });
     };
 
     return (
-        <Popover>
+        <Popover open={isOpen} onOpenChange={handleOpenChange}>
             <PopoverTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
                     <Settings2 className="h-4 w-4" />
@@ -58,7 +73,7 @@ export function ThresholdSettings({ thresholds, onChange }: ThresholdSettingsPro
                                 type="number"
                                 min={0}
                                 max={999}
-                                value={thresholds.healthy.min}
+                                value={localThresholds.healthy.min}
                                 onChange={(e) => handleChange('healthy', 'min', e.target.value)}
                                 className="h-8 w-16 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
@@ -67,7 +82,7 @@ export function ThresholdSettings({ thresholds, onChange }: ThresholdSettingsPro
                                 type="number"
                                 min={0}
                                 max={999}
-                                value={thresholds.healthy.max}
+                                value={localThresholds.healthy.max}
                                 onChange={(e) => handleChange('healthy', 'max', e.target.value)}
                                 className="h-8 w-16 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
@@ -82,7 +97,7 @@ export function ThresholdSettings({ thresholds, onChange }: ThresholdSettingsPro
                                 type="number"
                                 min={0}
                                 max={999}
-                                value={thresholds.warning.min}
+                                value={localThresholds.warning.min}
                                 onChange={(e) => handleChange('warning', 'min', e.target.value)}
                                 className="h-8 w-16 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
@@ -91,7 +106,7 @@ export function ThresholdSettings({ thresholds, onChange }: ThresholdSettingsPro
                                 type="number"
                                 min={0}
                                 max={999}
-                                value={thresholds.warning.max}
+                                value={localThresholds.warning.max}
                                 onChange={(e) => handleChange('warning', 'max', e.target.value)}
                                 className="h-8 w-16 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
@@ -107,7 +122,7 @@ export function ThresholdSettings({ thresholds, onChange }: ThresholdSettingsPro
                                 type="number"
                                 min={0}
                                 max={999}
-                                value={thresholds.critical.min}
+                                value={localThresholds.critical.min}
                                 onChange={(e) => handleChange('critical', 'min', e.target.value)}
                                 className="h-8 w-16 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
