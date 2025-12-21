@@ -11,7 +11,7 @@ import {
 } from "react";
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { useLocationStore } from "@/lib/stores/location-store";
-import { BoxPlotData, Country, PingDataResponse, QueryMode } from "@/types/dashboard";
+import { BoxPlotData, Country, PingDataResponse, QueryMode, Router } from "@/types/dashboard";
 import { BoxPlotChart } from "./boxplot-chart";
 import { TotalIncrementsChart } from "./total-increments-chart";
 import { ZoomOut } from "lucide-react";
@@ -23,7 +23,6 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { API_BASE_URL } from "@/lib/config";
@@ -251,12 +250,13 @@ function ChartTooltip({
 }
 
 interface BgpAnnounceChartProps {
-    router: string | undefined;
+    asn?: number | null;
+    selectedRouter?: Router | null;
     selectedCountry: Country;
 }
 
 // Main component
-export function BgpAnnounceChart({ router, selectedCountry }: BgpAnnounceChartProps) {
+export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAnnounceChartProps) {
     const DEBOUNCE_TIME = 500;
     const runtimeConfig = useRuntimeConfig();
 
@@ -278,13 +278,27 @@ export function BgpAnnounceChart({ router, selectedCountry }: BgpAnnounceChartPr
     // Defer state updates for smoother UI
     const deferredViewRange = useDeferredValue(viewRange);
 
-    // Initial router setup
+    // React to prop changes
     useEffect(() => {
-        if (router) {
-            setIdentifier(router);
-            setDebouncedIdentifier(router);
+        if (selectedRouter && selectedRouter.ip) {
+            setMode("ip");
+            setIdentifier(selectedRouter.ip);
+        } else if (asn) {
+            setMode("as");
+            setIdentifier(asn.toString());
         }
-    }, [router]);
+    }, [selectedRouter, asn]);
+
+    // Automatically switch to CC mode when a country is selected (and not world?)
+    // But we need to be careful not to override router selection if that's what user is looking at.
+    // Ideally we'd know "what changed last".
+    // For now, if country changes, we switch to CC.
+    useEffect(() => {
+        if (selectedCountry && selectedCountry.code && selectedCountry.code.toLowerCase() !== "world") {
+            setMode("cc");
+            setIdentifier(selectedCountry.code);
+        }
+    }, [selectedCountry]);
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -295,15 +309,6 @@ export function BgpAnnounceChart({ router, selectedCountry }: BgpAnnounceChartPr
             clearTimeout(handler);
         };
     }, [identifier]);
-
-    // Automatically switch to CC mode when a country is selected
-    useEffect(() => {
-        if (selectedCountry && selectedCountry.code && selectedCountry.code.toLowerCase() !== "world") {
-            setMode("cc");
-            setIdentifier(selectedCountry.code);
-            setDebouncedIdentifier(selectedCountry.code);
-        }
-    }, [selectedCountry]);
 
     // Reset view range when global time range changes drastically
     const startMs = timeRange.start.getTime();
@@ -444,15 +449,9 @@ export function BgpAnnounceChart({ router, selectedCountry }: BgpAnnounceChartPr
     );
 
     const getTitle = () => {
-        if (mode === "ip") return <>Ping RTT für <span className="text-blue-500">IP {identifier}</span></>;
+        if (mode === "ip") return <>Ping RTT für Router Interface <span className="text-blue-500">{identifier}</span></>;
         if (mode === "cc") return <>BGP Announcements (Boxplot) für <span className="text-blue-500">Ländercode {identifier}</span></>;
-        return <>BGP Announcements (Boxplot) für <span className="text-blue-500">AS-{router || identifier}</span></>;
-    };
-
-    const getDescription = () => {
-        if (mode === "ip") return `Ping Latenz-Statistiken für IP ${identifier}`;
-        if (mode === "cc") return `BGP Announcements (Boxplot) für Ländercode ${identifier}`;
-        return `BGP Announcements (Boxplot) für AS-${router || identifier}`;
+        return <>BGP Announcements (Boxplot) für <span className="text-blue-500">AS-{identifier}</span></>;
     };
 
     return (
@@ -460,55 +459,6 @@ export function BgpAnnounceChart({ router, selectedCountry }: BgpAnnounceChartPr
             <CardHeader className="space-y-4 pb-4 flex items-center justify-between">
                 <div className="flex flex-col space-y-1.5">
                     <CardTitle>{getTitle()}</CardTitle>
-                </div>
-
-                <div className="flex flex-wrap gap-4 items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <ToggleGroup
-                            type="single"
-                            value={mode}
-                            onValueChange={(val) =>
-                                val && setMode(val as QueryMode)
-                            }
-                            className="border rounded-md"
-                        >
-                            <ToggleGroupItem
-                                value="as"
-                                className="px-3 py-1 text-sm"
-                            >
-                                AS
-                            </ToggleGroupItem>
-                            <ToggleGroupItem
-                                value="cc"
-                                className="px-3 py-1 text-sm"
-                            >
-                                CC
-                            </ToggleGroupItem>
-                            <ToggleGroupItem
-                                value="ip"
-                                className="px-3 py-1 text-sm"
-                            >
-                                IP
-                            </ToggleGroupItem>
-                        </ToggleGroup>
-
-                        <input
-                            type="text"
-                            value={identifier}
-                            onChange={(e) => setIdentifier(e.target.value)}
-                            className={`flex h-10 w-48 rounded-md border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${identifier.length > 0 && !isValidInput(mode, identifier)
-                                ? "border-red-500 focus-visible:ring-red-500"
-                                : "border-input"
-                                }`}
-                            placeholder={
-                                mode === "as"
-                                    ? "AS Number"
-                                    : mode === "cc"
-                                        ? "Country Code"
-                                        : "IP Address"
-                            }
-                        />
-                    </div>
                 </div>
             </CardHeader>
             <CardContent className="relative min-h-[400px] flex flex-col gap-4">
