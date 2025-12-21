@@ -94,6 +94,7 @@ export interface TreeMapDataItem {
     id: string;
     name: string;
     value: number;
+    status: NetworkStatus;
     anomalyCount: number;
     metadata?: CountryMetadata | AsMetadata | OthersMetadata;
     [key: string]: unknown;
@@ -108,10 +109,7 @@ export interface TreeMapProps {
     onItemClick?: (item: TreeMapDataItem) => void;
     showLabels?: boolean;
     useGradient?: boolean;
-    anomalyRanges?: Record<NetworkStatus, {
-        min: number;
-        max: number;
-    }>;
+    thresholds?: StatusThresholds;
     onBackClick?: () => void;
 }
 

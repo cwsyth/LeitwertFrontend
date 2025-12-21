@@ -101,25 +101,6 @@ export function CountriesView({
         loadData();
     }, [loadData]);
 
-    const anomalyRanges = React.useMemo(() => {
-        if (!useGradient || data.length === 0) return undefined;
-
-        // Group anomaly counts by status
-        const byStatus = data.reduce((acc, item) => {
-            (acc[item.status] ||= []).push(item.anomalyCount);
-            return acc;
-        }, {} as Record<NetworkStatus, number[]>);
-
-        // Calculate min and max for each status
-        return Object.entries(byStatus).reduce((acc, [status, counts]) => {
-            acc[status as NetworkStatus] = {
-                min: Math.min(...counts),
-                max: Math.max(...counts)
-            };
-            return acc;
-        }, {} as Record<NetworkStatus, { min: number; max: number }>);
-    }, [data, useGradient]);
-
     const renderTooltip = (item: TreeMapDataItem | TreeMapOthersData) => {
         const isOthersData = (
             item: TreeMapDataItem | TreeMapOthersData
@@ -236,7 +217,7 @@ export function CountriesView({
             onItemClick={handleItemClick}
             showLabels={showLabels}
             useGradient={useGradient}
-            anomalyRanges={anomalyRanges}
+            thresholds={thresholds}
         />
     );
 }

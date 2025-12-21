@@ -8,7 +8,12 @@
 'use client';
 
 import {ResponsiveContainer, Tooltip, Treemap} from 'recharts';
-import {NetworkStatus, TreeMapDataItem, TreeMapProps} from '@/types/network';
+import {
+    NetworkStatus,
+    StatusThresholds,
+    TreeMapDataItem,
+    TreeMapProps
+} from '@/types/network';
 import {
     getGradientColor,
     getStatusColor,
@@ -27,7 +32,7 @@ export function TreeMap({
                             onItemClick,
                             showLabels,
                             useGradient,
-                            anomalyRanges,
+                            thresholds,
                             onBackClick,
                         }: TreeMapProps) {
 
@@ -65,7 +70,6 @@ export function TreeMap({
     const CustomizedContent = (props: CustomContentProps) => {
         const { x, y, width, height, name, id, status, anomalyCount } = props;
 
-        // Type guards for required props
         if (x === undefined || y === undefined || width === undefined ||
             height === undefined || !name || !id) {
             return null;
@@ -75,14 +79,9 @@ export function TreeMap({
 
         if (id === 'others') {
             fillColor = OTHERS_COLOR;
-        } else if (useGradient && anomalyRanges && status && anomalyCount !== undefined) {
-            const range = anomalyRanges[status];
-
-            if (range && range.min !== undefined && range.max !== undefined) {
-                fillColor = getGradientColor(status, anomalyCount, range.min, range.max);
-            } else {
-                fillColor = getStatusColor(status); // Fallback
-            }
+        } else if (useGradient && thresholds && status && anomalyCount !== undefined && status in thresholds) {
+            const range = thresholds[status as keyof StatusThresholds];
+            fillColor = getGradientColor(status, anomalyCount, range.min, range.max);
         } else if (status) {
             fillColor = getStatusColor(status);
         } else {
