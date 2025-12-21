@@ -160,7 +160,7 @@ function ChartTooltip({
 }) {
     // Determine labels based on mode
     const valueLabel =
-        mode === "ip" ? "Ping RTT" : "Anzahl der Inkrementierungen";
+        mode === "ip" ? "Ping RTT" : "Increments";
     const runtimeConfig = useRuntimeConfig();
 
     if (type === "line") {
