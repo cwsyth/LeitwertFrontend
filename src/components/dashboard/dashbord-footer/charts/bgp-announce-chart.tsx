@@ -14,7 +14,7 @@ import { useLocationStore } from "@/lib/stores/location-store";
 import { BoxPlotData, Country, PingDataResponse, QueryMode, Router } from "@/types/dashboard";
 import { BoxPlotChart } from "./boxplot-chart";
 import { TotalIncrementsChart } from "./total-increments-chart";
-import { ZoomOut } from "lucide-react";
+import { ZoomOut, ArrowLeft } from "lucide-react";
 
 import {
     Card,
@@ -51,8 +51,9 @@ const IPV4_REGEX = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9
 // Comprehensive IPv6 regex
 const IPV6_REGEX = /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/;
 
-function isValidInput(mode: QueryMode, value: string): boolean {
-    const trimmed = value.trim();
+function isValidInput(mode: QueryMode, value: string | number | null | undefined): boolean {
+    if (!value) return false;
+    const trimmed = String(value).trim();
     if (trimmed.length === 0) return false;
 
     switch (mode) {
@@ -318,6 +319,27 @@ export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAn
         setViewRange([0, 100]);
     }, [startMs, endMs]);
 
+    const handleBack = () => {
+        if (mode === "ip") {
+            const potentialAsn = selectedRouter?.asn || (asn ? asn.toString() : "");
+            if (potentialAsn) {
+                setMode("as");
+                setIdentifier(potentialAsn);
+            } else {
+                // If no ASN found, fallback to country logic
+                if (selectedCountry && selectedCountry.code && selectedCountry.code.toLowerCase() !== "world") {
+                    setMode("cc");
+                    setIdentifier(selectedCountry.code);
+                }
+            }
+        } else if (mode === "as") {
+            if (selectedCountry && selectedCountry.code && selectedCountry.code.toLowerCase() !== "world") {
+                setMode("cc");
+                setIdentifier(selectedCountry.code);
+            }
+        }
+    };
+
     const { data, isLoading, error, isFetching } = useQuery({
         queryKey: [
             "bgp-announce-data",
@@ -458,25 +480,42 @@ export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAn
         <Card className="w-full">
             <CardHeader className="space-y-4 pb-4 flex items-center justify-between">
                 <div className="flex flex-col space-y-1.5">
-                    <CardTitle>{getTitle()}</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                        {mode !== "cc" && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleBack}
+                                className="h-8 w-8 p-0"
+                            >
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                        )}
+                        {getTitle()}
+                    </CardTitle>
                 </div>
             </CardHeader>
             <CardContent className="relative min-h-[400px] flex flex-col gap-4">
                 <div className="relative min-h-[400px]">
-                    {(isLoading || isFetching) && (
+                    {!selectedLocationId ? (
+                        <div className="h-[400px] flex items-center justify-center text-muted-foreground">
+                            Bitte wählen Sie einen Standort aus.
+                        </div>
+                    ) : !isValidInput(mode, identifier) ? (
+                        <div className="h-[400px] flex items-center justify-center text-muted-foreground">
+                            Bitte wählen Sie ein Ziel (AS, Router oder Land) aus.
+                        </div>
+                    ) : (isLoading || isFetching) ? (
                         <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
                             <div className="animate-pulse text-muted-foreground">
                                 Laden...
                             </div>
                         </div>
-                    )}
-                    {error ? (
+                    ) : error ? (
                         <div className="h-[400px] flex items-center justify-center text-destructive">
                             Fehler beim Laden der Daten.
                         </div>
-                    ) : (!data || !Array.isArray(data) || data.length === 0) &&
-                        !isLoading &&
-                        !isFetching ? (
+                    ) : (!data || !Array.isArray(data) || data.length === 0) ? (
                         <div className="h-[400px] flex items-center justify-center text-muted-foreground">
                             Keine Daten vorhanden.
                         </div>
