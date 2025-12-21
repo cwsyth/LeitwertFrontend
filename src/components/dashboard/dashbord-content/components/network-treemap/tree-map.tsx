@@ -22,6 +22,15 @@ import {
 import React from "react";
 import {Button} from "@/components/ui/button";
 import {ArrowLeft} from "lucide-react";
+import {
+    OthersTooltip
+} from "@/components/dashboard/dashbord-content/components/network-treemap/tooltips/others-tooltip";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle
+} from "@/components/ui/dialog";
 
 export function TreeMap({
                             data,
@@ -35,6 +44,7 @@ export function TreeMap({
                             thresholds,
                             onBackClick,
                         }: TreeMapProps) {
+    const [isOthersDialogOpen, setIsOthersDialogOpen] = React.useState(false);
 
     const minDataValue = data.length > 0 ? Math.min(...data.map(d => d.value)) : 0;
     const othersDisplayValue = Math.max(minDataValue * othersDisplaySize, 1);
@@ -89,10 +99,13 @@ export function TreeMap({
         }
 
         const handleClick = () => {
-            // Nicht klickbar für "Others"
-            if (id === 'others') return;
+            // Open dialog for "Others"
+            if (id === 'others') {
+                setIsOthersDialogOpen(true);
+                return;
+            }
 
-            // Finde das originale Item
+            // Find original item
             const item = data.find(d => d.id === id);
             if (item && onItemClick) {
                 onItemClick(item);
@@ -102,7 +115,7 @@ export function TreeMap({
         return (
             <g
                 onClick={handleClick}
-                style={{cursor: id === 'others' ? 'default' : 'pointer'}}
+                style={{cursor: 'pointer'}}
             >
                 <rect
                     x={x}
@@ -187,6 +200,32 @@ export function TreeMap({
                     </Treemap>
                 </ResponsiveContainer>
             </div>
+
+            <Dialog open={isOthersDialogOpen} onOpenChange={setIsOthersDialogOpen}>
+                <DialogContent className="max-w-2xl max-h-[80vh]">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {others?.name === 'Others' ? 'Weitere Einträge' : 'Others'}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="overflow-y-auto max-h-[60vh] pr-2">
+                        {others && (
+                            <OthersTooltip
+                                data={{
+                                    isOthers: true,
+                                    actualValue: others.value,
+                                    name: others.name,
+                                    value: others.value,
+                                    count: others.count,
+                                    totalAnomalyCount: others.totalAnomalyCount,
+                                    items: others.items
+                                }}
+                                type={title.includes('Autonome Systeme') ? 'as' : 'country'}
+                            />
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

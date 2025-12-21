@@ -64,7 +64,7 @@ export function OthersTooltip({data, type}: OthersTooltipProps) {
                 <ul className="text-sm space-y-1">
                     {data.items.map(item => (
                         <li key={item.id} className="text-muted-foreground">
-                            {isCountry ? item.name : `AS${item.id} - ${item.name}`}
+                            {isCountry ? item.name : `${item.name} (${item.id})`}
                         </li>
                     ))}
                 </ul>
