@@ -16,7 +16,7 @@ export default function DashboardContent({ mode, selectedCountry, setRouters, se
         <div className="w-full h-full">
             <Card className="dashboard-content w-full h-full bg-background">
                 <CardContent className="h-full w-full">
-                    {mode === "street" && <DashboardContentMap selectedCountry={selectedCountry} setRouters={setRouters} />}
+                    {mode === "street" && <DashboardContentMap selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} setRouters={setRouters} />}
                     {mode === "hierarchy" && <DashboardContentHierarchy selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} />}
                 </CardContent>
             </Card>

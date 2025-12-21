@@ -59,8 +59,8 @@ export default function Dashboard() {
                     <DashboardContent
                         mode={mode}
                         selectedCountry={selectedCountry}
-                        setRouters={setRouters}
                         setSelectedCountry={setSelectedCountry}
+                        setRouters={setRouters}
                 />
                 </div>
             </div>
