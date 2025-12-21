@@ -10,7 +10,7 @@ import {
     Country,
     Router,
 } from "@/types/dashboard";
-import { NetworkTable } from "@/components/network/network-table";
+import { NetworkTable } from "@/components/network-table/network-table";
 import { BgpAnnounceChart } from "./dashbord-footer/charts/bgp-announce-chart";
 
 export default function Dashboard() {
