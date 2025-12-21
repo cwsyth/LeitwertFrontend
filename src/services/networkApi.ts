@@ -16,7 +16,7 @@ export interface GetNetworkDetailsParams {
     cc: string
     limit?: number
     page?: number
-    sort?: string
+    sort?: 'name' | 'cidrs' | 'bgp-anomalies' | 'ping-anomalies'
 }
 
 export const networkApi = {
@@ -85,9 +85,12 @@ export const networkApi = {
         const searchParams = new URLSearchParams({
             cc: params.cc,
             limit: String(params.limit || 10),
-            page: String(params.page || 1),
-            sort: params.sort || 'name'
+            page: String(params.page || 1)
         })
+
+        if (params.sort) {
+            searchParams.append('sort', params.sort)
+        }
 
         const response = await fetch(`${API_BASE_URL}/v1/networks/get-details?${searchParams}`, {
             method: 'GET',

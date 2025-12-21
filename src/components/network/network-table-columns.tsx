@@ -138,8 +138,7 @@ export const columns: ColumnDef<NetworkDetail>[] = [
                     </Tooltip>
                 </TooltipProvider>
             )
-        },
-        enableSorting: false
+        }
     },
     {
         id: 'anomalies_as',
@@ -177,7 +176,8 @@ export const columns: ColumnDef<NetworkDetail>[] = [
             const status = row.getValue('status2') as AllocationStatus
             const config = allocationStatusConfig[status] || allocationStatusConfig.allocated
             return <Badge variant={config.variant}>{config.label}</Badge>
-        }
+        },
+        enableSorting: false
     },
     {
         id: 'registry',
@@ -186,6 +186,7 @@ export const columns: ColumnDef<NetworkDetail>[] = [
         cell: ({ row }) => {
             const registry = row.getValue('registry') as string
             return <div className='uppercase'>{registry}</div>
-        }
+        },
+        enableSorting: false
     }
 ]
