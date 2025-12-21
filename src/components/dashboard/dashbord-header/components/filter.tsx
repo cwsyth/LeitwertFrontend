@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -21,7 +21,6 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useEffect } from "react";
 
 const worldCountry: Country = {
     code: 'world',
@@ -41,11 +40,16 @@ interface DashboardHeaderFilterProps {
 }
 
 export default function DashboardHeaderFilter({ selectedCountry, setSelectedCountry }: DashboardHeaderFilterProps) {
+    const [mounted, setMounted] = useState(false);
     const [open, setOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
     const { selectedLocationId, setSelectedLocationId } = useLocationStore();
     const [locationOpen, setLocationOpen] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const { data: locationData } = useQuery<Location[]>({
         queryKey: ["locations"],
@@ -69,6 +73,52 @@ export default function DashboardHeaderFilter({ selectedCountry, setSelectedCoun
             country.name.toLowerCase().includes(searchQuery.toLowerCase())
         )
         : countries;
+
+    if (!mounted) {
+        return (
+            <Card className="w-full h-full">
+                <CardHeader>
+                    <CardTitle>
+                        Filter
+                    </CardTitle>
+                    <CardDescription className="text-foreground">
+                        <div className="mt-2 space-y-3 mr-4">
+                            <Button
+                                variant="outline"
+                                disabled
+                                className="w-full justify-between"
+                            >
+                                <div className="flex items-center gap-2">
+                                    {selectedCountry && (
+                                        <div className="flex items-center justify-center w-5 h-5 rounded-full">
+                                            {selectedCountry.code === 'world' ? (
+                                                <span className="text-lg">🌍</span>
+                                            ) : (
+                                                <CircleFlag countryCode={selectedCountry.code} height={16} />
+                                            )}
+                                        </div>
+                                    )}
+                                    <span>{selectedCountry?.name || "Select country..."}</span>
+                                </div>
+                                <ChevronUp className="h-4 w-4 shrink-0" />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                disabled
+                                className="w-full justify-between"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Route className="h-4 w-4" />
+                                    <span>{selectedLocation?.id || "Select location..."}</span>
+                                </div>
+                                <ChevronUp className="h-4 w-4 shrink-0" />
+                            </Button>
+                        </div>
+                    </CardDescription>
+                </CardHeader>
+            </Card>
+        );
+    }
 
     return (
         <Card className="w-full h-full">
