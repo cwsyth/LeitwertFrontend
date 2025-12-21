@@ -43,7 +43,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 
-import { columns } from './network-table-columns'
 import type { NetworkDetail } from '@/types/network'
 import {networkApi} from "@/services/networkApi";
 import {
@@ -60,11 +59,13 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import {Country} from "@/types/dashboard";
+import {Country, Router} from "@/types/dashboard";
 import {useTimeRangeStore} from "@/lib/stores/time-range-store";
+import {createColumns} from "@/components/network/network-table-columns";
 
 interface NetworkTableProps {
     selectedCountry: Country
+    routers: Router[];
 }
 
 const COLUMN_TO_API_SORT: Record<string, 'name' | 'cidrs' | 'bgp-anomalies' | 'ping-anomalies'> = {
@@ -163,11 +164,13 @@ const DragAlongCell = ({ cell }: { cell: Cell<NetworkDetail, unknown> }) => {
     )
 }
 
-export function NetworkTable({ selectedCountry }: NetworkTableProps) {
+export function NetworkTable({ selectedCountry, routers }: NetworkTableProps) {
     const [data, setData] = useState<NetworkDetail[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [sorting, setSorting] = useState<SortingState>([])
+
+    const columns = createColumns(routers)
     const [columnOrder, setColumnOrder] = useState<string[]>(columns.map(column => column.id as string))
 
     const [currentPage, setCurrentPage] = useState(1)

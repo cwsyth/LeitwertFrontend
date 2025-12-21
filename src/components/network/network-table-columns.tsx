@@ -13,6 +13,7 @@ import {
     TooltipProvider,
     TooltipTrigger
 } from "@/components/ui/tooltip";
+import {Router} from "@/types/dashboard";
 
 const allocationStatusConfig: Record<AllocationStatus, { variant: 'default' | 'destructive' | 'outline' | 'secondary'; label: string }> = {
     allocated: { variant: 'default', label: 'Allocated' },
@@ -21,173 +22,187 @@ const allocationStatusConfig: Record<AllocationStatus, { variant: 'default' | 'd
     available: { variant: 'outline', label: 'Available' }
 }
 
-export const columns: ColumnDef<NetworkDetail>[] = [
-    {
-        id: 'name',
-        header: 'Name',
-        accessorKey: 'name',
-        cell: ({ row }) => {
-            const name = row.getValue('name') as string | undefined
-            return <div className='max-w-[200px] truncate'>{name || '-'}</div>
-        }
-    },
-    {
-        id: 'asn',
-        header: 'ASN',
-        accessorKey: 'asn',
-        cell: ({ row }) => <div className='font-mono font-medium'>AS{row.getValue('asn')}</div>,
-        sortDescFirst: false,
-        enableSorting: false
-    },
-    // TODO: Fetch routers from map request
-    // {
-    //     id: 'routers',
-    //     header: 'Routers',
-    //     accessorKey: 'routers',
-    //     cell: ({ row }) => {
-    //         const routers = row.getValue('routers') as string[]
-    //
-    //         if (routers.length === 0) {
-    //             return <div className='text-muted-foreground'>-</div>
-    //         }
-    //
-    //         if (routers.length === 1) {
-    //             return <code className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{routers[0]}</code>
-    //         }
-    //
-    //         return (
-    //             <TooltipProvider>
-    //                 <Tooltip>
-    //                     <TooltipTrigger asChild>
-    //                         <div className='cursor-pointer'>
-    //                             <code className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{routers[0]}</code>
-    //                             <div className='text-muted-foreground text-xs mt-0.5'>+{routers.length - 1} more</div>
-    //                         </div>
-    //                     </TooltipTrigger>
-    //                     <TooltipContent
-    //                         side='left'
-    //                         align='start'
-    //                         className='max-w-xs border border-muted bg-white p-3 text-black shadow-lg'
-    //                     >
-    //                         <div className='flex flex-col'>
-    //                             <p className='mb-2 text-xs font-semibold text-black'>
-    //                                 Routers ({routers.length})
-    //                             </p>
-    //                             <div className='max-h-[200px] space-y-1.5 overflow-y-auto pr-2'>
-    //                                 {routers.map((router, index) => (
-    //                                     <code
-    //                                         key={index}
-    //                                         className='block cursor-text select-text rounded bg-gray-100 px-2 py-1 font-mono text-xs text-black hover:bg-gray-200'
-    //                                     >
-    //                                         {router}
-    //                                     </code>
-    //                                 ))}
-    //                             </div>
-    //                         </div>
-    //                     </TooltipContent>
-    //                 </Tooltip>
-    //             </TooltipProvider>
-    //         )
-    //     },
-    //     enableSorting: false
-    // },
-    {
-        id: 'ipv4_cidrs',
-        header: 'IPv4 CIDRs',
-        accessorKey: 'ipv4_cidrs',
-        cell: ({ row }) => {
-            const cidrs = row.getValue('ipv4_cidrs') as string[]
-
-            if (cidrs.length === 0) {
-                return <div className='text-muted-foreground'>-</div>
+export const createColumns = (routers: Router[]): ColumnDef<NetworkDetail>[] => [
+        {
+            id: 'name',
+            header: 'Name',
+            accessorKey: 'name',
+            cell: ({row}) => {
+                const name = row.getValue('name') as string | undefined
+                return <div
+                    className='max-w-[200px] truncate'>{name || '-'}</div>
             }
+        },
+        {
+            id: 'asn',
+            header: 'ASN',
+            accessorKey: 'asn',
+            cell: ({row}) => <div
+                className='font-mono font-medium'>AS{row.getValue('asn')}</div>,
+            sortDescFirst: false,
+            enableSorting: false
+        },
+        {
+            id: 'routers',
+            header: 'Routers',
+            accessorFn: (row) => {
+                // Find all routers that match this AS
+                return routers.filter(router => router.asn == row.asn)
+            },
+            cell: ({row}) => {
+                const matchedRouters = routers.filter(router => router.asn == row.original.asn)
 
-            if (cidrs.length === 1) {
-                return <code className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{cidrs[0]}</code>
-            }
+                if (matchedRouters.length === 0) {
+                    return <div className='text-muted-foreground'>-</div>
+                }
 
-            return (
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <div className='cursor-pointer'>
-                                <code className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{cidrs[0]}</code>
-                                <div className='text-muted-foreground text-xs mt-0.5'>+{cidrs.length - 1} more</div>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent
-                            side='left'
-                            align='start'
-                            className='max-w-xs border border-muted bg-white p-3 text-black shadow-lg'
-                        >
-                            <div className='flex flex-col'>
-                                <p className='mb-2 text-xs font-semibold text-black'>
-                                    IPv4 CIDR Ranges ({cidrs.length})
-                                </p>
-                                <div className='max-h-[200px] space-y-1.5 overflow-y-auto pr-2'>
-                                    {cidrs.map((cidr, index) => (
-                                        <code
-                                            key={index}
-                                            className='block cursor-text select-text rounded bg-gray-100 px-2 py-1 font-mono text-xs text-black hover:bg-gray-200'
-                                        >
-                                            {cidr}
-                                        </code>
-                                    ))}
+                if (matchedRouters.length === 1) {
+                    return <code
+                        className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{matchedRouters[0].router_id}</code>
+                }
+
+                return (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className='cursor-pointer'>
+                                    <code
+                                        className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{matchedRouters[0].router_id}</code>
+                                    <div
+                                        className='text-muted-foreground text-xs mt-0.5'>+{matchedRouters.length - 1} more
+                                    </div>
                                 </div>
-                            </div>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            )
-        }
-    },
-    {
-        id: 'anomalies_as',
-        header: 'Anomalies (AS)',
-        accessorFn: (row) => row.anomalies.length,
-        cell: ({ row }) => {
-            const anomalies = row.original.anomalies.length
-
-            return (
-                <div className='text-center'>
-                    <span className='font-semibold'>{anomalies}</span>
-                </div>
-            )
-        }
-    },
-    {
-        id: 'anomalies_router',
-        header: 'Anomalies (Router)',
-        accessorFn: (row) => 0,
-        cell: ({ row }) => {
-            const anomalies = 0 // TODO: Replace with real data from map request
-
-            return (
-                <div className='text-center'>
-                    <span className='font-semibold'>{anomalies}</span>
-                </div>
-            )
-        }
-    },
-    {
-        id: 'status',
-        header: 'Allocation',
-        accessorKey: 'status',
-        cell: ({ row }) => {
-            const status = row.getValue('status') as AllocationStatus
-            const config = allocationStatusConfig[status] || allocationStatusConfig.allocated
-            return <Badge variant={config.variant}>{config.label}</Badge>
+                            </TooltipTrigger>
+                            <TooltipContent
+                                side='left'
+                                align='start'
+                                className='max-w-xs border border-muted bg-white p-3 text-black shadow-lg'
+                            >
+                                <div className='flex flex-col'>
+                                    <p className='mb-2 text-xs font-semibold text-black'>
+                                        Routers ({matchedRouters.length})
+                                    </p>
+                                    <div
+                                        className='max-h-[200px] space-y-1.5 overflow-y-auto pr-2'>
+                                        {matchedRouters.map((router, index) => (
+                                            <code
+                                                key={index}
+                                                className='block cursor-text select-text rounded bg-gray-100 px-2 py-1 font-mono text-xs text-black hover:bg-gray-200'
+                                            >
+                                                {router.router_id}
+                                            </code>
+                                        ))}
+                                    </div>
+                                </div>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                )
+            },
+            enableSorting: false
         },
-        enableSorting: false
-    },
-    {
-        id: 'registry',
-        header: 'Registry',
-        accessorKey: 'registry',
-        cell: ({ row }) => {
-            const registry = row.getValue('registry') as string
-            return <div className='uppercase'>{registry}</div>
+        {
+            id: 'ipv4_cidrs',
+            header: 'IPv4 CIDRs',
+            accessorKey: 'ipv4_cidrs',
+            cell: ({row}) => {
+                const cidrs = row.getValue('ipv4_cidrs') as string[]
+
+                if (cidrs.length === 0) {
+                    return <div className='text-muted-foreground'>-</div>
+                }
+
+                if (cidrs.length === 1) {
+                    return <code
+                        className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{cidrs[0]}</code>
+                }
+
+                return (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className='cursor-pointer'>
+                                    <code
+                                        className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{cidrs[0]}</code>
+                                    <div
+                                        className='text-muted-foreground text-xs mt-0.5'>+{cidrs.length - 1} more
+                                    </div>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent
+                                side='left'
+                                align='start'
+                                className='max-w-xs border border-muted bg-white p-3 text-black shadow-lg'
+                            >
+                                <div className='flex flex-col'>
+                                    <p className='mb-2 text-xs font-semibold text-black'>
+                                        IPv4 CIDR Ranges ({cidrs.length})
+                                    </p>
+                                    <div
+                                        className='max-h-[200px] space-y-1.5 overflow-y-auto pr-2'>
+                                        {cidrs.map((cidr, index) => (
+                                            <code
+                                                key={index}
+                                                className='block cursor-text select-text rounded bg-gray-100 px-2 py-1 font-mono text-xs text-black hover:bg-gray-200'
+                                            >
+                                                {cidr}
+                                            </code>
+                                        ))}
+                                    </div>
+                                </div>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                )
+            }
         },
-        enableSorting: false
-    }
+        {
+            id: 'anomalies_as',
+            header: 'Anomalies (AS)',
+            accessorFn: (row) => row.anomalies.length,
+            cell: ({row}) => {
+                const anomalies = row.original.anomalies.length
+
+                return (
+                    <div className='text-center'>
+                        <span className='font-semibold'>{anomalies}</span>
+                    </div>
+                )
+            }
+        },
+        {
+            id: 'anomalies_router',
+            header: 'Anomalies (Router)',
+            accessorFn: (row) => 0,
+            cell: ({row}) => {
+                const anomalies = 0 // TODO: Replace with real data from map request
+
+                return (
+                    <div className='text-center'>
+                        <span className='font-semibold'>{anomalies}</span>
+                    </div>
+                )
+            }
+        },
+        {
+            id: 'status',
+            header: 'Allocation',
+            accessorKey: 'status',
+            cell: ({row}) => {
+                const status = row.getValue('status') as AllocationStatus
+                const config = allocationStatusConfig[status] || allocationStatusConfig.allocated
+                return <Badge variant={config.variant}>{config.label}</Badge>
+            },
+            enableSorting: false
+        },
+        {
+            id: 'registry',
+            header: 'Registry',
+            accessorKey: 'registry',
+            cell: ({row}) => {
+                const registry = row.getValue('registry') as string
+                return <div className='uppercase'>{registry}</div>
+            },
+            enableSorting: false
+        }
 ]

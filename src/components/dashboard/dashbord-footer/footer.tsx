@@ -13,7 +13,7 @@ interface DashboardFooterProps {
 export default function DashboardFooter({ viewVisibility, selectedCountry, routers, selectedRouter, setSelectedRouter }: DashboardFooterProps) {
     return (
         <div className="dashboard-footer w-full rounded-[var(--radius)] flex flex-col gap-3">
-            <NetworkTable selectedCountry={selectedCountry} />
+            <NetworkTable selectedCountry={selectedCountry} routers={routers} />
             {viewVisibility.bgpAnnouncements && <BgpAnnounceChart router={selectedRouter?.asn} />}
         </div>
     );
