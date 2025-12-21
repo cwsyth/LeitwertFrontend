@@ -17,7 +17,7 @@ interface TimeSeriesAnomalyResponse {
 
 type Trend = 'increasing' | 'decreasing' | 'stable';
 
-export function AnomalyCard({ title, description, apiEndpoint, className, selectedCountry }: StatusCardProps) {
+export default function AnomalyCard({ title, description, apiEndpoint, className, selectedCountry }: StatusCardProps) {
     const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesAnomalyResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(false);

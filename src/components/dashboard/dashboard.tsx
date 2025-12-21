@@ -11,7 +11,6 @@ import {
     Country,
     Router,
 } from "@/types/dashboard";
-import { BgpAnnounceChart } from "./dashbord-content/components/charts/bgp-announce-chart";
 
 export default function Dashboard() {
     const [mode, setMode] = useState<DashboardContentMode>("street");
@@ -60,9 +59,10 @@ export default function Dashboard() {
                     viewVisibility={viewVisibility}
                     selectedCountry={selectedCountry}
                     routers={routers}
+                    selectedRouter={selectedRouter}
                     setSelectedRouter={setSelectedRouter}
                 />
-                {viewVisibility.bgpAnnouncements && <BgpAnnounceChart router={selectedRouter?.asn} />}
+
             </div>
         </div>
     );
