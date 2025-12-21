@@ -12,7 +12,6 @@ import {AlertTriangle, Globe} from "lucide-react";
 import {TreeMapDataItem} from '@/types/network';
 import {STATUS_COLOR_CLASSES} from "@/lib/anomaly-status";
 import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
-import { run } from 'node:test';
 
 interface AsTooltipProps {
     data: TreeMapDataItem;
