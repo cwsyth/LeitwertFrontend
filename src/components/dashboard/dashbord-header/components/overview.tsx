@@ -9,9 +9,9 @@ interface StatusItem {
 }
 
 const statusItems: StatusItem[] = [
-    { label: "gesund", count: 1400, variant: "default", color: "bg-green-500" },
-    { label: "Warnung", count: 240, variant: "secondary", color: "bg-yellow-500" },
-    { label: "kritisch", count: 60, variant: "destructive" },
+    { label: "Healthy", count: 1400, variant: "default", color: "bg-green-500" },
+    { label: "Warning", count: 240, variant: "secondary", color: "bg-yellow-500" },
+    { label: "Critical", count: 60, variant: "destructive" },
 ];
 
 export default function DashboardHeaderOverview() {

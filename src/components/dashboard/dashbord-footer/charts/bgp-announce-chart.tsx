@@ -559,12 +559,11 @@ export function BgpAnnounceChart({
                 <div className="relative min-h-[400px]">
                     {!selectedLocationId ? (
                         <div className="h-[400px] flex items-center justify-center text-muted-foreground">
-                            Bitte wählen Sie einen Standort aus.
+                            Please select a location.
                         </div>
                     ) : !isValidInput(mode, identifier) ? (
                         <div className="h-[400px] flex items-center justify-center text-muted-foreground">
-                            Bitte wählen Sie ein Ziel (AS, Router oder Land)
-                            aus.
+                            Please select a target (AS, router or country).
                         </div>
                     ) : isLoading || isFetching ? (
                         <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
