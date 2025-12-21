@@ -12,6 +12,7 @@ import type { CountryCustomProperties, CountryFeatureCollection, WorldCustomProp
 import type { CountryMiddlepointFeature } from '@/data/country_middlepoints';
 import type { Feature } from 'geojson';
 import { countries as countriesData } from "countries-list";
+import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
 
 interface DashboardContentMapProps {
     selectedCountry: Country;
@@ -25,6 +26,8 @@ interface HoverInfo {
     totalRouters: number;
     statusCounts: Record<EntityStatus, number>;
 }
+
+const runtimeConfig = useRuntimeConfig();
 
 export default function DashboardContentMap({ selectedCountry, setRouters }: DashboardContentMapProps) {
     const mapRef = useRef<MapRef>(null);
@@ -285,7 +288,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                             </div>
                         </div>
                         <div className="text-2xl font-bold text-slate-900 mb-3">
-                            {hoverInfo.totalRouters.toLocaleString('de-DE')}
+                            {hoverInfo.totalRouters.toLocaleString(runtimeConfig.locale)}
                             <span className="text-xs font-normal text-slate-500 ml-1">Gesamt</span>
                         </div>
                         <div className="space-y-1.5">
@@ -296,7 +299,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.healthy.toLocaleString('de-DE')}
+                                    {hoverInfo.statusCounts.healthy.toLocaleString(runtimeConfig.locale)}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between gap-3">
@@ -306,7 +309,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.warning.toLocaleString('de-DE')}
+                                    {hoverInfo.statusCounts.warning.toLocaleString(runtimeConfig.locale)}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between gap-3">
@@ -316,7 +319,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.critical.toLocaleString('de-DE')}
+                                    {hoverInfo.statusCounts.critical.toLocaleString(runtimeConfig.locale)}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between gap-3">
@@ -326,7 +329,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.unknown.toLocaleString('de-DE')}
+                                    {hoverInfo.statusCounts.unknown.toLocaleString(runtimeConfig.locale)}
                                 </span>
                             </div>
                         </div>

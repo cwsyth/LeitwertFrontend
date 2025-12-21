@@ -10,11 +10,14 @@
 import React from 'react';
 import {AlertTriangle, Building2, Globe, Hash, Network} from "lucide-react";
 import {OthersMetadata} from '@/types/network';
+import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
 
 interface OthersTooltipProps {
     data: OthersMetadata;
     type: 'country' | 'as';
 }
+
+const runtimeConfig = useRuntimeConfig();
 
 export function OthersTooltip({data, type}: OthersTooltipProps) {
     const isCountry = type === 'country';
@@ -44,7 +47,7 @@ export function OthersTooltip({data, type}: OthersTooltipProps) {
             {isCountry ? 'Countries:' : 'AS Count:'}
           </span>
                     <span className="font-semibold ml-auto">
-            {data.count.toLocaleString()}
+            {data.count.toLocaleString(runtimeConfig.locale)}
           </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -52,7 +55,7 @@ export function OthersTooltip({data, type}: OthersTooltipProps) {
                     <span
                         className="text-muted-foreground">Total Anomalies:</span>
                     <span className="font-semibold ml-auto">
-            {data.totalAnomalyCount.toLocaleString()}
+            {data.totalAnomalyCount.toLocaleString(runtimeConfig.locale)}
           </span>
                 </div>
             </div>

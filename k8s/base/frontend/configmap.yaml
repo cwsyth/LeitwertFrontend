@@ -4,3 +4,5 @@ metadata:
   name: dashboard
 data:
   INTERNAL_FRONTEND_API_URL: "http://frontendapi:5000/api"
+  LOCALE: "de-DE"
+  TIMEZONE: "Europe/Berlin"

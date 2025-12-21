@@ -10,6 +10,9 @@ import { DayButton, DayPicker, getDefaultClassNames } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { useRuntimeConfig } from "@/lib/useRuntimeConfig"
+
+const runtimeConfig = useRuntimeConfig();
 
 function Calendar({
   className,
@@ -37,7 +40,10 @@ function Calendar({
       captionLayout={captionLayout}
       formatters={{
         formatMonthDropdown: (date) =>
-          date.toLocaleString("default", { month: "short" }),
+          date.toLocaleString(runtimeConfig.locale, {
+            month: "short",
+            timeZone: runtimeConfig.timezone,
+        }),
         ...formatters,
       }}
       classNames={{

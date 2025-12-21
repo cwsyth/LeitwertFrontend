@@ -9,6 +9,7 @@ import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { API_BASE_URL } from "@/lib/config";
 import { Area, AreaChart } from 'recharts';
 import { ChartContainer, ChartConfig } from '@/components/ui/chart';
+import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
 
 interface TimeSeriesAnomalyResponse {
     anomalies: number[];
@@ -16,6 +17,8 @@ interface TimeSeriesAnomalyResponse {
 }
 
 type Trend = 'increasing' | 'decreasing' | 'stable';
+
+const runtimeConfig = useRuntimeConfig();
 
 export default function AnomalyCard({ title, description, apiEndpoint, className, selectedCountry }: StatusCardProps) {
     const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesAnomalyResponse | null>(null);
@@ -209,7 +212,7 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
                             <div className="text-center">
                                 <div
                                     className="text-5xl font-bold leading-none">
-                                    {currentAnomaly.toLocaleString('de-DE')}
+                                    {currentAnomaly.toLocaleString(runtimeConfig.locale)}
                                 </div>
                                 <div
                                     className="text-xs mt-1">Anomalies

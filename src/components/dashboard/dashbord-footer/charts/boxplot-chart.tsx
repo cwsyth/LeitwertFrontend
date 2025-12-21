@@ -14,6 +14,7 @@ import {
 } from "recharts";
 import { memo, useState } from "react";
 import { BoxPlotData } from "@/types/dashboard";
+import { useRuntimeConfig } from "@/lib/useRuntimeConfig";
 
 interface CustomTooltipProps {
     active?: boolean;
@@ -29,6 +30,8 @@ interface CustomBoxPlotProps {
     height?: number;
     payload?: BoxPlotData;
 }
+
+const runtimeConfig = useRuntimeConfig();
 
 const CustomBoxPlot = (props: CustomBoxPlotProps) => {
     const { x, y, width, height, payload } = props;
@@ -135,7 +138,7 @@ const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
         return (
             <div className="bg-background border rounded-lg p-3 shadow-lg text-sm">
                 <p className="font-medium mb-2">
-                    {new Date(data.timestamp).toLocaleString()}
+                    {new Date(data.timestamp).toLocaleString(runtimeConfig.locale, {timeZone: runtimeConfig.timezone})}
                 </p>
                 <div className="space-y-1">
                     <p className="text-muted-foreground">
@@ -237,12 +240,12 @@ const BoxPlotChartComponent = ({
                         domain={domain || ["dataMin", "dataMax"]}
                         allowDataOverflow={true}
                         tickFormatter={(value) =>
-                            new Date(value).toLocaleDateString(undefined, {
+                            new Date(value).toLocaleDateString(runtimeConfig.locale, {
                                 month: "short",
                                 day: "numeric",
                                 hour: "2-digit",
                                 minute: "2-digit",
-                                timeZone: "UTC",
+                                timeZone: runtimeConfig.timezone,
                             })
                         }
                         tick={{ fontSize: 12 }}

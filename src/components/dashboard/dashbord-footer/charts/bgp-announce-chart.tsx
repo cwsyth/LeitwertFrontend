@@ -7,6 +7,7 @@ import {
     useMemo,
     useDeferredValue,
     useCallback,
+    use,
 } from "react";
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { useLocationStore } from "@/lib/stores/location-store";
@@ -26,6 +27,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { API_BASE_URL } from "@/lib/config";
+import { useRuntimeConfig } from "@/lib/useRuntimeConfig";
 
 // Configuration from env
 export const CONFIG = {
@@ -39,6 +41,7 @@ export const CONFIG = {
         window: Number(process.env.NEXT_PUBLIC_AGG_TIME_WINDOW_LARGE || 86400),
     },
 };
+const runtimeConfig = useRuntimeConfig();
 
 type TimeRange = keyof typeof CONFIG;
 
@@ -104,7 +107,7 @@ async function fetchBoxPlotData(
                 return {
                     ...item,
                     timestamp: item.timestamp,
-                    // Map avg_rtt to total_increments as a fallback if not using dataKey, 
+                    // Map avg_rtt to total_increments as a fallback if not using dataKey,
                     // but we ARE using dataKey.
                     total_increments: item.avg_rtt || 0,
                     avg_rtt: item.avg_rtt,
@@ -161,7 +164,7 @@ function ChartTooltip({
                             Time
                         </span>
                         <span className="font-bold text-muted-foreground">
-                            {new Date(data.timestamp).toLocaleString()}
+                            {new Date(data.timestamp).toLocaleString(runtimeConfig.locale, {timeZone: runtimeConfig.timezone})}
                         </span>
                     </div>
                     <div className="flex flex-col">
@@ -209,7 +212,7 @@ function ChartTooltip({
     return (
         <div className="bg-background border rounded-lg p-3 shadow-lg text-xs w-48">
             <p className="font-medium mb-2">
-                {new Date(data.timestamp).toLocaleString()}
+                {new Date(data.timestamp).toLocaleString(runtimeConfig.locale, {timeZone: runtimeConfig.timezone})}
             </p>
             <div className="space-y-1">
                 <p className="text-muted-foreground flex justify-between">
@@ -658,13 +661,14 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                 <div className="border-t pt-4 space-y-4">
                     <div className="flex items-center justify-between">
                         <div className="text-sm font-medium">
-                            {currentDate.toLocaleString("de-DE", {
+                            {currentDate.toLocaleString(runtimeConfig.locale, {
                                 weekday: "short",
                                 day: "2-digit",
                                 month: "short",
                                 year: "numeric",
                                 hour: "2-digit",
                                 minute: "2-digit",
+                                timeZone: runtimeConfig.timezone,
                             })}
                         </div>
                     </div>
@@ -673,22 +677,24 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
                         <div className="flex justify-between text-xs text-muted-foreground">
                             <span>Angezeigter Zeitraum (Von/Bis)</span>
                             <span>
-                                {viewStart.toLocaleString("de-DE", {
+                                {viewStart.toLocaleString(runtimeConfig.locale, {
                                     weekday: "short",
                                     day: "2-digit",
                                     month: "short",
                                     year: "numeric",
                                     hour: "2-digit",
                                     minute: "2-digit",
+                                    timeZone: runtimeConfig.timezone,
                                 })}{" "}
                                 -{" "}
-                                {viewEnd.toLocaleString("de-DE", {
+                                {viewEnd.toLocaleString(runtimeConfig.locale, {
                                     weekday: "short",
                                     day: "2-digit",
                                     month: "short",
                                     year: "numeric",
                                     hour: "2-digit",
                                     minute: "2-digit",
+                                    timeZone: runtimeConfig.timezone,
                                 })}
                             </span>
                         </div>

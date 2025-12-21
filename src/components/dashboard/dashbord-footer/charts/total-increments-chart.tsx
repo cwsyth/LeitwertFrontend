@@ -13,6 +13,7 @@ import {
     YAxis,
 } from "recharts";
 import { BoxPlotData } from "@/types/dashboard";
+import { useRuntimeConfig } from "@/lib/useRuntimeConfig";
 
 interface TotalIncrementsChartProps {
     data: BoxPlotData[];
@@ -31,6 +32,8 @@ interface CustomAnomalyDotProps {
         is_anomaly?: boolean;
     };
 }
+
+const runtimeConfig = useRuntimeConfig();
 
 const TotalIncrementsChartComponent = ({
     data,
@@ -136,9 +139,10 @@ const TotalIncrementsChartComponent = ({
                         allowDataOverflow={true}
                         tickFormatter={(value) => {
                             const date = new Date(value);
-                            return date.toLocaleTimeString([], {
+                            return date.toLocaleTimeString(runtimeConfig.locale, {
                                 hour: "2-digit",
                                 minute: "2-digit",
+                                timeZone: runtimeConfig.timezone,
                             });
                         }}
                         className="text-xs text-muted-foreground"
@@ -187,7 +191,9 @@ const TotalIncrementsChartComponent = ({
                                                 <div className="font-bold text-muted-foreground">
                                                     {new Date(
                                                         label || 0
-                                                    ).toLocaleString()}
+                                                    ).toLocaleString(runtimeConfig.locale, {
+                                                        timeZone: runtimeConfig.timezone,
+                                                    })}
                                                 </div>
                                             </div>
                                             <div>
