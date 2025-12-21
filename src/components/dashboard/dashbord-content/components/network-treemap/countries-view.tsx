@@ -13,7 +13,6 @@ import {
 } from '@/components/dashboard/dashbord-content/components/network-treemap/tree-map';
 import {
     CountriesViewProps,
-    NetworkStatus,
     OthersMetadata,
     TreeMapDataItem,
     TreeMapOthersData
