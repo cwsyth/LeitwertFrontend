@@ -11,7 +11,13 @@ import {
 } from "react";
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { useLocationStore } from "@/lib/stores/location-store";
-import { BoxPlotData, Country, PingDataResponse, QueryMode, Router } from "@/types/dashboard";
+import {
+    BoxPlotData,
+    Country,
+    PingDataResponse,
+    QueryMode,
+    Router,
+} from "@/types/dashboard";
 import { BoxPlotChart } from "./boxplot-chart";
 import { TotalIncrementsChart } from "./total-increments-chart";
 import { ZoomOut, ArrowLeft } from "lucide-react";
@@ -47,11 +53,16 @@ type TimeRange = keyof typeof CONFIG;
 const AS_REGEX = /^(AS|as)?[0-9]+$/;
 const CC_REGEX = /^[a-zA-Z]{2}$/;
 // Simple IPv4 regex
-const IPV4_REGEX = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+const IPV4_REGEX =
+    /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 // Comprehensive IPv6 regex
-const IPV6_REGEX = /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/;
+const IPV6_REGEX =
+    /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/;
 
-function isValidInput(mode: QueryMode, value: string | number | null | undefined): boolean {
+function isValidInput(
+    mode: QueryMode,
+    value: string | number | null | undefined
+): boolean {
     if (!value) return false;
     const trimmed = String(value).trim();
     if (trimmed.length === 0) return false;
@@ -149,12 +160,13 @@ function ChartTooltip({
     mode?: QueryMode;
 }) {
     // Determine labels based on mode
-    const valueLabel = mode === "ip" ? "Ping RTT" : "Anzahl der Inkrementierungen";
+    const valueLabel =
+        mode === "ip" ? "Ping RTT" : "Anzahl der Inkrementierungen";
     const runtimeConfig = useRuntimeConfig();
 
     if (type === "line") {
         // Line chart
-        const val = mode === "ip" ? (data.avg_rtt ?? 0) : data.total_increments;
+        const val = mode === "ip" ? data.avg_rtt ?? 0 : data.total_increments;
 
         return (
             <div className="rounded-lg border bg-background p-2 shadow-sm text-xs w-48">
@@ -164,7 +176,10 @@ function ChartTooltip({
                             Time
                         </span>
                         <span className="font-bold text-muted-foreground">
-                            {new Date(data.timestamp).toLocaleString(runtimeConfig.locale, { timeZone: runtimeConfig.timezone })}
+                            {new Date(data.timestamp).toLocaleString(
+                                runtimeConfig.locale,
+                                { timeZone: runtimeConfig.timezone }
+                            )}
                         </span>
                     </div>
                     <div className="flex flex-col">
@@ -175,7 +190,7 @@ function ChartTooltip({
                             {valueLabel}
                         </span>
                         <span className="font-bold">
-                            {typeof val === 'number' ? val.toFixed(2) : val}
+                            {typeof val === "number" ? val.toFixed(2) : val}
                         </span>
                     </div>
                     {data.avg_ttl !== undefined && (
@@ -186,9 +201,7 @@ function ChartTooltip({
                             >
                                 TTL
                             </span>
-                            <span className="font-bold">
-                                {data.avg_ttl}
-                            </span>
+                            <span className="font-bold">{data.avg_ttl}</span>
                         </div>
                     )}
                     {data.next_power_of_2 !== undefined && (
@@ -212,7 +225,9 @@ function ChartTooltip({
     return (
         <div className="bg-background border rounded-lg p-3 shadow-lg text-xs w-48">
             <p className="font-medium mb-2">
-                {new Date(data.timestamp).toLocaleString(runtimeConfig.locale, { timeZone: runtimeConfig.timezone })}
+                {new Date(data.timestamp).toLocaleString(runtimeConfig.locale, {
+                    timeZone: runtimeConfig.timezone,
+                })}
             </p>
             <div className="space-y-1">
                 <p className="text-muted-foreground flex justify-between">
@@ -257,7 +272,11 @@ interface BgpAnnounceChartProps {
 }
 
 // Main component
-export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAnnounceChartProps) {
+export function BgpAnnounceChart({
+    asn,
+    selectedRouter,
+    selectedCountry,
+}: BgpAnnounceChartProps) {
     const DEBOUNCE_TIME = 500;
     const runtimeConfig = useRuntimeConfig();
 
@@ -295,7 +314,11 @@ export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAn
     // Ideally we'd know "what changed last".
     // For now, if country changes, we switch to CC.
     useEffect(() => {
-        if (selectedCountry && selectedCountry.code && selectedCountry.code.toLowerCase() !== "world") {
+        if (
+            selectedCountry &&
+            selectedCountry.code &&
+            selectedCountry.code.toLowerCase() !== "world"
+        ) {
             setMode("cc");
             setIdentifier(selectedCountry.code);
         }
@@ -321,19 +344,28 @@ export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAn
 
     const handleBack = () => {
         if (mode === "ip") {
-            const potentialAsn = selectedRouter?.asn || (asn ? asn.toString() : "");
+            const potentialAsn =
+                selectedRouter?.asn || (asn ? asn.toString() : "");
             if (potentialAsn) {
                 setMode("as");
                 setIdentifier(potentialAsn);
             } else {
                 // If no ASN found, fallback to country logic
-                if (selectedCountry && selectedCountry.code && selectedCountry.code.toLowerCase() !== "world") {
+                if (
+                    selectedCountry &&
+                    selectedCountry.code &&
+                    selectedCountry.code.toLowerCase() !== "world"
+                ) {
                     setMode("cc");
                     setIdentifier(selectedCountry.code);
                 }
             }
         } else if (mode === "as") {
-            if (selectedCountry && selectedCountry.code && selectedCountry.code.toLowerCase() !== "world") {
+            if (
+                selectedCountry &&
+                selectedCountry.code &&
+                selectedCountry.code.toLowerCase() !== "world"
+            ) {
                 setMode("cc");
                 setIdentifier(selectedCountry.code);
             }
@@ -359,7 +391,8 @@ export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAn
                 timeRange.start,
                 timeRange.end
             ),
-        enabled: isValidInput(mode, debouncedIdentifier) && !!selectedLocationId,
+        enabled:
+            isValidInput(mode, debouncedIdentifier) && !!selectedLocationId,
     });
 
     // Pre-process data to include timestampMs for faster filtering
@@ -471,9 +504,28 @@ export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAn
     );
 
     const getTitle = () => {
-        if (mode === "ip") return <>Ping RTT für Router Interface <span className="text-blue-500">{identifier}</span></>;
-        if (mode === "cc") return <>BGP Announcements (Boxplot) für <span className="text-blue-500">Ländercode {identifier}</span></>;
-        return <>BGP Announcements (Boxplot) für <span className="text-blue-500">AS-{identifier}</span></>;
+        if (mode === "ip")
+            return (
+                <>
+                    Ping RTT für Router Interface{" "}
+                    <span className="text-blue-500">{identifier}</span>
+                </>
+            );
+        if (mode === "cc")
+            return (
+                <>
+                    BGP Announcements (Boxplot) für{" "}
+                    <span className="text-blue-500">
+                        Ländercode {identifier.toUpperCase()}
+                    </span>
+                </>
+            );
+        return (
+            <>
+                BGP Announcements (Boxplot) für{" "}
+                <span className="text-blue-500">AS-{identifier}</span>
+            </>
+        );
     };
 
     return (
@@ -503,9 +555,10 @@ export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAn
                         </div>
                     ) : !isValidInput(mode, identifier) ? (
                         <div className="h-[400px] flex items-center justify-center text-muted-foreground">
-                            Bitte wählen Sie ein Ziel (AS, Router oder Land) aus.
+                            Bitte wählen Sie ein Ziel (AS, Router oder Land)
+                            aus.
                         </div>
-                    ) : (isLoading || isFetching) ? (
+                    ) : isLoading || isFetching ? (
                         <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
                             <div className="animate-pulse text-muted-foreground">
                                 Laden...
@@ -515,7 +568,7 @@ export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAn
                         <div className="h-[400px] flex items-center justify-center text-destructive">
                             Fehler beim Laden der Daten.
                         </div>
-                    ) : (!data || !Array.isArray(data) || data.length === 0) ? (
+                    ) : !data || !Array.isArray(data) || data.length === 0 ? (
                         <div className="h-[400px] flex items-center justify-center text-muted-foreground">
                             Keine Daten vorhanden.
                         </div>
@@ -530,16 +583,25 @@ export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAn
                                             deferredViewStart.getTime(),
                                             deferredViewEnd.getTime(),
                                         ]}
-                                        dataKey={mode === "ip" ? "avg_rtt" : "total_increments"}
-                                        valueLabel={mode === "ip" ? "Ping RTT" : "Anzahl der Inkrementierungen"}
+                                        dataKey={
+                                            mode === "ip"
+                                                ? "avg_rtt"
+                                                : "total_increments"
+                                        }
+                                        valueLabel={
+                                            mode === "ip"
+                                                ? "Ping RTT"
+                                                : "Anzahl der Inkrementierungen"
+                                        }
                                         showAvgTtl={mode === "ip"}
                                         showNextPowerOf2={mode === "ip"}
                                     />
                                     <div
                                         className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
                                         style={{
-                                            left: `calc(50px + (100% - 50px - 20px) * ${currentTimePercentInView / 100
-                                                })`,
+                                            left: `calc(50px + (100% - 50px - 20px) * ${
+                                                currentTimePercentInView / 100
+                                            })`,
                                             display: isCurrentTimeInView
                                                 ? "block"
                                                 : "none",
@@ -551,22 +613,22 @@ export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAn
                                                 style={{
                                                     left:
                                                         currentTimePercentInView >
-                                                            50
+                                                        50
                                                             ? "auto"
                                                             : "100%",
                                                     right:
                                                         currentTimePercentInView >
-                                                            50
+                                                        50
                                                             ? "100%"
                                                             : "auto",
                                                     marginLeft:
                                                         currentTimePercentInView >
-                                                            50
+                                                        50
                                                             ? 0
                                                             : "8px",
                                                     marginRight:
                                                         currentTimePercentInView >
-                                                            50
+                                                        50
                                                             ? "8px"
                                                             : 0,
                                                 }}
@@ -596,8 +658,9 @@ export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAn
                                     <div
                                         className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
                                         style={{
-                                            left: `calc(50px + (100% - 50px - 20px) * ${currentTimePercentInView / 100
-                                                })`,
+                                            left: `calc(50px + (100% - 50px - 20px) * ${
+                                                currentTimePercentInView / 100
+                                            })`,
                                             display: isCurrentTimeInView
                                                 ? "block"
                                                 : "none",
@@ -609,22 +672,22 @@ export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAn
                                                 style={{
                                                     left:
                                                         currentTimePercentInView >
-                                                            50
+                                                        50
                                                             ? "auto"
                                                             : "100%",
                                                     right:
                                                         currentTimePercentInView >
-                                                            50
+                                                        50
                                                             ? "100%"
                                                             : "auto",
                                                     marginLeft:
                                                         currentTimePercentInView >
-                                                            50
+                                                        50
                                                             ? 0
                                                             : "8px",
                                                     marginRight:
                                                         currentTimePercentInView >
-                                                            50
+                                                        50
                                                             ? "8px"
                                                             : 0,
                                                 }}
@@ -676,15 +739,18 @@ export function BgpAnnounceChart({ asn, selectedRouter, selectedCountry }: BgpAn
                         <div className="flex justify-between text-xs text-muted-foreground">
                             <span>Angezeigter Zeitraum (Von/Bis)</span>
                             <span>
-                                {viewStart.toLocaleString(runtimeConfig.locale, {
-                                    weekday: "short",
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                    timeZone: runtimeConfig.timezone,
-                                })}{" "}
+                                {viewStart.toLocaleString(
+                                    runtimeConfig.locale,
+                                    {
+                                        weekday: "short",
+                                        day: "2-digit",
+                                        month: "short",
+                                        year: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        timeZone: runtimeConfig.timezone,
+                                    }
+                                )}{" "}
                                 -{" "}
                                 {viewEnd.toLocaleString(runtimeConfig.locale, {
                                     weekday: "short",
