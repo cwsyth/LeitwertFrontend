@@ -16,7 +16,7 @@ import {RouterDetailTooltip} from "./router-detail-tooltip"
 
 interface SingleRouterCellProps {
     router: Router
-    onRouterClick: (router: Router) => void
+    onRouterClick: (router: null | Router) => void
     selectedRouter: Router | null
 }
 
@@ -38,7 +38,7 @@ export function SingleRouterCell({
                                 ? 'bg-black text-white'
                                 : 'bg-muted'
                         }`}
-                        onClick={() => onRouterClick(router)}
+                        onClick={() => onRouterClick(isSelected ? null : router)} // Toggle selection
                     >
                         {router.router_id}
                     </code>

@@ -17,7 +17,7 @@ import {RouterDetailTooltip} from "./router-detail-tooltip"
 
 interface MultipleRoutersCellProps {
     routers: Router[]
-    onRouterClick: (router: Router) => void
+    onRouterClick: (router: null | Router) => void
     selectedRouter: Router | null
 }
 
@@ -69,7 +69,7 @@ export function MultipleRoutersCell({
                                                         ? 'bg-black text-white'
                                                         : 'bg-gray-100 text-black'
                                                 }`}
-                                                onClick={() => onRouterClick(router)}
+                                                onClick={() => onRouterClick(isSelected ? null : router)} // Toggle selection
                                             >
                                                 {router.router_id}
                                             </code>
