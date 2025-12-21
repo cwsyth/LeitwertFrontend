@@ -15,8 +15,8 @@ interface DashboardContentProps {
 
 export default function DashboardContent({ mode, selectedCountry, setRouters, setSelectedCountry, setSelectedAs }: DashboardContentProps) {
     return (
-        <div className="w-full h-full overflow-scroll">
-            <Card className="dashboard-content w-full h-full bg-background overflow-scroll">
+        <div className="w-full h-full">
+            <Card className="dashboard-content w-full h-full bg-background">
                 <CardContent className="h-full w-full ">
                     {mode === "street" && <DashboardContentMap selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} setRouters={setRouters} />}
                     {mode === "hierarchy" && <DashboardContentHierarchy
