@@ -27,6 +27,7 @@ import {
     CountryTooltip
 } from "@/components/dashboard/dashbord-content/components/network-treemap/tooltips/country-tooltip";
 import {isOthersData} from "@/lib/type-guards";
+import {useLocationStore} from "@/lib/stores/location-store";
 
 export function CountriesView({
                                   limit = 50,
@@ -41,6 +42,7 @@ export function CountriesView({
     const [isLoading, setIsLoading] = useState(true);
 
     const timeRange = useTimeRangeStore((state) => state.timeRange);
+    const selectedLocationId = useLocationStore((state) => state.selectedLocationId);
 
     const handleItemClick = (item: TreeMapDataItem) => {
         if (onCountryClick) {
@@ -51,7 +53,12 @@ export function CountriesView({
     const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await networkApi.getCountriesSummary(limit, timeRange, sizeMetric);
+            const response = await networkApi.getCountriesSummary(
+                limit,
+                timeRange,
+                sizeMetric,
+                selectedLocationId
+            );
 
             const transformedData: TreeMapDataItem[] = response.countries.map(country => {
                 const metricValue = country[sizeMetric === 'as_count' ? 'asCount' : sizeMetric === 'ip_count' ? 'ipCount' : 'anomalyCount'];
@@ -102,7 +109,7 @@ export function CountriesView({
         } finally {
             setIsLoading(false);
         }
-    }, [limit, sizeMetric, timeRange, thresholds]);
+    }, [limit, sizeMetric, timeRange, thresholds, selectedLocationId]);
 
     useEffect(() => {
         loadData();
