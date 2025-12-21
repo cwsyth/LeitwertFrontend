@@ -12,7 +12,6 @@ import type { CountryCustomProperties, CountryData, CountryFeatureCollection, Wo
 import type { CountryMiddlepointFeature } from '@/data/country_middlepoints';
 import type { Feature } from 'geojson';
 import { countries as countriesData } from "countries-list";
-import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
 
 interface DashboardContentMapProps {
     selectedCountry: Country;
@@ -28,8 +27,7 @@ interface HoverInfo {
     statusCounts: Record<EntityStatus, number>;
 }
 
-export default function DashboardContentMap({ selectedCountry, setSelectedCountry, setRouters }: DashboardContentMapProps) {
-    const runtimeConfig = useRuntimeConfig();
+export default function DashboardContentMap({ selectedCountry, setRouters }: DashboardContentMapProps) {
     const mapRef = useRef<MapRef>(null);
     const queryClient = useQueryClient();
     const [data, setData] = useState<CountryData[] |WorldData[] | null>(null);
@@ -131,9 +129,6 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                         };
                     }) || []
                 };
-
-                const routers = data[0]?.routers || [];
-                setRouters(routers);
 
                 return mapData;
             }
@@ -270,16 +265,6 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                 const countryCode = feature.properties?.country_code;
                 if (!countryCode) return;
 
-                const countries: Country[] = Object.entries(countriesData).map(([code, data]) => ({
-                    code: code.toLowerCase(),
-                    name: data.name
-                }));
-
-                setSelectedCountry({
-                    code: countryCode.toLowerCase(),
-                    name: countries.find(c => c.code.toLowerCase() === countryCode.toLowerCase())?.name || ""
-                });
-/*
                 const data = await queryClient.fetchQuery({
                     queryKey: ['country-feature-collection', countryCode],
                     queryFn: async () => {
@@ -292,7 +277,8 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                 });
 
                 const routers = data[0]?.routers || [];
-                setRouters(routers); */
+                setRouters(routers);
+                console.log(routers);
             }
         } finally {
             setIsClickLoading(false);
@@ -326,7 +312,7 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                             </div>
                         </div>
                         <div className="text-2xl font-bold text-slate-900 mb-3">
-                            {hoverInfo.totalRouters.toLocaleString(runtimeConfig.locale)}
+                            {hoverInfo.totalRouters.toLocaleString('de-DE')}
                             <span className="text-xs font-normal text-slate-500 ml-1">Gesamt</span>
                         </div>
                         <div className="space-y-1.5">
@@ -337,7 +323,7 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.healthy.toLocaleString(runtimeConfig.locale)}
+                                    {hoverInfo.statusCounts.healthy.toLocaleString('de-DE')}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between gap-3">
@@ -347,7 +333,7 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.warning.toLocaleString(runtimeConfig.locale)}
+                                    {hoverInfo.statusCounts.warning.toLocaleString('de-DE')}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between gap-3">
@@ -357,7 +343,7 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.critical.toLocaleString(runtimeConfig.locale)}
+                                    {hoverInfo.statusCounts.critical.toLocaleString('de-DE')}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between gap-3">
@@ -367,7 +353,7 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.unknown.toLocaleString(runtimeConfig.locale)}
+                                    {hoverInfo.statusCounts.unknown.toLocaleString('de-DE')}
                                 </span>
                             </div>
                         </div>

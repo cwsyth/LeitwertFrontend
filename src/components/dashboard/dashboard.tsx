@@ -43,20 +43,26 @@ export default function Dashboard() {
 
     return (
         <div className="dashboard-wrapper h-full flex gap-3">
-            <div className="dashboard w-6/10 h-full flex flex-col items-center gap-3">
-                <DashboardHeader
-                    viewVisibility={viewVisibility}
-                    toggleView={toggleView}
-                    selectedCountry={selectedCountry}
-                    setSelectedCountry={setSelectedCountry}
+            <div className="dashboard w-6/10 h-full flex flex-col gap-3">
+                <div className="w-full flex-shrink-0">
+                    <DashboardHeader
+                        viewVisibility={viewVisibility}
+                        toggleView={toggleView}
+                        selectedCountry={selectedCountry}
+                        setSelectedCountry={setSelectedCountry}
+                    />
+                </div>
+                <div className="w-full">
+                    <DashboardNav mode={mode} setMode={setMode} />
+                </div>
+                <div className="w-full flex-15">
+                    <DashboardContent
+                        mode={mode}
+                        selectedCountry={selectedCountry}
+                        setSelectedCountry={setSelectedCountry}
+                        setRouters={setRouters}
                 />
-                <DashboardNav mode={mode} setMode={setMode} />
-                <DashboardContent
-                    mode={mode}
-                    selectedCountry={selectedCountry}
-                    setRouters={setRouters}
-                    setSelectedCountry={setSelectedCountry}
-                />
+                </div>
             </div>
             <div className="w-4/10">
                 <NetworkTable selectedCountry={selectedCountry} />

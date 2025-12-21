@@ -13,10 +13,10 @@ interface DashboardContentProps {
 
 export default function DashboardContent({ mode, selectedCountry, setRouters, setSelectedCountry }: DashboardContentProps) {
     return (
-        <div className={mode === "street" ? "h-180 w-full" : "w-full"}>
-            <Card className="dashboard-content w-full h-full flex-1 bg-background">
+        <div className="w-full h-full">
+            <Card className="dashboard-content w-full h-full bg-background">
                 <CardContent className="h-full w-full">
-                    {mode === "street" && <DashboardContentMap selectedCountry={selectedCountry} setRouters={setRouters} />}
+                    {mode === "street" && <DashboardContentMap selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} setRouters={setRouters} />}
                     {mode === "hierarchy" && <DashboardContentHierarchy selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} />}
                 </CardContent>
             </Card>
