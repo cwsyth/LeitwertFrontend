@@ -59,7 +59,7 @@ export const createColumns = (
                     <Badge
                         variant='default'
                         className='cursor-pointer bg-black text-white hover:bg-black/90'
-                        onClick={() => setSelectedAs(Number(row.original.asn))}
+                        onClick={() => setSelectedAs(0)} // Clear selection on click
                     >
                         AS{row.getValue('asn')}
                     </Badge>
