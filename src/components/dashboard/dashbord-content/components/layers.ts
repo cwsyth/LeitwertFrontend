@@ -127,7 +127,7 @@ export const countryView = {
           20, 29,
           50, 40
         ],
-        ['*', 1.3, ['/', ['get', 'critical_count'], ['get', 'point_count']]]
+        ['*', 1.6, ['/', ['get', 'critical_count'], ['get', 'point_count']]]
       ],
       'circle-opacity': 0.95
     }
@@ -218,7 +218,7 @@ export const worldView = {
           100, 36,
           200, 42
         ],
-        ['/', ['coalesce', ['get', 'healthy'], 0], ['max', ['get', 'router_count_total'], 1]]
+        ['/', ['coalesce', ['get', 'healthy', ['get', 'router_count_status']], 0], ['max', ['get', 'router_count_total'], 1]]
       ],
       'circle-opacity': 0.9
     }
@@ -244,7 +244,7 @@ export const worldView = {
           100, 36,
           200, 42
         ],
-        ['/', ['+', ['coalesce', ['get', 'unknown'], 0], ['coalesce', ['get', 'warning'], 0], ['coalesce', ['get', 'critical'], 0]], ['max', ['get', 'router_count_total'], 1]]
+        ['/', ['+', ['coalesce', ['get', 'unknown', ['get', 'router_count_status']], 0], ['coalesce', ['get', 'warning', ['get', 'router_count_status']], 0], ['coalesce', ['get', 'critical', ['get', 'router_count_status']], 0]], ['max', ['get', 'router_count_total'], 1]]
       ],
       'circle-opacity': 0.85
     }
@@ -270,7 +270,7 @@ export const worldView = {
           100, 36,
           200, 42
         ],
-        ['/', ['+', ['coalesce', ['get', 'warning'], 0], ['coalesce', ['get', 'critical'], 0]], ['max', ['get', 'router_count_total'], 1]]
+        ['/', ['+', ['coalesce', ['get', 'warning', ['get', 'router_count_status']], 0], ['coalesce', ['get', 'critical', ['get', 'router_count_status']], 0]], ['max', ['get', 'router_count_total'], 1]]
       ],
       'circle-opacity': 0.9
     }
@@ -296,7 +296,7 @@ export const worldView = {
           100, 36,
           200, 42
         ],
-        ['*', 1.3, ['/', ['coalesce', ['get', 'critical'], 0], ['max', ['get', 'router_count_total'], 1]]]
+        ['*', 1.6, ['/', ['coalesce', ['get', 'critical', ['get', 'router_count_status']], 0], ['max', ['get', 'router_count_total'], 1]]]
       ],
       'circle-opacity': 0.95
     }

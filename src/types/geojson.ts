@@ -2,12 +2,29 @@ import { TCountryCode } from 'countries-list';
 import type { FeatureCollection, Feature, Point } from 'geojson';
 import type { EntityStatus, Router } from './dashboard';
 
+type RouterStatusTimeSeries = Record<EntityStatus, number[]> & {
+    timestamps: string[];
+};
+
+export interface CountryData {
+    country_code: TCountryCode;
+    router_count_total: number;
+    router_count_status: RouterStatusTimeSeries;
+    routers: Router[];
+}
+
 export type CountryCustomProperties = Router;
 
+export interface WorldData {
+    country_code: TCountryCode;
+    router_count_total: number;
+    router_count_status: RouterStatusTimeSeries;
+}
+
 export interface WorldCustomProperties {
-  country_code: TCountryCode;
-  router_count_total: number;
-  router_count_status: Record<EntityStatus, number>;
+    country_code: TCountryCode;
+    router_count_total: number;
+    router_count_status: Record<EntityStatus, number>;
 }
 
 // Create typed GeoJSON types

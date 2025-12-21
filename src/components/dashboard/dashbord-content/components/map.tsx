@@ -8,7 +8,7 @@ import geohash from 'ngeohash';
 import { countryView, worldView } from './layers';
 import { countryMiddlepoints } from '@/data/country_middlepoints';
 import type { Country, EntityStatus, Router } from '@/types/dashboard';
-import type { CountryCustomProperties, CountryFeatureCollection, WorldCustomProperties, WorldFeatureCollection } from '@/types/geojson';
+import type { CountryCustomProperties, CountryData, CountryFeatureCollection, WorldCustomProperties, WorldData, WorldFeatureCollection } from '@/types/geojson';
 import type { CountryMiddlepointFeature } from '@/data/country_middlepoints';
 import type { Feature } from 'geojson';
 import { countries as countriesData } from "countries-list";
@@ -29,6 +29,7 @@ interface HoverInfo {
 export default function DashboardContentMap({ selectedCountry, setRouters }: DashboardContentMapProps) {
     const mapRef = useRef<MapRef>(null);
     const queryClient = useQueryClient();
+    const [data, setData] = useState<CountryData[] |WorldData[] | null>(null);
     const [isClickLoading, setIsClickLoading] = useState(false);
     const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
     let [longitude, latitude] = [10.426171427430804, 51.08304539800482]; // default to Germany
@@ -75,7 +76,9 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
             }
 
             if (isWorld) {
-                const data: WorldCustomProperties[] = await response.json();
+                const data: WorldData[] = await response.json();
+                setData(data);
+
                 const mapData: WorldFeatureCollection = {
                     type: "FeatureCollection",
                     features: data.map((item) => ({
@@ -90,29 +93,42 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                         properties: {
                             ...item,
                             // Flatten router_count_status for layer expressions
-                            healthy: item.router_count_status.healthy || 0,
-                            warning: item.router_count_status.warning || 0,
-                            critical: item.router_count_status.critical || 0,
-                            unknown: item.router_count_status.unknown || 0
+                            router_count_status: {
+                                healthy: item.router_count_status.healthy[0] || 0,
+                                warning: item.router_count_status.warning[0] || 0,
+                                critical: item.router_count_status.critical[0] || 0,
+                                unknown: item.router_count_status.unknown[0] || 0
+                            }
                         }
                     }))
                 };
+
                 return mapData;
             } else {
-                const data = await response.json();
+                const data: CountryData[] = await response.json();
+                setData(data);
+
                 const mapData: CountryFeatureCollection = {
                     type: "FeatureCollection",
-                    features: data[0].routers?.map((item: CountryCustomProperties) => ({
-                        type: "Feature",
-                        geometry: {
-                            type: "Point",
-                            coordinates: item.location?.lon && item.location?.lat
-                                ? [item.location.lon, item.location.lat]
-                                : geohash.decode(item.geohash),
-                        },
-                        properties: item
-                    })) || []
+                    features: data[0].routers?.map((item: CountryCustomProperties) => {
+                        const coords = item.location?.lon && item.location?.lat
+                            ? [item.location.lon, item.location.lat]
+                            : (() => {
+                                const decoded = geohash.decode(item.geohash);
+                                return [decoded.longitude, decoded.latitude];
+                            })();
+
+                        return {
+                            type: "Feature",
+                            geometry: {
+                                type: "Point",
+                                coordinates: coords
+                            },
+                            properties: item
+                        };
+                    }) || []
                 };
+
                 return mapData;
             }
         }
