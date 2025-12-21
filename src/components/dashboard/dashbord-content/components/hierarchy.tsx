@@ -4,8 +4,8 @@ import {
     CountriesView
 } from "@/components/dashboard/dashbord-content/components/network-treemap/countries-view";
 import {
-    AsNetworkView
-} from "@/components/dashboard/dashbord-content/components/network-treemap/as-network-view";
+    AsView
+} from "@/components/dashboard/dashbord-content/components/network-treemap/as-view";
 import React, {useEffect, useState} from "react";
 import {AsSizeMetric, CountrySizeMetric} from "@/types/network";
 import {Country} from "@/types/dashboard";
@@ -89,15 +89,17 @@ export default function DashboardContentHierarchy({ selectedCountry, setSelected
                     useGradient={useGradient}
                     sizeMetric={countrySizeMetric}
                     onCountryClick={handleCountryClick}
+                    thresholds={thresholds}
                 />
             ) : (
-                <AsNetworkView
+                <AsView
                     countryCode={selectedCountry.code.toUpperCase()}
                     limit={limit}
                     showLabels={showLabels}
                     useGradient={useGradient}
                     sizeMetric={asSizeMetric}
                     onBackClick={handleBackToWorld}
+                    thresholds={thresholds}
                 />
             )}
         </div>

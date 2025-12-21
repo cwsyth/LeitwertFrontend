@@ -22,6 +22,7 @@ import {networkApi} from '@/services/networkApi';
 import {Skeleton} from "@/components/ui/skeleton";
 import {AlertTriangle, Building2, Globe} from "lucide-react";
 import {useTimeRangeStore} from "@/lib/stores/time-range-store";
+import {determineStatus} from "@/lib/anomaly-status";
 
 export function CountriesView({
                                      limit = 50,
@@ -29,8 +30,7 @@ export function CountriesView({
                                      showLabels,
                                      useGradient,
                                      sizeMetric = 'as_count',
-                                     statusFilter = 'all',
-                                     onStatusFilterChange
+                                     thresholds
                                  }: CountriesViewProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
@@ -49,18 +49,16 @@ export function CountriesView({
         try {
             const response = await networkApi.getCountriesSummary(limit, timeRange, sizeMetric);
 
-            const filteredCountries = statusFilter === 'all'
-                ? response.countries
-                : response.countries.filter(country => country.status === statusFilter);
-
-            const transformedData: TreeMapDataItem[] = filteredCountries.map(country => {
+            const transformedData: TreeMapDataItem[] = response.countries.map(country => {
                 const metricValue = country[sizeMetric === 'as_count' ? 'asCount' : sizeMetric === 'ip_count' ? 'ipCount' : 'anomalyCount'];
+                const anomalyCount = country.anomalyCount ?? 0;
+
                 return {
                     id: country.code,
                     name: country.name,
                     value: metricValue,
-                    status: country.status,
-                    anomalyCount: country.anomalyCount ?? 0,
+                    status: determineStatus(anomalyCount, thresholds),  // ← NEU
+                    anomalyCount: anomalyCount,
                     metadata: {
                         asCount: country.asCount,
                         ipCount: country.ipCount
@@ -97,7 +95,7 @@ export function CountriesView({
         } finally {
             setIsLoading(false);
         }
-    }, [limit, statusFilter, sizeMetric, timeRange]);
+    }, [limit, sizeMetric, timeRange, thresholds]);
 
     useEffect(() => {
         loadData();
@@ -234,8 +232,6 @@ export function CountriesView({
             data={data}
             others={others}
             title="Globale Übersicht"
-            onStatusFilter={onStatusFilterChange}
-            currentStatus={statusFilter}
             renderTooltip={renderTooltip}
             onItemClick={handleItemClick}
             showLabels={showLabels}

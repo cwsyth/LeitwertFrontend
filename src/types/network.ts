@@ -13,18 +13,22 @@ export interface CountryData {
     name: string;
     asCount: number;
     anomalyCount: number;
-    status: NetworkStatus;
     ipCount: number;
-    anomalies: string[];
+    anomalies: {
+        bgp: string[];
+        ping: string[];
+    };
 }
 
 export interface AsNetworkData {
     asNumber: number;
     name: string;
     ipCount: number;
-    status: NetworkStatus;
     anomalyCount: number;
-    anomalies: string[];
+    anomalies: {
+        bgp: string[];
+        ping: string[];
+    };
 }
 
 export interface CountriesSummaryResponse {
@@ -90,49 +94,44 @@ export interface TreeMapDataItem {
     id: string;
     name: string;
     value: number;
-    status: NetworkStatus;
     anomalyCount: number;
     metadata?: CountryMetadata | AsMetadata | OthersMetadata;
     [key: string]: unknown;
 }
 
 export interface TreeMapProps {
-    data: TreeMapDataItem[],
-    others?: TreeMapOthersData,
-    title: string,
-    onStatusFilter?: (status: NetworkStatus | 'all') => void,
-    currentStatus: NetworkStatus | 'all',
-    renderTooltip: (data: TreeMapDataItem | TreeMapOthersData) => ReactNode,
-    othersDisplaySize?: number,
-    onItemClick?: (item: TreeMapDataItem) => void,
-    showLabels?: boolean,
-    useGradient?: boolean,
+    data: TreeMapDataItem[];
+    others?: TreeMapOthersData;
+    title: string;
+    renderTooltip: (data: TreeMapDataItem | TreeMapOthersData) => ReactNode;
+    othersDisplaySize?: number;
+    onItemClick?: (item: TreeMapDataItem) => void;
+    showLabels?: boolean;
+    useGradient?: boolean;
     anomalyRanges?: Record<NetworkStatus, {
         min: number;
-        max: number
-    }>,
+        max: number;
+    }>;
     onBackClick?: () => void;
 }
 
-export interface AsTreeMapProps {
-    countryCode: string,
-    limit?: number,
-    showLabels?: boolean,
-    useGradient?: boolean,
-    sizeMetric?: AsSizeMetric,
-    statusFilter?: NetworkStatus | 'all'
-    onStatusFilterChange?: (status: NetworkStatus | 'all') => void;
+export interface AsViewProps {
+    countryCode: string;
+    limit?: number;
+    showLabels?: boolean;
+    useGradient?: boolean;
+    sizeMetric?: AsSizeMetric;
     onBackClick?: () => void;
+    thresholds: StatusThresholds;
 }
 
-export interface CountriesTreeMapProps {
-    limit?: number,
-    onCountryClick?: (countryCode: string) => void,
-    showLabels?: boolean,
-    useGradient?: boolean,
-    sizeMetric?: CountrySizeMetric,
-    statusFilter?: NetworkStatus | 'all'
-    onStatusFilterChange?: (status: NetworkStatus | 'all') => void;
+export interface CountriesViewProps {
+    limit?: number;
+    onCountryClick?: (countryCode: string) => void;
+    showLabels?: boolean;
+    useGradient?: boolean;
+    sizeMetric?: CountrySizeMetric;
+    thresholds: StatusThresholds;
 }
 
 export type CountrySizeMetric = 'as_count' | 'ip_count' | 'anomaly_count';
@@ -149,31 +148,37 @@ export const AS_SIZE_METRIC_LABELS: Record<AsSizeMetric, string> = {
     anomaly_count: 'Anomalien'
 };
 
-export type NetworkRegistry = 'ripencc' | 'arin' | 'apnic' | 'lacnic' | 'afrinic'
+export type NetworkRegistry = 'ripencc' | 'arin' | 'apnic' | 'lacnic' | 'afrinic';
 
-export type AllocationStatus = 'allocated' | 'assigned' | 'reserved' | 'available'
+export type AllocationStatus = 'allocated' | 'assigned' | 'reserved' | 'available';
 
 export interface NetworkDetail {
-    asn: string
-    name?: string
-    organization?: string
-    country: string
-    registry: NetworkRegistry
-    status2: AllocationStatus
-    ipv4_cidrs: string[]
-    routers: number
+    asn: string;
+    name?: string;
+    organization?: string;
+    country: string;
+    registry: NetworkRegistry;
+    status2: AllocationStatus;
+    ipv4_cidrs: string[];
+    routers: number;
     anomalies: {
-        bgp: number
-        ping: number
-    }
+        bgp: number;
+        ping: number;
+    };
 }
 
 export interface NetworkDetailsResponse {
-    details: NetworkDetail[]
+    details: NetworkDetail[];
     meta: {
-        total_entries: number
-        page: number
-        limit: number
-        has_next: boolean
-    }
+        total_entries: number;
+        page: number;
+        limit: number;
+        has_next: boolean;
+    };
+}
+
+export interface StatusThresholds {
+    healthy: { min: number; max: number };
+    warning: { min: number; max: number };
+    critical: { min: number; max: number };
 }

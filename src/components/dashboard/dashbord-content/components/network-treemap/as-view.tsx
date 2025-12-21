@@ -12,7 +12,7 @@ import {
     TreeMap
 } from '@/components/dashboard/dashbord-content/components/network-treemap/tree-map';
 import {
-    AsNetworkViewProps,
+    AsViewProps,
     NetworkStatus,
     OthersMetadata,
     TreeMapDataItem,
@@ -22,17 +22,17 @@ import {networkApi} from '@/services/networkApi';
 import {Skeleton} from "@/components/ui/skeleton";
 import {AlertTriangle, Globe, Hash, Network} from "lucide-react";
 import {useTimeRangeStore} from "@/lib/stores/time-range-store";
+import {determineStatus} from "@/lib/anomaly-status";
 
-export function AsNetworkView({
+export function AsView({
                               countryCode,
                               limit = 10,
                               showLabels,
                               useGradient,
                               sizeMetric = 'ip_count',
-                              statusFilter = 'all',
-                              onStatusFilterChange,
-                              onBackClick
-                          }: AsNetworkViewProps) {
+                              onBackClick,
+                              thresholds
+                          }: AsViewProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
     const [countryName, setCountryName] = useState('');
@@ -52,18 +52,16 @@ export function AsNetworkView({
 
             setCountryName(response.country.name);
 
-            const filteredAsNetworks = statusFilter === 'all'
-                ? response.country.asNetworks
-                : response.country.asNetworks.filter(as => as.status === statusFilter);
-
-            const transformedData: TreeMapDataItem[] = filteredAsNetworks.map(as => {
+            const transformedData: TreeMapDataItem[] = response.country.asNetworks.map(as => {
                 const metricValue = as[sizeMetric === 'ip_count' ? 'ipCount' : 'anomalyCount'];
+                const anomalyCount = as.anomalyCount ?? 0;
+
                 return {
                     id: as.asNumber.toString(),
                     name: as.name,
                     value: metricValue,
-                    status: as.status,
-                    anomalyCount: as.anomalyCount ?? 0,
+                    status: determineStatus(anomalyCount, thresholds),
+                    anomalyCount: anomalyCount,
                     metadata: {
                         asNumber: as.asNumber,
                         ipCount: as.ipCount
@@ -101,7 +99,7 @@ export function AsNetworkView({
         } finally {
             setIsLoading(false);
         }
-    }, [countryCode, limit, statusFilter, sizeMetric, timeRange]);
+    }, [countryCode, limit, sizeMetric, timeRange, thresholds]);
 
     useEffect(() => {
         loadData();
@@ -235,8 +233,6 @@ export function AsNetworkView({
             data={data}
             others={others}
             title={`${countryName} - Autonome Systeme`}
-            onStatusFilter={onStatusFilterChange}
-            currentStatus={statusFilter}
             renderTooltip={renderTooltip}
             showLabels={showLabels}
             useGradient={useGradient}
