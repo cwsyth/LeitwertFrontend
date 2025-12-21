@@ -36,6 +36,7 @@ export default function Dashboard() {
 
     const [routers, setRouters] = useState<Router[]>([]);
 
+    const [selectedAs, setSelectedAs] = useState<number>(0);
     const [selectedRouter, setSelectedRouter] = useState<Router | null>(null);
 
     return (
@@ -63,7 +64,13 @@ export default function Dashboard() {
             </div>
             <div className="w-2/5 h-full flex flex-col gap-3">
                 <div className="flex-1 min-h-0 overflow-auto">
-                    <NetworkTable selectedCountry={selectedCountry} routers={routers} setSelectedRouter={setSelectedRouter} />
+                    <NetworkTable
+                        selectedCountry={selectedCountry}
+                        routers={routers}
+                        setSelectedRouter={setSelectedRouter}
+                        selectedAs={selectedAs}
+                        setSelectedAs={setSelectedAs}
+                    />
                 </div>
                 {viewVisibility.bgpAnnouncements &&
                     <div className="flex-1 min-h-0 overflow-auto">

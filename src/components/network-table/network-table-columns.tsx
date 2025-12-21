@@ -31,7 +31,8 @@ const allocationStatusConfig: Record<AllocationStatus, {
 
 export const createColumns = (
     routers: Router[],
-    setSelectedRouter: (router: Router | null) => void
+    setSelectedRouter: (router: Router | null) => void,
+    setSelectedAs: (asn: number) => void
 ): ColumnDef<NetworkDetail>[] => {
 
     return [
@@ -49,8 +50,13 @@ export const createColumns = (
             id: 'asn',
             header: 'ASN',
             accessorKey: 'asn',
-            cell: ({row}) => <div
-                className='font-mono font-medium'>AS{row.getValue('asn')}</div>,
+            cell: ({row}) =>
+                <div
+                    className='font-mono font-medium cursor-pointer hover:text-primary'
+                    onClick={() => setSelectedAs(Number(row.original.asn))}
+                >
+                    AS{row.getValue('asn')}
+                </div>,
             sortDescFirst: false,
             enableSorting: false
         },
