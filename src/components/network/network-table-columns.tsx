@@ -14,6 +14,7 @@ import {
     TooltipTrigger
 } from "@/components/ui/tooltip";
 import {Router} from "@/types/dashboard";
+import {Popover, PopoverContent, PopoverTrigger} from "../ui/popover";
 
 const allocationStatusConfig: Record<AllocationStatus, { variant: 'default' | 'destructive' | 'outline' | 'secondary'; label: string }> = {
     allocated: { variant: 'default', label: 'Allocated' },
@@ -57,46 +58,111 @@ export const createColumns = (routers: Router[]): ColumnDef<NetworkDetail>[] => 
                 }
 
                 if (matchedRouters.length === 1) {
-                    return <code
-                        className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{matchedRouters[0].router_id}</code>
+                    const router = matchedRouters[0]
+
+                    return (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <code className='cursor-pointer rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>
+                                        {router.router_id}
+                                    </code>
+                                </TooltipTrigger>
+                                <TooltipContent
+                                    side='left'
+                                    align='start'
+                                    className='max-w-xs border border-muted bg-white p-3 text-black shadow-lg'
+                                >
+                                    <div className='flex flex-col gap-2'>
+                                        <div>
+                                            <p className='text-xs font-semibold text-gray-500'>Router ID</p>
+                                            <code className='text-xs font-mono'>{router.router_id}</code>
+                                        </div>
+                                        <div>
+                                            <p className='text-xs font-semibold text-gray-500'>Geohash</p>
+                                            <code className='text-xs font-mono'>{router.geohash}</code>
+                                        </div>
+                                        <div>
+                                            <p className='text-xs font-semibold text-gray-500'>Location</p>
+                                            <p className='text-xs'>{router.location.city}, {router.location.region}</p>
+                                            <p className='text-xs text-gray-600'>Lat: {router.location.lat}, Lon: {router.location.lon}</p>
+                                        </div>
+                                        <div>
+                                            <p className='text-xs font-semibold text-gray-500'>ISP</p>
+                                            <p className='text-xs'>{router.location.isp}</p>
+                                        </div>
+                                        <div>
+                                            <p className='text-xs font-semibold text-gray-500'>Status</p>
+                                            <span className='text-xs font-medium'>{router.status}</span>
+                                        </div>
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )
                 }
 
                 return (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <div className='cursor-pointer'>
-                                    <code
-                                        className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{matchedRouters[0].router_id}</code>
-                                    <div
-                                        className='text-muted-foreground text-xs mt-0.5'>+{matchedRouters.length - 1} more
-                                    </div>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <div className='cursor-pointer'>
+                                <code className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{matchedRouters[0].router_id}</code>
+                                <div className='text-muted-foreground text-xs mt-0.5'>+{matchedRouters.length - 1} more</div>
+                            </div>
+                        </PopoverTrigger>
+                        <PopoverContent
+                            side='left'
+                            align='start'
+                            className='max-w-xs border border-muted bg-white p-3 text-black shadow-lg'
+                        >
+                            <div className='flex flex-col'>
+                                <p className='mb-2 text-xs font-semibold text-black'>
+                                    Routers ({matchedRouters.length})
+                                </p>
+                                <div className='max-h-[200px] space-y-1.5 overflow-y-auto pr-2'>
+                                    {matchedRouters.map((router, index) => (
+                                        <TooltipProvider key={index}>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <code className='block cursor-pointer select-text rounded bg-gray-100 px-2 py-1 font-mono text-xs text-black hover:bg-gray-200'>
+                                                        {router.router_id}
+                                                    </code>
+                                                </TooltipTrigger>
+                                                <TooltipContent
+                                                    side='left'
+                                                    className='max-w-xs border border-muted bg-white p-3 text-black shadow-lg'
+                                                >
+                                                    <div className='flex flex-col gap-2'>
+                                                        <div>
+                                                            <p className='text-xs font-semibold text-gray-500'>Router ID</p>
+                                                            <code className='text-xs font-mono'>{router.router_id}</code>
+                                                        </div>
+                                                        <div>
+                                                            <p className='text-xs font-semibold text-gray-500'>Geohash</p>
+                                                            <code className='text-xs font-mono'>{router.geohash}</code>
+                                                        </div>
+                                                        <div>
+                                                            <p className='text-xs font-semibold text-gray-500'>Location</p>
+                                                            <p className='text-xs'>{router.location.city}, {router.location.region}</p>
+                                                            <p className='text-xs text-gray-600'>Lat: {router.location.lat}, Lon: {router.location.lon}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className='text-xs font-semibold text-gray-500'>ISP</p>
+                                                            <p className='text-xs'>{router.location.isp}</p>
+                                                        </div>
+                                                        <div>
+                                                            <p className='text-xs font-semibold text-gray-500'>Status</p>
+                                                            <span className='text-xs font-medium'>{router.status}</span>
+                                                        </div>
+                                                    </div>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    ))}
                                 </div>
-                            </TooltipTrigger>
-                            <TooltipContent
-                                side='left'
-                                align='start'
-                                className='max-w-xs border border-muted bg-white p-3 text-black shadow-lg'
-                            >
-                                <div className='flex flex-col'>
-                                    <p className='mb-2 text-xs font-semibold text-black'>
-                                        Routers ({matchedRouters.length})
-                                    </p>
-                                    <div
-                                        className='max-h-[200px] space-y-1.5 overflow-y-auto pr-2'>
-                                        {matchedRouters.map((router, index) => (
-                                            <code
-                                                key={index}
-                                                className='block cursor-text select-text rounded bg-gray-100 px-2 py-1 font-mono text-xs text-black hover:bg-gray-200'
-                                            >
-                                                {router.router_id}
-                                            </code>
-                                        ))}
-                                    </div>
-                                </div>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
                 )
             },
             enableSorting: false
