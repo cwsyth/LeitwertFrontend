@@ -528,7 +528,7 @@ export function BgpAnnounceChart({
 
     return (
         <Card className="w-full">
-            <CardHeader className="space-y-4 pb-4 flex items-center justify-between">
+            <CardHeader className="space-y-4 flex items-center justify-between">
                 <div className="flex flex-col space-y-1.5">
                     <CardTitle className="flex items-center gap-2">
                         {mode !== "cc" && (
