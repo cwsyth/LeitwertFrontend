@@ -4,7 +4,6 @@ import { useState } from "react";
 import DashboardHeader from "./dashbord-header/header";
 import DashboardNav from "./dashbord-nav/nav";
 import DashboardContent from "./dashbord-content/content";
-import DashboardFooter from "./dashbord-footer/footer";
 import {
     DashboardContentMode,
     DashboardViewVisibility,
@@ -20,8 +19,6 @@ export default function Dashboard() {
     const [viewVisibility, setViewVisibility] =
         useState<DashboardViewVisibility>({
             timeline: true,
-            searchResults: true,
-            globalStats: true,
             bgpAnnouncements: true,
         });
 
@@ -43,7 +40,7 @@ export default function Dashboard() {
 
     return (
         <div className="dashboard-wrapper h-full flex gap-3">
-            <div className="dashboard w-6/10 h-full flex flex-col gap-3">
+            <div className="dashboard w-3/5 h-full flex flex-col gap-3">
                 <div className="w-full flex-shrink-0">
                     <DashboardHeader
                         viewVisibility={viewVisibility}
@@ -52,10 +49,10 @@ export default function Dashboard() {
                         setSelectedCountry={setSelectedCountry}
                     />
                 </div>
-                <div className="w-full">
+                <div className="w-full flex-shrink-0">
                     <DashboardNav mode={mode} setMode={setMode} />
                 </div>
-                <div className="w-full flex-15">
+                <div className="w-full flex-grow min-h-0">
                     <DashboardContent
                         mode={mode}
                         selectedCountry={selectedCountry}
@@ -64,9 +61,14 @@ export default function Dashboard() {
                 />
                 </div>
             </div>
-            <div className="w-4/10">
-                <NetworkTable selectedCountry={selectedCountry} />
-                {//viewVisibility.bgpAnnouncements && <BgpAnnounceChart router={selectedRouter?.asn} />
+            <div className="w-2/5 h-full flex flex-col gap-3">
+                <div className="flex-1 min-h-0 overflow-auto">
+                    <NetworkTable selectedCountry={selectedCountry} />
+                </div>
+                {viewVisibility.bgpAnnouncements &&
+                    <div className="flex-1 min-h-0 overflow-auto">
+                        <BgpAnnounceChart router={selectedRouter?.asn} />
+                    </div>
                 }
             </div>
         </div>

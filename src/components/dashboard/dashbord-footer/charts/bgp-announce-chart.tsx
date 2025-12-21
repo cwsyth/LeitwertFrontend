@@ -447,10 +447,9 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
 
     return (
         <Card className="w-full">
-            <CardHeader className="space-y-4 pb-4">
+            <CardHeader className="space-y-4 pb-4 flex items-center justify-between">
                 <div className="flex flex-col space-y-1.5">
                     <CardTitle>{getTitle()}</CardTitle>
-                    <CardDescription>{getDescription()}</CardDescription>
                 </div>
 
                 <div className="flex flex-wrap gap-4 items-center justify-between">
