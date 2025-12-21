@@ -27,7 +27,7 @@ interface HoverInfo {
     statusCounts: Record<EntityStatus, number>;
 }
 
-export default function DashboardContentMap({ selectedCountry, setSelectedCountry, setRouters }: DashboardContentMapProps) {
+export default function DashboardContentMap({ selectedCountry, setRouters }: DashboardContentMapProps) {
     const mapRef = useRef<MapRef>(null);
     const queryClient = useQueryClient();
     const [data, setData] = useState<CountryData[] |WorldData[] | null>(null);
@@ -129,9 +129,6 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                         };
                     }) || []
                 };
-
-                const routers = data[0]?.routers || [];
-                setRouters(routers);
 
                 return mapData;
             }
@@ -268,16 +265,6 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                 const countryCode = feature.properties?.country_code;
                 if (!countryCode) return;
 
-                const countries: Country[] = Object.entries(countriesData).map(([code, data]) => ({
-                    code: code.toLowerCase(),
-                    name: data.name
-                }));
-
-                setSelectedCountry({
-                    code: countryCode.toLowerCase(),
-                    name: countries.find(c => c.code.toLowerCase() === countryCode.toLowerCase())?.name || ""
-                });
-/*
                 const data = await queryClient.fetchQuery({
                     queryKey: ['country-feature-collection', countryCode],
                     queryFn: async () => {
@@ -290,7 +277,8 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                 });
 
                 const routers = data[0]?.routers || [];
-                setRouters(routers); */
+                setRouters(routers);
+                console.log(routers);
             }
         } finally {
             setIsClickLoading(false);
