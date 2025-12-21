@@ -23,12 +23,12 @@ interface TablePreviewProps {
 
 export function TablePreview({columns}: TablePreviewProps) {
     return (
-        <div className='h-full rounded-lg border bg-card p-6 shadow-sm'>
+        <div className='h-full rounded-lg border bg-card p-6 shadow-sm flex flex-col'>
             <h2 className='mb-4 text-xl font-semibold'>Übersicht Autonome
                 Systeme</h2>
-            <div className='w-full space-y-4'>
-                <div className='relative rounded-md border bg-white'>
-                    <div className='opacity-50'>
+            <div className='flex-1 min-h-0 space-y-4 flex flex-col'>
+                <div className='relative rounded-md border bg-white flex-1 overflow-hidden'>
+                    <div className='opacity-50 h-full overflow-auto'>
                         <Table className='blur-sm'>
                             <TableHeader>
                                 <TableRow className='bg-muted/50'>
@@ -46,7 +46,7 @@ export function TablePreview({columns}: TablePreviewProps) {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {Array.from({length: 5}).map((_, i) => (
+                                {Array.from({length: 10}).map((_, i) => (
                                     <TableRow key={i}>
                                         {columns.map((column, colIndex) => (
                                             <TableCell key={`${i}-${colIndex}`}>

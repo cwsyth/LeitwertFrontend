@@ -189,11 +189,11 @@ export function NetworkTable({
     }
 
     return (
-        <div className='h-full rounded-lg border bg-card p-6 shadow-sm overflow-scroll'>
+        <div className='h-full rounded-lg border bg-card p-6 shadow-sm flex flex-col'>
             <h2 className='mb-4 text-l font-semibold'>Übersicht Autonome
                 Systeme - {selectedCountry.name}</h2>
-            <div className='w-full space-y-4'>
-                <div className='rounded-md border bg-white'>
+            <div className='flex-1 min-h-0 space-y-4 flex flex-col'>
+                <div className='rounded-md border bg-white flex-1 min-h-0 overflow-auto'>
                     {loading ? (
                         <TableSkeleton columns={columns}
                                        itemsPerPage={itemsPerPage}/>
