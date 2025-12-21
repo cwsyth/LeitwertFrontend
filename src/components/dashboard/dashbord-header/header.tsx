@@ -2,9 +2,7 @@ import DashboardHeaderFilter from "./components/filter";
 import DashboardHeaderViews from "./components/views";
 import { Country, DashboardViewVisibility } from "@/types/dashboard";
 import React from "react";
-import {
-    AnomalyCard
-} from "@/components/dashboard/dashbord-content/cards/anomaly-card";
+import AnomalyCard from "./cards/anomaly-card";
 
 interface DashboardHeaderProps {
     viewVisibility: DashboardViewVisibility;
