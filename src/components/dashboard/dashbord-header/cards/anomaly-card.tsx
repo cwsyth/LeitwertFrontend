@@ -165,7 +165,7 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
     } satisfies ChartConfig;
 
     return (
-        <Card className={`${className} h-full w-full overflow-scroll`}>
+        <Card className={`${className} h-full w-full`}>
             <CardHeader>
                 <CardTitle>
                     {title}

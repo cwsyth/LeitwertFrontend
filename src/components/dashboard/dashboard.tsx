@@ -65,7 +65,7 @@ export default function Dashboard() {
                 </div>
             </div>
             <div className="w-2/5 h-full flex flex-col gap-3">
-                <div className="flex-1 min-h-0 overflow-scroll">
+                <div className="flex-1 min-h-0">
                     <NetworkTable
                         selectedCountry={selectedCountry}
                         routers={routers}
@@ -76,7 +76,7 @@ export default function Dashboard() {
                     />
                 </div>
                 {viewVisibility.bgpAnnouncements &&
-                    <div className="flex-1 min-h-0 overflow-scroll rounded-lg">
+                    <div className="flex-1 min-h-0 overflow-y-scroll rounded-lg">
                         <BgpAnnounceChart selectedRouter={selectedRouter} asn={selectedAs} selectedCountry={selectedCountry} />
                     </div>
                 }

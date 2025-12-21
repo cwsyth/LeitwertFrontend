@@ -64,7 +64,7 @@ export default function DashboardContentHierarchy({ selectedCountry, setSelected
     const isWorldView = !selectedCountry || selectedCountry.code === 'world';
 
     return (
-        <div className="dashboard-hierarchy container mx-auto p-6 overflow-scroll">
+        <div className="dashboard-hierarchy container mx-auto p-6">
             {/* Customization Options */}
             <TreeMapFilters
                 limitValue={inputLimit}

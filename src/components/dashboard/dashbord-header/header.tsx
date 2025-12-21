@@ -21,7 +21,7 @@ export default function DashboardHeader({ viewVisibility, toggleView, selectedCo
                 <AnomalyCard title={"Routers"} description={"(Country)"} apiEndpoint={"/v1/router/health"} selectedCountry={selectedCountry} />
 
             </div>
-            <div className="flex-1 overflow-scroll">
+            <div className="flex-1">
                 <DashboardHeaderFilter selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} />
             </div>
             <div className="flex-1">
