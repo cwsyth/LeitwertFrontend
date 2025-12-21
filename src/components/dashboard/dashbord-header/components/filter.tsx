@@ -71,13 +71,13 @@ export default function DashboardHeaderFilter({ selectedCountry, setSelectedCoun
         : countries;
 
     return (
-        <Card className="w-full h-full">
+        <Card className="w-full h-full overflow-scroll">
             <CardHeader>
                 <CardTitle>
                     Filter
                 </CardTitle>
                 <CardDescription className="text-foreground">
-                    <div className="mt-2 space-y-3">
+                    <div className="mt-2 space-y-3 mr-4">
                         <Popover open={open} onOpenChange={setOpen}>
                             <PopoverTrigger asChild>
                                 <Button

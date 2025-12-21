@@ -26,7 +26,7 @@ export default function DashboardHeaderViews({
     toggleView,
 }: DashboardHeaderResultsProps) {
     return (
-        <Card className="w-full h-full">
+        <Card className="w-full h-full overflow-scroll">
             <CardHeader>
                 <CardTitle>Views</CardTitle>
                 <CardDescription>

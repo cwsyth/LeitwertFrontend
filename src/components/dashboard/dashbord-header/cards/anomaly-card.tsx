@@ -165,12 +165,12 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
     } satisfies ChartConfig;
 
     return (
-        <Card className={`${className} h-full w-full`}>
+        <Card className={`${className} h-full w-full overflow-scroll`}>
             <CardHeader>
                 <CardTitle>
                     {title}
                     {description && (
-                        <div className="text-xs text-muted-foreground">{description}</div>
+                        <span className="text-xs text-muted-foreground ml-2">{description}</span>
                     )}
                 </CardTitle>
             </CardHeader>

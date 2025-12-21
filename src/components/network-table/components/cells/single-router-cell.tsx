@@ -17,18 +17,27 @@ import {RouterDetailTooltip} from "./router-detail-tooltip"
 interface SingleRouterCellProps {
     router: Router
     onRouterClick: (router: Router) => void
+    selectedRouter: Router | null
 }
 
 export function SingleRouterCell({
                                      router,
-                                     onRouterClick
+                                     onRouterClick,
+                                     selectedRouter
                                  }: SingleRouterCellProps) {
+
+    const isSelected = selectedRouter?.router_id === router.router_id
+
     return (
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
                     <code
-                        className='cursor-pointer rounded bg-muted px-1.5 py-0.5 font-mono text-xs'
+                        className={`cursor-pointer rounded px-1.5 py-0.5 font-mono text-xs ${
+                            isSelected
+                                ? 'bg-black text-white'
+                                : 'bg-muted'
+                        }`}
                         onClick={() => onRouterClick(router)}
                     >
                         {router.router_id}

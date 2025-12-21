@@ -1,6 +1,6 @@
 "use client";
 
-import {useState} from "react";
+import { useState } from "react";
 import DashboardHeader from "./dashbord-header/header";
 import DashboardNav from "./dashbord-nav/nav";
 import DashboardContent from "./dashbord-content/content";
@@ -10,8 +10,8 @@ import {
     DashboardViewVisibility,
     Router,
 } from "@/types/dashboard";
-import {NetworkTable} from "@/components/network-table/network-table";
-import {BgpAnnounceChart} from "./dashbord-footer/charts/bgp-announce-chart";
+import { NetworkTable } from "@/components/network-table/network-table";
+import { BgpAnnounceChart } from "./dashbord-footer/charts/bgp-announce-chart";
 
 export default function Dashboard() {
     const [mode, setMode] = useState<DashboardContentMode>("street");
@@ -36,6 +36,7 @@ export default function Dashboard() {
 
     const [routers, setRouters] = useState<Router[]>([]);
 
+    const [selectedAs, setSelectedAs] = useState<number>(0);
     const [selectedRouter, setSelectedRouter] = useState<Router | null>(null);
 
     return (
@@ -52,22 +53,31 @@ export default function Dashboard() {
                 <div className="w-full flex-shrink-0">
                     <DashboardNav mode={mode} setMode={setMode} />
                 </div>
-                <div className="w-full flex-grow min-h-0">
+                <div className="w-full flex-grow">
                     <DashboardContent
                         mode={mode}
                         selectedCountry={selectedCountry}
                         setSelectedCountry={setSelectedCountry}
                         setRouters={setRouters}
+                        selectedAs={selectedAs}
+                        setSelectedAs={setSelectedAs}
                 />
                 </div>
             </div>
             <div className="w-2/5 h-full flex flex-col gap-3">
                 <div className="flex-1 min-h-0 overflow-scroll">
-                    <NetworkTable selectedCountry={selectedCountry} routers={routers} setSelectedRouter={setSelectedRouter} />
+                    <NetworkTable
+                        selectedCountry={selectedCountry}
+                        routers={routers}
+                        selectedRouter={selectedRouter}
+                        setSelectedRouter={setSelectedRouter}
+                        selectedAs={selectedAs}
+                        setSelectedAs={setSelectedAs}
+                    />
                 </div>
                 {viewVisibility.bgpAnnouncements &&
-                    <div className="flex-1 min-h-0 overflow-scroll rounded-lg">
-                        <BgpAnnounceChart router={selectedRouter?.asn} selectedCountry={selectedCountry} />
+                    <div className="flex-1 min-h-0 overflow-scroll">
+                        <BgpAnnounceChart selectedRouter={selectedRouter} asn={selectedAs} selectedCountry={selectedCountry} />
                     </div>
                 }
             </div>

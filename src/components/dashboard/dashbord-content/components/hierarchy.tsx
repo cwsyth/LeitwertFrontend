@@ -17,9 +17,10 @@ import {
 interface DashboardContentHierarchyProps {
     selectedCountry: Country;
     setSelectedCountry: React.Dispatch<React.SetStateAction<Country>>;
+    setSelectedAs: (asNumber: number) => void
 }
 
-export default function DashboardContentHierarchy({ selectedCountry, setSelectedCountry }: DashboardContentHierarchyProps) {
+export default function DashboardContentHierarchy({ selectedCountry, setSelectedCountry, setSelectedAs }: DashboardContentHierarchyProps) {
     const [limit, setLimit] = useState(50);
     const [inputLimit, setInputLimit] = useState("50");
     const [showLabels, setShowLabels] = useState(true);
@@ -63,7 +64,7 @@ export default function DashboardContentHierarchy({ selectedCountry, setSelected
     const isWorldView = !selectedCountry || selectedCountry.code === 'world';
 
     return (
-        <div className="dashboard-hierarchy container mx-auto p-6">
+        <div className="dashboard-hierarchy container mx-auto p-6 overflow-scroll">
             {/* Customization Options */}
             <TreeMapFilters
                 limitValue={inputLimit}
@@ -100,6 +101,7 @@ export default function DashboardContentHierarchy({ selectedCountry, setSelected
                     sizeMetric={asSizeMetric}
                     onBackClick={handleBackToWorld}
                     thresholds={thresholds}
+                    setSelectedAs={setSelectedAs}
                 />
             )}
         </div>

@@ -65,7 +65,10 @@ import {
 interface NetworkTableProps {
     selectedCountry: Country
     routers: Router[];
+    selectedRouter: Router | null
     setSelectedRouter: (router: Router | null) => void
+    selectedAs: number
+    setSelectedAs: (asNumber: number) => void
 }
 
 const COLUMN_TO_API_SORT: Record<string, 'name' | 'cidrs' | 'bgp-anomalies' | 'ping-anomalies'> = {
@@ -79,14 +82,17 @@ const COLUMN_TO_API_SORT: Record<string, 'name' | 'cidrs' | 'bgp-anomalies' | 'p
 export function NetworkTable({
                                  selectedCountry,
                                  routers,
-                                 setSelectedRouter
+                                 selectedRouter,
+                                 setSelectedRouter,
+                                 selectedAs,
+                                 setSelectedAs
                              }: NetworkTableProps) {
     const [data, setData] = useState<NetworkDetail[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [sorting, setSorting] = useState<SortingState>([])
 
-    const columns = createColumns(routers, setSelectedRouter)
+    const columns = createColumns(routers, selectedRouter, setSelectedRouter, selectedAs, setSelectedAs)
     const [columnOrder, setColumnOrder] = useState<string[]>(columns.map(column => column.id as string))
 
     const [currentPage, setCurrentPage] = useState(1)
@@ -185,10 +191,10 @@ export function NetworkTable({
     }
 
     return (
-        <div className='h-full rounded-lg border bg-card p-6 shadow-sm overflow-scroll'>
+        <div className='h-full rounded-lg border bg-card p-6 shadow-sm flex flex-col'>
             <h2 className='mb-4 text-l font-semibold'>AS Overview - {selectedCountry.name}</h2>
-            <div className='w-full space-y-4'>
-                <div className='rounded-md border bg-white'>
+            <div className='flex-1 min-h-0 space-y-4 flex flex-col'>
+                <div className='rounded-md border bg-white flex-1 min-h-0 overflow-auto'>
                     {loading ? (
                         <TableSkeleton columns={columns}
                                        itemsPerPage={itemsPerPage}/>

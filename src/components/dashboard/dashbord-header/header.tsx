@@ -13,7 +13,7 @@ interface DashboardHeaderProps {
 
 export default function DashboardHeader({ viewVisibility, toggleView, selectedCountry, setSelectedCountry }: DashboardHeaderProps) {
     return (
-        <div className="dashboard-header max-h-[17vh] w-full rounded-[var(--radius)] overflow-hidden flex gap-3 items-stretch">
+        <div className="dashboard-header w-full rounded-[var(--radius)] overflow-hidden flex gap-3 items-stretch">
             <div className="flex-1">
                 <AnomalyCard title={"Autonomous Systems (AS)"} description={"(Country)"} apiEndpoint={"/v1/networks/health"} selectedCountry={selectedCountry} />
             </div>
@@ -21,7 +21,7 @@ export default function DashboardHeader({ viewVisibility, toggleView, selectedCo
                 <AnomalyCard title={"Routers"} description={"(Country)"} apiEndpoint={"/v1/router/health"} selectedCountry={selectedCountry} />
 
             </div>
-            <div className="flex-1">
+            <div className="flex-1 overflow-scroll">
                 <DashboardHeaderFilter selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} />
             </div>
             <div className="flex-1">
