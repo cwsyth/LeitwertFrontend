@@ -181,7 +181,7 @@ export function TreeMap({
                         className="gap-2"
                     >
                         <ArrowLeft className="h-4 w-4"/>
-                        Zurück
+                        Back
                     </Button>
                 )}
             </div>
@@ -205,7 +205,7 @@ export function TreeMap({
                 <DialogContent className="max-w-2xl max-h-[80vh]">
                     <DialogHeader>
                         <DialogTitle>
-                            {others?.name === 'Others' ? 'Weitere Einträge' : 'Others'}
+                            {others?.name === 'Others' ? 'More Entries' : 'Others'}
                         </DialogTitle>
                     </DialogHeader>
                     <div className="overflow-y-auto max-h-[60vh] pr-2">

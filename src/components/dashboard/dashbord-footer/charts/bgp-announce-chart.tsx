@@ -515,22 +515,22 @@ export function BgpAnnounceChart({
         if (mode === "ip")
             return (
                 <>
-                    Ping RTT für Router Interface{" "}
+                    Ping RTT for Router Interface{" "}
                     <span className="text-blue-500">{identifier}</span>
                 </>
             );
         if (mode === "cc")
             return (
                 <>
-                    BGP Announcements (Boxplot) für{" "}
+                    BGP Announcements (Boxplot) for{" "}
                     <span className="text-blue-500">
-                        Ländercode {identifier.toUpperCase()}
+                        Country Code {identifier.toUpperCase()}
                     </span>
                 </>
             );
         return (
             <>
-                BGP Announcements (Boxplot) für{" "}
+                BGP Announcements (Boxplot) for{" "}
                 <span className="text-blue-500">AS-{identifier}</span>
             </>
         );
@@ -569,16 +569,16 @@ export function BgpAnnounceChart({
                     ) : isLoading || isFetching ? (
                         <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
                             <div className="animate-pulse text-muted-foreground">
-                                Laden...
+                                Loading...
                             </div>
                         </div>
                     ) : error ? (
                         <div className="h-[400px] flex items-center justify-center text-destructive">
-                            Fehler beim Laden der Daten.
+                            Error loading data.
                         </div>
                     ) : !data || !Array.isArray(data) || data.length === 0 ? (
                         <div className="h-[400px] flex items-center justify-center text-muted-foreground">
-                            Keine Daten vorhanden.
+                            No data available.
                         </div>
                     ) : (
                         <>
@@ -718,7 +718,7 @@ export function BgpAnnounceChart({
                                     onClick={() => setViewRange([0, 100])}
                                 >
                                     <ZoomOut className="h-4 w-4 mr-2" />
-                                    Zurücksetzen
+                                    Reset
                                 </Button>
                             )}
                         </>
@@ -743,7 +743,7 @@ export function BgpAnnounceChart({
 
                     <div className="space-y-1">
                         <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>Angezeigter Zeitraum (Von/Bis)</span>
+                            <span>Displayed Time Range (From/To)</span>
                             <span>
                                 {viewStart.toLocaleString(
                                     runtimeConfig.locale,

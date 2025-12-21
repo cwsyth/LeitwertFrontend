@@ -130,7 +130,7 @@ export function CountriesView({
         <TreeMap
             data={data}
             others={others}
-            title="Globale Übersicht"
+            title="Global Overview"
             renderTooltip={renderTooltip}
             onItemClick={handleItemClick}
             showLabels={showLabels}

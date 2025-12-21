@@ -22,14 +22,14 @@ export default function DashboardHeaderOverview() {
         <Card className="flex-1">
             <CardHeader className="pb-2">
                 <CardTitle className="text-base">
-                    Gesamtüberblick
+                    Global Overview
                 </CardTitle>
                 <CardDescription className="text-foreground">
                     <div className="flex items-center">
                         {/* Status List */}
                         <div>
                             <div className="text-x mb-2">
-                                Router gesamt: <span className="font-semibold text-sm">{totalCount}</span>
+                                Total routers: <span className="font-semibold text-sm">{totalCount}</span>
                             </div>
                             <div className="flex flex-col gap-1">
                                 {statusItems.map((item) => (

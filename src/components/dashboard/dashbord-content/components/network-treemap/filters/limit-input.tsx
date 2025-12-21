@@ -20,7 +20,7 @@ export function LimitInput({ value, onChange }: LimitInputProps) {
     return (
         <div className="flex items-center gap-2">
             <Label htmlFor="limit-input" className="whitespace-nowrap">
-                Anzahl
+                Limit
             </Label>
             <Input
                 id="limit-input"

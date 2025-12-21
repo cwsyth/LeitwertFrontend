@@ -73,7 +73,7 @@ export function TablePagination({
     return (
         <div className='flex items-center justify-between'>
             <p className='text-muted-foreground whitespace-nowrap text-sm'>
-                Einträge {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalEntries)} ({totalEntries})
+                Entries {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalEntries)} ({totalEntries})
             </p>
 
             <Pagination>

@@ -9,7 +9,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
-import { de } from "date-fns/locale";
+import { enGB } from "date-fns/locale";
 import {
     Calendar as CalendarIcon,
     Clock,
@@ -38,6 +38,7 @@ import {
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { TimeRangePreset, WindowConfig, WindowSize } from "@/types/time-range";
 import { API_BASE_URL } from "@/lib/config";
+import { useRuntimeConfig } from "@/lib/useRuntimeConfig";
 
 // Date range boundaries for calendar picker
 const MIN_DATE = new Date(new Date().getFullYear(), 9, 1); // Oct 1st
@@ -135,8 +136,8 @@ function formatAvailableRangeLabel(range: AvailableTimeRange): string {
     const from = new Date(range.from);
     const to = new Date(range.to);
 
-    const fromStr = format(from, "EEE dd.MM HH:mm", { locale: de });
-    const toStr = format(to, "EEE dd.MM HH:mm", { locale: de });
+    const fromStr = format(from, "EEE dd.MM HH:mm", { locale: enGB });
+    const toStr = format(to, "EEE dd.MM HH:mm", { locale: enGB });
 
     return `${fromStr} Uhr - ${toStr} Uhr`;
 }
@@ -378,7 +379,7 @@ export default function TimeRangeSelector() {
                                 "small"
                             )}
                         >
-                            Klein
+                            Small
                         </SelectItem>
                         <SelectItem
                             value="medium"
@@ -386,7 +387,7 @@ export default function TimeRangeSelector() {
                                 "medium"
                             )}
                         >
-                            Mittel
+                            Medium
                         </SelectItem>
                         <SelectItem
                             value="large"
@@ -394,7 +395,7 @@ export default function TimeRangeSelector() {
                                 "large"
                             )}
                         >
-                            Groß
+                            Large
                         </SelectItem>
                     </SelectContent>
                 </Select>
@@ -412,7 +413,7 @@ export default function TimeRangeSelector() {
                     {availableRangeButton && (
                         <div className="pb-4 border-b">
                             <label className="text-sm font-medium block mb-2">
-                                Zeiträume mit gesicherten Daten
+                                Time Ranges with Available Data
                             </label>
                             <Button
                                 variant={
@@ -432,7 +433,7 @@ export default function TimeRangeSelector() {
                     {/* Preset Buttons */}
                     <div className="pb-4 border-b">
                         <label className="text-sm font-medium block mb-2">
-                            Schnellwahl
+                            Presets
                         </label>
                         <div className="flex gap-2">
                             {PRESET_BUTTONS.map(
@@ -461,7 +462,7 @@ export default function TimeRangeSelector() {
                     <div className="flex gap-4 pt-4">
                         {/* Start Date + Time */}
                         <div className="space-y-3">
-                            <label className="text-sm font-medium">Von</label>
+                            <label className="text-sm font-medium">From</label>
                             <Calendar
                                 mode="single"
                                 selected={tempDateTime.startDate}
@@ -475,7 +476,7 @@ export default function TimeRangeSelector() {
                                 disabled={(date) =>
                                     date < MIN_DATE || date > MAX_DATE
                                 }
-                                locale={de}
+                                locale={enGB}
                             />
                             <div className="flex items-center gap-2 pt-2">
                                 <Clock className="h-4 w-4 text-muted-foreground" />
@@ -517,7 +518,7 @@ export default function TimeRangeSelector() {
 
                         {/* End Date + Time */}
                         <div className="space-y-3">
-                            <label className="text-sm font-medium">Bis</label>
+                            <label className="text-sm font-medium">To</label>
                             <Calendar
                                 mode="single"
                                 selected={tempDateTime.endDate}
@@ -532,7 +533,7 @@ export default function TimeRangeSelector() {
                                     date < tempDateTime.startDate ||
                                     date > MAX_DATE
                                 }
-                                locale={de}
+                                locale={enGB}
                             />
                             <div className="flex items-center gap-2 pt-2">
                                 <Clock className="h-4 w-4 text-muted-foreground" />
@@ -581,14 +582,14 @@ export default function TimeRangeSelector() {
                             onClick={handleCancel}
                             className="flex-1"
                         >
-                            Abbrechen
+                            Cancel
                         </Button>
                         <Button
                             size="sm"
                             onClick={handleApplyCustomRange}
                             className="flex-1"
                         >
-                            Anwenden
+                            Apply
                         </Button>
                     </div>
                 </PopoverContent>
@@ -600,7 +601,7 @@ export default function TimeRangeSelector() {
                     variant="secondary"
                     className="gap-1.5 px-2 py-1 font-semibold"
                 >
-                    {format(timeRange.start, "dd.MM HH:mm", { locale: de })} Uhr
+                    {format(timeRange.start, "dd.MM HH:mm", { locale: enGB })} Uhr
                 </Badge>
 
                 <div className="flex-1 flex flex-col items-center relative">
@@ -623,7 +624,7 @@ export default function TimeRangeSelector() {
                             }}
                         >
                             {format(playbackPosition, "dd.MM HH:mm", {
-                                locale: de,
+                                locale: enGB,
                             })}
                         </div>
                     )}
@@ -633,7 +634,7 @@ export default function TimeRangeSelector() {
                     variant="secondary"
                     className="gap-1.5 px-2 py-1 font-semibold"
                 >
-                    {format(timeRange.end, "dd.MM HH:mm", { locale: de })} Uhr
+                    {format(timeRange.end, "dd.MM HH:mm", { locale: enGB })} Uhr
                 </Badge>
             </div>
 
