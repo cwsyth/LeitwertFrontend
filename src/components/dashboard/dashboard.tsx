@@ -1,17 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import {useState} from "react";
 import DashboardHeader from "./dashbord-header/header";
 import DashboardNav from "./dashbord-nav/nav";
 import DashboardContent from "./dashbord-content/content";
 import {
+    Country,
     DashboardContentMode,
     DashboardViewVisibility,
-    Country,
     Router,
 } from "@/types/dashboard";
-import { NetworkTable } from "@/components/network/network-table";
-import { BgpAnnounceChart } from "./dashbord-footer/charts/bgp-announce-chart";
+import {NetworkTable} from "@/components/network-table/network-table";
+import {BgpAnnounceChart} from "./dashbord-footer/charts/bgp-announce-chart";
 
 export default function Dashboard() {
     const [mode, setMode] = useState<DashboardContentMode>("street");
@@ -63,11 +63,11 @@ export default function Dashboard() {
             </div>
             <div className="w-2/5 h-full flex flex-col gap-3">
                 <div className="flex-1 min-h-0 overflow-auto">
-                    <NetworkTable selectedCountry={selectedCountry} routers={routers} />
+                    <NetworkTable selectedCountry={selectedCountry} routers={routers} setSelectedRouter={setSelectedRouter} />
                 </div>
                 {viewVisibility.bgpAnnouncements &&
                     <div className="flex-1 min-h-0 overflow-auto">
-                        <BgpAnnounceChart router={selectedRouter?.asn} />
+                        <BgpAnnounceChart router={selectedRouter?.asn} selectedCountry={selectedCountry} />
                     </div>
                 }
             </div>

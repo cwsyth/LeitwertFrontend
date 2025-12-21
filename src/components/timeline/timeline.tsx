@@ -7,27 +7,37 @@
 
 "use client";
 
-import {useCallback, useEffect, useMemo, useState} from "react";
-import {format} from "date-fns";
-import {de} from "date-fns/locale";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 import {
     Calendar as CalendarIcon,
     Clock,
     Gauge,
     Pause,
-    Play
+    Play,
 } from "lucide-react";
 
-import {Button} from "@/components/ui/button";
-import {Input} from "@/components/ui/input";
-import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
-import {Calendar} from "@/components/ui/calendar";
-import {Slider} from "@/components/ui/slider";
-import {Badge} from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+} from "@/components/ui/select";
 
-import {useTimeRangeStore} from "@/lib/stores/time-range-store";
-import {TimeRangePreset, WindowConfig} from "@/types/time-range";
-import {API_BASE_URL} from "@/lib/config";
+import { useTimeRangeStore } from "@/lib/stores/time-range-store";
+import { TimeRangePreset, WindowConfig, WindowSize } from "@/types/time-range";
+import { API_BASE_URL } from "@/lib/config";
 
 // Date range boundaries for calendar picker
 const MIN_DATE = new Date(new Date().getFullYear(), 9, 1); // Oct 1st
@@ -35,21 +45,21 @@ const MAX_DATE = new Date(); // Today
 
 // Quick select preset buttons
 const PRESET_BUTTONS = [
-    {preset: TimeRangePreset.SMALL, label: "-1 Tag"},
-    {preset: TimeRangePreset.MEDIUM, label: "-7 Tage"},
-    {preset: TimeRangePreset.LARGE, label: "-14 Tage"},
+    { preset: TimeRangePreset.SMALL, label: "-1 Tag" },
+    { preset: TimeRangePreset.MEDIUM, label: "-7 Tage" },
+    { preset: TimeRangePreset.LARGE, label: "-14 Tage" },
 ] as const;
 
 // Playback speed multipliers
 const SPEED_OPTIONS = [
-    {value: 0.5, label: "0,5x"},
-    {value: 1, label: "1x"},
-    {value: 2, label: "2x"},
-    {value: 5, label: "5x"},
-    {value: 10, label: "10x"},
-    {value: 20, label: "20x"},
-    {value: 50, label: "50x"},
-    {value: 100, label: "100x"}
+    { value: 0.5, label: "0,5x" },
+    { value: 1, label: "1x" },
+    { value: 2, label: "2x" },
+    { value: 5, label: "5x" },
+    { value: 10, label: "10x" },
+    { value: 20, label: "20x" },
+    { value: 50, label: "50x" },
+    { value: 100, label: "100x" },
 ] as const;
 
 // Types
@@ -75,13 +85,15 @@ function useAvailableTimeRange() {
     useEffect(() => {
         async function fetchAvailableTimeRange() {
             try {
-                const response = await fetch(`${API_BASE_URL}/v1/bgp/usable-time-range`);
+                const response = await fetch(
+                    `${API_BASE_URL}/v1/bgp/usable-time-range`
+                );
                 if (response.ok) {
                     const data = await response.json();
                     setTimeRange(data);
                 }
             } catch (error) {
-                console.error('Failed to fetch available time range:', error);
+                console.error("Failed to fetch available time range:", error);
             } finally {
                 setIsLoading(false);
             }
@@ -90,7 +102,7 @@ function useAvailableTimeRange() {
         fetchAvailableTimeRange();
     }, []);
 
-    return {timeRange, isLoading};
+    return { timeRange, isLoading };
 }
 
 // Determines allowed window sizes based on time range duration
@@ -99,21 +111,21 @@ function getWindowConfig(durationHours: number): WindowConfig {
 
     if (durationHours <= 24) {
         return {
-            allowedSizes: ['small', 'medium'],
-            defaultSize: 'small',
-            disabledSizes: ['large']
+            allowedSizes: ["small", "medium"],
+            defaultSize: "small",
+            disabledSizes: ["large"],
         };
     } else if (durationDays <= 14) {
         return {
-            allowedSizes: ['medium', 'large'],
-            defaultSize: 'medium',
-            disabledSizes: ['small']
+            allowedSizes: ["medium", "large"],
+            defaultSize: "medium",
+            disabledSizes: ["small"],
         };
     } else {
         return {
-            allowedSizes: ['large'],
-            defaultSize: 'large',
-            disabledSizes: ['small', 'medium']
+            allowedSizes: ["large"],
+            defaultSize: "large",
+            disabledSizes: ["small", "medium"],
         };
     }
 }
@@ -123,8 +135,8 @@ function formatAvailableRangeLabel(range: AvailableTimeRange): string {
     const from = new Date(range.from);
     const to = new Date(range.to);
 
-    const fromStr = format(from, "EEE dd.MM HH:mm", {locale: de});
-    const toStr = format(to, "EEE dd.MM HH:mm", {locale: de});
+    const fromStr = format(from, "EEE dd.MM HH:mm", { locale: de });
+    const toStr = format(to, "EEE dd.MM HH:mm", { locale: de });
 
     return `${fromStr} Uhr - ${toStr} Uhr`;
 }
@@ -143,12 +155,12 @@ export default function TimeRangeSelector() {
         setPlaybackSpeed: setStorePlaybackSpeed,
         setPlaybackPosition,
         setWindowSize,
-        resetPlayback
+        resetPlayback,
     } = useTimeRangeStore();
 
     const {
         timeRange: availableTimeRange,
-        isLoading: isLoadingAvailableRange
+        isLoading: isLoadingAvailableRange,
     } = useAvailableTimeRange();
 
     // UI state for popover and tooltip
@@ -162,7 +174,7 @@ export default function TimeRangeSelector() {
         startHour: timeRange.start.getHours().toString().padStart(2, "0"),
         startMinute: timeRange.start.getMinutes().toString().padStart(2, "0"),
         endHour: timeRange.end.getHours().toString().padStart(2, "0"),
-        endMinute: timeRange.end.getMinutes().toString().padStart(2, "0")
+        endMinute: timeRange.end.getMinutes().toString().padStart(2, "0"),
     }));
 
     // Calculate duration in hours (cached, only recalculates when timeRange changes)
@@ -172,15 +184,16 @@ export default function TimeRangeSelector() {
     }, [timeRange]);
 
     // Determine which window sizes are allowed based on duration
-    const windowConfig = useMemo(() =>
-            getWindowConfig(timeRangeDuration),
+    const windowConfig = useMemo(
+        () => getWindowConfig(timeRangeDuration),
         [timeRangeDuration]
     );
 
     // Calculate slider position based on playback position (0-100%)
     const sliderValue = useMemo(() => {
         if (!playbackPosition) return 0;
-        const totalDuration = timeRange.end.getTime() - timeRange.start.getTime();
+        const totalDuration =
+            timeRange.end.getTime() - timeRange.start.getTime();
         const elapsed = playbackPosition.getTime() - timeRange.start.getTime();
         return (elapsed / totalDuration) * 100;
     }, [playbackPosition, timeRange]);
@@ -196,7 +209,7 @@ export default function TimeRangeSelector() {
                 const currentStart = timeRange.start.getTime();
                 const currentEnd = timeRange.end.getTime();
                 return apiStart === currentStart && apiEnd === currentEnd;
-            })()
+            })(),
         };
     }, [availableTimeRange, timeRange]);
 
@@ -206,9 +219,12 @@ export default function TimeRangeSelector() {
             startDate: timeRange.start,
             endDate: timeRange.end,
             startHour: timeRange.start.getHours().toString().padStart(2, "0"),
-            startMinute: timeRange.start.getMinutes().toString().padStart(2, "0"),
+            startMinute: timeRange.start
+                .getMinutes()
+                .toString()
+                .padStart(2, "0"),
             endHour: timeRange.end.getHours().toString().padStart(2, "0"),
-            endMinute: timeRange.end.getMinutes().toString().padStart(2, "0")
+            endMinute: timeRange.end.getMinutes().toString().padStart(2, "0"),
         });
     }, [timeRange]);
 
@@ -220,11 +236,14 @@ export default function TimeRangeSelector() {
     }, [windowSize, windowConfig, setWindowSize]);
 
     // Event Handlers
-    const handlePresetClick = useCallback((presetValue: TimeRangePreset) => {
-        setPreset(presetValue);
-        resetPlayback();
-        setIsOpen(false);
-    }, [setPreset, resetPlayback]);
+    const handlePresetClick = useCallback(
+        (presetValue: TimeRangePreset) => {
+            setPreset(presetValue);
+            resetPlayback();
+            setIsOpen(false);
+        },
+        [setPreset, resetPlayback]
+    );
 
     const handleAvailableRangeClick = useCallback(() => {
         if (!availableTimeRange) return;
@@ -265,37 +284,52 @@ export default function TimeRangeSelector() {
             startDate: timeRange.start,
             endDate: timeRange.end,
             startHour: timeRange.start.getHours().toString().padStart(2, "0"),
-            startMinute: timeRange.start.getMinutes().toString().padStart(2, "0"),
+            startMinute: timeRange.start
+                .getMinutes()
+                .toString()
+                .padStart(2, "0"),
             endHour: timeRange.end.getHours().toString().padStart(2, "0"),
-            endMinute: timeRange.end.getMinutes().toString().padStart(2, "0")
+            endMinute: timeRange.end.getMinutes().toString().padStart(2, "0"),
         });
         setIsOpen(false);
     }, [timeRange]);
 
-    const handleTimeInput = useCallback((
-        value: string,
-        field: keyof Pick<TempDateTime, 'startHour' | 'startMinute' | 'endHour' | 'endMinute'>,
-        max: number
-    ) => {
-        const cleanValue = value.replace(/^0+/, "") || "0";
-        const num = parseInt(cleanValue);
+    const handleTimeInput = useCallback(
+        (
+            value: string,
+            field: keyof Pick<
+                TempDateTime,
+                "startHour" | "startMinute" | "endHour" | "endMinute"
+            >,
+            max: number
+        ) => {
+            const cleanValue = value.replace(/^0+/, "") || "0";
+            const num = parseInt(cleanValue);
 
-        if (!isNaN(num) && num >= 0 && num <= max) {
-            setTempDateTime(prev => ({...prev, [field]: cleanValue}));
-        } else if (value === "") {
-            setTempDateTime(prev => ({...prev, [field]: "0"}));
-        }
-    }, []);
+            if (!isNaN(num) && num >= 0 && num <= max) {
+                setTempDateTime((prev) => ({ ...prev, [field]: cleanValue }));
+            } else if (value === "") {
+                setTempDateTime((prev) => ({ ...prev, [field]: "0" }));
+            }
+        },
+        []
+    );
 
-    const handleTimeBlur = useCallback((
-        field: keyof Pick<TempDateTime, 'startHour' | 'startMinute' | 'endHour' | 'endMinute'>
-    ) => {
-        // Pad with leading zero on blur
-        setTempDateTime(prev => ({
-            ...prev,
-            [field]: prev[field].padStart(2, "0")
-        }));
-    }, []);
+    const handleTimeBlur = useCallback(
+        (
+            field: keyof Pick<
+                TempDateTime,
+                "startHour" | "startMinute" | "endHour" | "endMinute"
+            >
+        ) => {
+            // Pad with leading zero on blur
+            setTempDateTime((prev) => ({
+                ...prev,
+                [field]: prev[field].padStart(2, "0"),
+            }));
+        },
+        []
+    );
 
     const handlePlayPause = useCallback(() => {
         togglePlayback();
@@ -303,40 +337,89 @@ export default function TimeRangeSelector() {
 
     const handleSpeedChange = useCallback(() => {
         // Cycle through speed options
-        const currentIndex = SPEED_OPTIONS.findIndex(opt => opt.value === playbackSpeed);
+        const currentIndex = SPEED_OPTIONS.findIndex(
+            (opt) => opt.value === playbackSpeed
+        );
         const nextIndex = (currentIndex + 1) % SPEED_OPTIONS.length;
         setStorePlaybackSpeed(SPEED_OPTIONS[nextIndex].value);
     }, [playbackSpeed, setStorePlaybackSpeed]);
 
-    const handleSliderChange = useCallback((values: number[]) => {
-        // Convert slider percentage to actual timestamp
-        const percentage = values[0];
-        const totalDuration = timeRange.end.getTime() - timeRange.start.getTime();
-        const elapsed = (percentage / 100) * totalDuration;
-        const newPosition = new Date(timeRange.start.getTime() + elapsed);
+    const handleSliderChange = useCallback(
+        (values: number[]) => {
+            // Convert slider percentage to actual timestamp
+            const percentage = values[0];
+            const totalDuration =
+                timeRange.end.getTime() - timeRange.start.getTime();
+            const elapsed = (percentage / 100) * totalDuration;
+            const newPosition = new Date(timeRange.start.getTime() + elapsed);
 
-        setPlaybackPosition(newPosition);
-    }, [timeRange, setPlaybackPosition]);
+            setPlaybackPosition(newPosition);
+        },
+        [timeRange, setPlaybackPosition]
+    );
 
     return (
         <div className="flex items-center justify-end w-full gap-3">
+            {/* Window Size Selector */}
+            <div className="flex items-center gap-2">
+                <Select
+                    value={windowSize}
+                    onValueChange={(value) =>
+                        setWindowSize(value as WindowSize)
+                    }
+                >
+                    <SelectTrigger className="w-25 text-black bg-white">
+                        <span>Window</span>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem
+                            value="small"
+                            disabled={windowConfig.disabledSizes.includes(
+                                "small"
+                            )}
+                        >
+                            Klein
+                        </SelectItem>
+                        <SelectItem
+                            value="medium"
+                            disabled={windowConfig.disabledSizes.includes(
+                                "medium"
+                            )}
+                        >
+                            Mittel
+                        </SelectItem>
+                        <SelectItem
+                            value="large"
+                            disabled={windowConfig.disabledSizes.includes(
+                                "large"
+                            )}
+                        >
+                            Groß
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
             {/* Date Time Picker */}
             <Popover open={isOpen} onOpenChange={setIsOpen}>
                 <PopoverTrigger asChild>
                     <Button variant="outline" className="gap-2">
-                        <CalendarIcon className="h-4 w-4"/>
+                        <CalendarIcon className="h-4 w-4" />
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-4" align="end">
                     {/* Available Data Range */}
                     {availableRangeButton && (
                         <div className="pb-4 border-b">
-                            <label
-                                className="text-sm font-medium block mb-2">
+                            <label className="text-sm font-medium block mb-2">
                                 Zeiträume mit gesicherten Daten
                             </label>
                             <Button
-                                variant={availableRangeButton.isSelected ? "default" : "outline"}
+                                variant={
+                                    availableRangeButton.isSelected
+                                        ? "default"
+                                        : "outline"
+                                }
                                 size="sm"
                                 onClick={handleAvailableRangeClick}
                                 disabled={isLoadingAvailableRange}
@@ -348,23 +431,29 @@ export default function TimeRangeSelector() {
 
                     {/* Preset Buttons */}
                     <div className="pb-4 border-b">
-                        <label
-                            className="text-sm font-medium block mb-2">Schnellwahl</label>
+                        <label className="text-sm font-medium block mb-2">
+                            Schnellwahl
+                        </label>
                         <div className="flex gap-2">
-                            {PRESET_BUTTONS.map(({
-                                                     preset: presetValue,
-                                                     label
-                                                 }) => (
-                                <Button
-                                    key={presetValue}
-                                    variant={preset === presetValue ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => handlePresetClick(presetValue)}
-                                    className="flex-1"
-                                >
-                                    {label}
-                                </Button>
-                            ))}
+                            {PRESET_BUTTONS.map(
+                                ({ preset: presetValue, label }) => (
+                                    <Button
+                                        key={presetValue}
+                                        variant={
+                                            preset === presetValue
+                                                ? "default"
+                                                : "outline"
+                                        }
+                                        size="sm"
+                                        onClick={() =>
+                                            handlePresetClick(presetValue)
+                                        }
+                                        className="flex-1"
+                                    >
+                                        {label}
+                                    </Button>
+                                )
+                            )}
                         </div>
                     </div>
 
@@ -376,22 +465,33 @@ export default function TimeRangeSelector() {
                             <Calendar
                                 mode="single"
                                 selected={tempDateTime.startDate}
-                                onSelect={(date) => date && setTempDateTime(prev =>
-                                    ({...prev, startDate: date})
-                                )}
-                                disabled={(date) => date < MIN_DATE || date > MAX_DATE}
+                                onSelect={(date) =>
+                                    date &&
+                                    setTempDateTime((prev) => ({
+                                        ...prev,
+                                        startDate: date,
+                                    }))
+                                }
+                                disabled={(date) =>
+                                    date < MIN_DATE || date > MAX_DATE
+                                }
                                 locale={de}
                             />
                             <div className="flex items-center gap-2 pt-2">
-                                <Clock
-                                    className="h-4 w-4 text-muted-foreground"/>
+                                <Clock className="h-4 w-4 text-muted-foreground" />
                                 <Input
                                     type="number"
                                     min="0"
                                     max="23"
                                     value={tempDateTime.startHour}
-                                    onChange={(e) => handleTimeInput(e.target.value, 'startHour', 23)}
-                                    onBlur={() => handleTimeBlur('startHour')}
+                                    onChange={(e) =>
+                                        handleTimeInput(
+                                            e.target.value,
+                                            "startHour",
+                                            23
+                                        )
+                                    }
+                                    onBlur={() => handleTimeBlur("startHour")}
                                     className="w-14 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     placeholder="HH"
                                 />
@@ -401,8 +501,14 @@ export default function TimeRangeSelector() {
                                     min="0"
                                     max="59"
                                     value={tempDateTime.startMinute}
-                                    onChange={(e) => handleTimeInput(e.target.value, 'startMinute', 59)}
-                                    onBlur={() => handleTimeBlur('startMinute')}
+                                    onChange={(e) =>
+                                        handleTimeInput(
+                                            e.target.value,
+                                            "startMinute",
+                                            59
+                                        )
+                                    }
+                                    onBlur={() => handleTimeBlur("startMinute")}
                                     className="w-14 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     placeholder="MM"
                                 />
@@ -415,22 +521,34 @@ export default function TimeRangeSelector() {
                             <Calendar
                                 mode="single"
                                 selected={tempDateTime.endDate}
-                                onSelect={(date) => date && setTempDateTime(prev =>
-                                    ({...prev, endDate: date})
-                                )}
-                                disabled={(date) => date < tempDateTime.startDate || date > MAX_DATE}
+                                onSelect={(date) =>
+                                    date &&
+                                    setTempDateTime((prev) => ({
+                                        ...prev,
+                                        endDate: date,
+                                    }))
+                                }
+                                disabled={(date) =>
+                                    date < tempDateTime.startDate ||
+                                    date > MAX_DATE
+                                }
                                 locale={de}
                             />
                             <div className="flex items-center gap-2 pt-2">
-                                <Clock
-                                    className="h-4 w-4 text-muted-foreground"/>
+                                <Clock className="h-4 w-4 text-muted-foreground" />
                                 <Input
                                     type="number"
                                     min="0"
                                     max="23"
                                     value={tempDateTime.endHour}
-                                    onChange={(e) => handleTimeInput(e.target.value, 'endHour', 23)}
-                                    onBlur={() => handleTimeBlur('endHour')}
+                                    onChange={(e) =>
+                                        handleTimeInput(
+                                            e.target.value,
+                                            "endHour",
+                                            23
+                                        )
+                                    }
+                                    onBlur={() => handleTimeBlur("endHour")}
                                     className="w-14 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     placeholder="HH"
                                 />
@@ -440,8 +558,14 @@ export default function TimeRangeSelector() {
                                     min="0"
                                     max="59"
                                     value={tempDateTime.endMinute}
-                                    onChange={(e) => handleTimeInput(e.target.value, 'endMinute', 59)}
-                                    onBlur={() => handleTimeBlur('endMinute')}
+                                    onChange={(e) =>
+                                        handleTimeInput(
+                                            e.target.value,
+                                            "endMinute",
+                                            59
+                                        )
+                                    }
+                                    onBlur={() => handleTimeBlur("endMinute")}
                                     className="w-14 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                     placeholder="MM"
                                 />
@@ -471,10 +595,12 @@ export default function TimeRangeSelector() {
             </Popover>
 
             {/* Slider with time markers */}
-            <div className="flex items-center gap-2" style={{width: '300px'}}>
-                <Badge variant="secondary"
-                       className="gap-1.5 px-2 py-1 font-semibold">
-                    {format(timeRange.start, "dd.MM HH:mm", {locale: de})} Uhr
+            <div className="flex items-center gap-2" style={{ width: "300px" }}>
+                <Badge
+                    variant="secondary"
+                    className="gap-1.5 px-2 py-1 font-semibold"
+                >
+                    {format(timeRange.start, "dd.MM HH:mm", { locale: de })} Uhr
                 </Badge>
 
                 <div className="flex-1 flex flex-col items-center relative">
@@ -493,34 +619,34 @@ export default function TimeRangeSelector() {
                             className="absolute -top-8 bg-popover text-popover-foreground px-3 py-1 rounded-md text-xs shadow-md pointer-events-none whitespace-nowrap min-w-fit"
                             style={{
                                 left: `${sliderValue}%`,
-                                transform: 'translateX(-50%)'
+                                transform: "translateX(-50%)",
                             }}
                         >
-                            {format(playbackPosition, "dd.MM HH:mm", {locale: de})}
+                            {format(playbackPosition, "dd.MM HH:mm", {
+                                locale: de,
+                            })}
                         </div>
                     )}
                 </div>
 
-                <Badge variant="secondary"
-                       className="gap-1.5 px-2 py-1 font-semibold">
-                    {format(timeRange.end, "dd.MM HH:mm", {locale: de})} Uhr
+                <Badge
+                    variant="secondary"
+                    className="gap-1.5 px-2 py-1 font-semibold"
+                >
+                    {format(timeRange.end, "dd.MM HH:mm", { locale: de })} Uhr
                 </Badge>
             </div>
 
             {/* Separator */}
-            <div className="h-6 w-px bg-border"/>
+            <div className="h-6 w-px bg-border" />
 
             {/* Playback Controls */}
             <div className="flex items-center gap-2">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handlePlayPause}
-                >
+                <Button variant="outline" size="icon" onClick={handlePlayPause}>
                     {isPlaying ? (
-                        <Pause className="h-4 w-4"/>
+                        <Pause className="h-4 w-4" />
                     ) : (
-                        <Play className="h-4 w-4"/>
+                        <Play className="h-4 w-4" />
                     )}
                 </Button>
 
@@ -530,7 +656,7 @@ export default function TimeRangeSelector() {
                     onClick={handleSpeedChange}
                     className="gap-2 min-w-[4rem]"
                 >
-                    <Gauge className="h-4 w-4"/>
+                    <Gauge className="h-4 w-4" />
                     {playbackSpeed}x
                 </Button>
             </div>

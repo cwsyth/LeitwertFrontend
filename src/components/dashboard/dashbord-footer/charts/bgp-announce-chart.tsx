@@ -11,7 +11,7 @@ import {
 } from "react";
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { useLocationStore } from "@/lib/stores/location-store";
-import { BoxPlotData, PingDataResponse, QueryMode } from "@/types/dashboard";
+import { BoxPlotData, Country, PingDataResponse, QueryMode } from "@/types/dashboard";
 import { BoxPlotChart } from "./boxplot-chart";
 import { TotalIncrementsChart } from "./total-increments-chart";
 import { ZoomOut } from "lucide-react";
@@ -164,7 +164,7 @@ function ChartTooltip({
                             Time
                         </span>
                         <span className="font-bold text-muted-foreground">
-                            {new Date(data.timestamp).toLocaleString(runtimeConfig.locale, {timeZone: runtimeConfig.timezone})}
+                            {new Date(data.timestamp).toLocaleString(runtimeConfig.locale, { timeZone: runtimeConfig.timezone })}
                         </span>
                     </div>
                     <div className="flex flex-col">
@@ -212,7 +212,7 @@ function ChartTooltip({
     return (
         <div className="bg-background border rounded-lg p-3 shadow-lg text-xs w-48">
             <p className="font-medium mb-2">
-                {new Date(data.timestamp).toLocaleString(runtimeConfig.locale, {timeZone: runtimeConfig.timezone})}
+                {new Date(data.timestamp).toLocaleString(runtimeConfig.locale, { timeZone: runtimeConfig.timezone })}
             </p>
             <div className="space-y-1">
                 <p className="text-muted-foreground flex justify-between">
@@ -252,10 +252,11 @@ function ChartTooltip({
 
 interface BgpAnnounceChartProps {
     router: string | undefined;
+    selectedCountry: Country;
 }
 
 // Main component
-export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
+export function BgpAnnounceChart({ router, selectedCountry }: BgpAnnounceChartProps) {
     const DEBOUNCE_TIME = 500;
     const runtimeConfig = useRuntimeConfig();
 
@@ -294,6 +295,15 @@ export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
             clearTimeout(handler);
         };
     }, [identifier]);
+
+    // Automatically switch to CC mode when a country is selected
+    useEffect(() => {
+        if (selectedCountry && selectedCountry.code && selectedCountry.code.toLowerCase() !== "world") {
+            setMode("cc");
+            setIdentifier(selectedCountry.code);
+            setDebouncedIdentifier(selectedCountry.code);
+        }
+    }, [selectedCountry]);
 
     // Reset view range when global time range changes drastically
     const startMs = timeRange.start.getTime();
