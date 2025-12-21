@@ -36,7 +36,7 @@ import {
     horizontalListSortingStrategy
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, ChevronUp, ChevronDown, AlertCircle } from 'lucide-react'
+import { GripVertical, ChevronUp, AlertCircle } from 'lucide-react'
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
