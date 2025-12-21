@@ -1,6 +1,4 @@
-import { Country, DashboardViewVisibility, Router } from "@/types/dashboard";
-import { NetworkTable } from "@/components/network-table/network-table";
-import { BgpAnnounceChart } from "./charts/bgp-announce-chart";
+import {Country, DashboardViewVisibility, Router} from "@/types/dashboard";
 
 interface DashboardFooterProps {
     viewVisibility: DashboardViewVisibility;

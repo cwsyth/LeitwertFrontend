@@ -1,17 +1,17 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import DashboardHeader from "./dashbord-header/header";
 import DashboardNav from "./dashbord-nav/nav";
 import DashboardContent from "./dashbord-content/content";
 import {
+    Country,
     DashboardContentMode,
     DashboardViewVisibility,
-    Country,
     Router,
 } from "@/types/dashboard";
-import { NetworkTable } from "@/components/network-table/network-table";
-import { BgpAnnounceChart } from "./dashbord-footer/charts/bgp-announce-chart";
+import {NetworkTable} from "@/components/network-table/network-table";
+import {BgpAnnounceChart} from "./dashbord-footer/charts/bgp-announce-chart";
 
 export default function Dashboard() {
     const [mode, setMode] = useState<DashboardContentMode>("street");
