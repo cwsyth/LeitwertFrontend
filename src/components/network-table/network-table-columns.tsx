@@ -31,6 +31,7 @@ const allocationStatusConfig: Record<AllocationStatus, {
 
 export const createColumns = (
     routers: Router[],
+    router: Router | null,
     setSelectedRouter: (router: Router | null) => void,
     selectedAs: number,
     setSelectedAs: (asn: number) => void
@@ -90,11 +91,15 @@ export const createColumns = (
 
                 if (matchedRouters.length === 1) {
                     return <SingleRouterCell router={matchedRouters[0]}
-                                             onRouterClick={setSelectedRouter}/>
+                                             onRouterClick={setSelectedRouter}
+                                             selectedRouter={router}
+                    />
                 }
 
                 return <MultipleRoutersCell routers={matchedRouters}
-                                            onRouterClick={setSelectedRouter}/>
+                                            onRouterClick={setSelectedRouter}
+                                            selectedRouter={router}
+                />
             },
             enableSorting: false
         },

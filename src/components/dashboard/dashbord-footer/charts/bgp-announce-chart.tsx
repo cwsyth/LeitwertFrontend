@@ -7,6 +7,7 @@ import {
     useMemo,
     useDeferredValue,
     useCallback,
+    useRef,
 } from "react";
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { useLocationStore } from "@/lib/stores/location-store";
@@ -297,29 +298,38 @@ export function BgpAnnounceChart({
     const deferredViewRange = useDeferredValue(viewRange);
 
     // React to prop changes
+    // React to prop changes
+    const prevAsn = useRef(asn);
+    const prevRouter = useRef(selectedRouter);
+    const prevCountry = useRef(selectedCountry);
+
     useEffect(() => {
-        if (selectedRouter && selectedRouter.ip) {
+        const asnChanged = asn !== prevAsn.current;
+        const routerChanged = selectedRouter?.ip !== prevRouter.current?.ip;
+
+        // If router changed specifically, switch to IP mode
+        if (routerChanged && selectedRouter && selectedRouter.ip) {
             setMode("ip");
             setIdentifier(selectedRouter.ip);
-        } else if (asn) {
+        }
+        // If AS changed (and implies we want to see AS data)
+        else if (asnChanged && asn) {
             setMode("as");
             setIdentifier(asn.toString());
         }
+
+        prevAsn.current = asn;
+        prevRouter.current = selectedRouter;
     }, [selectedRouter, asn]);
 
-    // Automatically switch to CC mode when a country is selected (and not world?)
-    // But we need to be careful not to override router selection if that's what user is looking at.
-    // Ideally we'd know "what changed last".
-    // For now, if country changes, we switch to CC.
+    // Automatically switch to CC mode when a country is selected
     useEffect(() => {
-        if (
-            selectedCountry &&
-            selectedCountry.code &&
-            selectedCountry.code.toLowerCase() !== "world"
-        ) {
+        const countryChanged = selectedCountry?.code !== prevCountry.current?.code;
+        if (countryChanged && selectedCountry && selectedCountry.code && selectedCountry.code.toLowerCase() !== "world") {
             setMode("cc");
             setIdentifier(selectedCountry.code);
         }
+        prevCountry.current = selectedCountry;
     }, [selectedCountry]);
 
     useEffect(() => {
@@ -597,9 +607,8 @@ export function BgpAnnounceChart({
                                     <div
                                         className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
                                         style={{
-                                            left: `calc(50px + (100% - 50px - 20px) * ${
-                                                currentTimePercentInView / 100
-                                            })`,
+                                            left: `calc(50px + (100% - 50px - 20px) * ${currentTimePercentInView / 100
+                                                })`,
                                             display: isCurrentTimeInView
                                                 ? "block"
                                                 : "none",
@@ -611,22 +620,22 @@ export function BgpAnnounceChart({
                                                 style={{
                                                     left:
                                                         currentTimePercentInView >
-                                                        50
+                                                            50
                                                             ? "auto"
                                                             : "100%",
                                                     right:
                                                         currentTimePercentInView >
-                                                        50
+                                                            50
                                                             ? "100%"
                                                             : "auto",
                                                     marginLeft:
                                                         currentTimePercentInView >
-                                                        50
+                                                            50
                                                             ? 0
                                                             : "8px",
                                                     marginRight:
                                                         currentTimePercentInView >
-                                                        50
+                                                            50
                                                             ? "8px"
                                                             : 0,
                                                 }}
@@ -656,9 +665,8 @@ export function BgpAnnounceChart({
                                     <div
                                         className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
                                         style={{
-                                            left: `calc(50px + (100% - 50px - 20px) * ${
-                                                currentTimePercentInView / 100
-                                            })`,
+                                            left: `calc(50px + (100% - 50px - 20px) * ${currentTimePercentInView / 100
+                                                })`,
                                             display: isCurrentTimeInView
                                                 ? "block"
                                                 : "none",
@@ -670,22 +678,22 @@ export function BgpAnnounceChart({
                                                 style={{
                                                     left:
                                                         currentTimePercentInView >
-                                                        50
+                                                            50
                                                             ? "auto"
                                                             : "100%",
                                                     right:
                                                         currentTimePercentInView >
-                                                        50
+                                                            50
                                                             ? "100%"
                                                             : "auto",
                                                     marginLeft:
                                                         currentTimePercentInView >
-                                                        50
+                                                            50
                                                             ? 0
                                                             : "8px",
                                                     marginRight:
                                                         currentTimePercentInView >
-                                                        50
+                                                            50
                                                             ? "8px"
                                                             : 0,
                                                 }}
