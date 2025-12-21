@@ -41,7 +41,6 @@ export const CONFIG = {
         window: Number(process.env.NEXT_PUBLIC_AGG_TIME_WINDOW_LARGE || 86400),
     },
 };
-const runtimeConfig = useRuntimeConfig();
 
 type TimeRange = keyof typeof CONFIG;
 
@@ -151,6 +150,7 @@ function ChartTooltip({
 }) {
     // Determine labels based on mode
     const valueLabel = mode === "ip" ? "Ping RTT" : "Anzahl der Inkrementierungen";
+    const runtimeConfig = useRuntimeConfig();
 
     if (type === "line") {
         // Line chart
@@ -257,6 +257,7 @@ interface BgpAnnounceChartProps {
 // Main component
 export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
     const DEBOUNCE_TIME = 500;
+    const runtimeConfig = useRuntimeConfig();
 
     // Global Time Store
     const { timeRange, windowSize, isPlaying, playbackPosition } =
