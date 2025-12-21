@@ -25,7 +25,8 @@ export const networkApi = {
     async getCountriesSummary(
         limit: number = 20,
         timeRange?: { start: Date; end: Date },
-        sizeMetric: string = 'as_count'
+        sizeMetric: string = 'as_count',
+        locationId?: string | null
     ): Promise<CountriesSummaryResponse> {
         const params = new URLSearchParams({
             limit: limit.toString(),
@@ -35,6 +36,10 @@ export const networkApi = {
         if (timeRange) {
             params.append('from', timeRange.start.toISOString());
             params.append('to', timeRange.end.toISOString());
+        }
+
+        if (locationId) {
+            params.append('location', locationId);
         }
 
         try {
@@ -56,7 +61,8 @@ export const networkApi = {
         countryCode: string,
         limit: number = 50,
         timeRange?: { start: Date; end: Date },
-        sizeMetric: string = 'ip_count'
+        sizeMetric: string = 'ip_count',
+        locationId?: string | null
     ): Promise<CountryAsResponse> {
         const params = new URLSearchParams({
             limit: limit.toString(),
@@ -66,6 +72,10 @@ export const networkApi = {
         if (timeRange) {
             params.append('from', timeRange.start.toISOString());
             params.append('to', timeRange.end.toISOString());
+        }
+
+        if (locationId) {
+            params.append('location', locationId);
         }
 
         try {

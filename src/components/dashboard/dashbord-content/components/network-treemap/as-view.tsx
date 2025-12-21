@@ -23,6 +23,7 @@ import {
 import {
     AsTooltip
 } from "@/components/dashboard/dashbord-content/components/network-treemap/tooltips/as-tooltip";
+import {useLocationStore} from "@/lib/stores/location-store";
 
 export function AsView({
                            countryCode,
@@ -40,6 +41,7 @@ export function AsView({
     const [isLoading, setIsLoading] = useState(true);
 
     const timeRange = useTimeRangeStore((state) => state.timeRange);
+    const selectedLocationId = useLocationStore((state) => state.selectedLocationId);
 
     const loadData = useCallback(async () => {
         setIsLoading(true);
@@ -48,7 +50,8 @@ export function AsView({
                 countryCode,
                 limit,
                 timeRange,
-                sizeMetric
+                sizeMetric,
+                selectedLocationId
             );
 
             setCountryName(response.country.name);
@@ -100,7 +103,7 @@ export function AsView({
         } finally {
             setIsLoading(false);
         }
-    }, [countryCode, limit, sizeMetric, timeRange, thresholds]);
+    }, [countryCode, limit, sizeMetric, timeRange, thresholds, selectedLocationId]);
 
     useEffect(() => {
         loadData();
