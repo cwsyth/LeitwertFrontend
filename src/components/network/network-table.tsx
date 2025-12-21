@@ -61,6 +61,7 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import {Country} from "@/types/dashboard";
+import {useTimeRangeStore} from "@/lib/stores/time-range-store";
 
 interface NetworkTableProps {
     selectedCountry: Country
@@ -174,6 +175,9 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
     const [totalEntries, setTotalEntries] = useState(0)
     const [itemsPerPage, setItemsPerPage] = useState(10)
 
+    const timeRange = useTimeRangeStore(state => state.timeRange)
+    const windowSize = useTimeRangeStore(state => state.windowSize)
+
     const dndContextId = useId()
 
     const table = useReactTable({
@@ -264,7 +268,9 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
                     cc: selectedCountry.code,
                     limit: itemsPerPage,
                     page: currentPage,
-                    sort: apiSortValue
+                    sort: apiSortValue,
+                    timeRange: timeRange,
+                    windowSize: windowSize
                 })
                 setData(response.details)
                 setTotalPages(Math.ceil(response.meta.total_entries / itemsPerPage))
@@ -278,7 +284,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
         }
 
         fetchData()
-    }, [selectedCountry, currentPage, itemsPerPage, sorting])
+    }, [selectedCountry, currentPage, itemsPerPage, sorting, timeRange, windowSize])
 
     if (!selectedCountry || selectedCountry.code === 'world') {
         return (

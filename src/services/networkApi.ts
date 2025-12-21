@@ -17,6 +17,8 @@ export interface GetNetworkDetailsParams {
     limit?: number
     page?: number
     sort?: 'name' | 'cidrs' | 'bgp-anomalies' | 'ping-anomalies'
+    timeRange?: { start: Date; end: Date }
+    windowSize?: string
 }
 
 export const networkApi = {
@@ -90,6 +92,15 @@ export const networkApi = {
 
         if (params.sort) {
             searchParams.append('sort', params.sort)
+        }
+
+        if (params.timeRange) {
+            searchParams.append('from', params.timeRange.start.toISOString())
+            searchParams.append('to', params.timeRange.end.toISOString())
+        }
+
+        if (params.windowSize) {
+            searchParams.append('window', params.windowSize)
         }
 
         const response = await fetch(`${API_BASE_URL}/v1/networks/get-details?${searchParams}`, {
