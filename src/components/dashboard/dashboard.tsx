@@ -69,6 +69,7 @@ export default function Dashboard() {
                     <NetworkTable
                         selectedCountry={selectedCountry}
                         routers={routers}
+                        selectedRouter={selectedRouter}
                         setSelectedRouter={setSelectedRouter}
                         selectedAs={selectedAs}
                         setSelectedAs={setSelectedAs}

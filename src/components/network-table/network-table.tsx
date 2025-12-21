@@ -65,6 +65,7 @@ import {
 interface NetworkTableProps {
     selectedCountry: Country
     routers: Router[];
+    selectedRouter: Router | null
     setSelectedRouter: (router: Router | null) => void
     selectedAs: number
     setSelectedAs: (asNumber: number) => void
@@ -81,6 +82,7 @@ const COLUMN_TO_API_SORT: Record<string, 'name' | 'cidrs' | 'bgp-anomalies' | 'p
 export function NetworkTable({
                                  selectedCountry,
                                  routers,
+                                 selectedRouter,
                                  setSelectedRouter,
                                  selectedAs,
                                  setSelectedAs
@@ -90,7 +92,7 @@ export function NetworkTable({
     const [error, setError] = useState<string | null>(null)
     const [sorting, setSorting] = useState<SortingState>([])
 
-    const columns = createColumns(routers, setSelectedRouter, selectedAs, setSelectedAs)
+    const columns = createColumns(routers, selectedRouter, setSelectedRouter, selectedAs, setSelectedAs)
     const [columnOrder, setColumnOrder] = useState<string[]>(columns.map(column => column.id as string))
 
     const [currentPage, setCurrentPage] = useState(1)

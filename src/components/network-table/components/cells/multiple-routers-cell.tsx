@@ -18,18 +18,27 @@ import {RouterDetailTooltip} from "./router-detail-tooltip"
 interface MultipleRoutersCellProps {
     routers: Router[]
     onRouterClick: (router: Router) => void
+    selectedRouter: Router | null
 }
 
 export function MultipleRoutersCell({
                                         routers,
-                                        onRouterClick
+                                        onRouterClick,
+                                        selectedRouter
                                     }: MultipleRoutersCellProps) {
+    const isFirstSelected = selectedRouter?.router_id === routers[0].router_id
+
     return (
         <Popover>
             <PopoverTrigger asChild>
                 <div className='cursor-pointer'>
                     <code
-                        className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>
+                        className={`rounded px-1.5 py-0.5 font-mono text-xs ${
+                            isFirstSelected
+                                ? 'bg-black text-white'
+                                : 'bg-muted'
+                        }`}
+                    >
                         {routers[0].router_id}
                     </code>
                     <div className='text-muted-foreground text-xs mt-0.5'>
@@ -46,28 +55,35 @@ export function MultipleRoutersCell({
                     <p className='mb-2 text-xs font-semibold text-black'>
                         Routers ({routers.length})
                     </p>
-                    <div
-                        className='max-h-[200px] space-y-1.5 overflow-y-auto pr-2'>
-                        {routers.map((router, index) => (
-                            <TooltipProvider key={index}>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <code
-                                            className='block cursor-pointer select-text rounded bg-gray-100 px-2 py-1 font-mono text-xs text-black hover:bg-gray-200'
-                                            onClick={() => onRouterClick(router)}
+                    <div className='max-h-[200px] space-y-1.5 overflow-y-auto pr-2'>
+                        {routers.map((router, index) => {
+                            const isSelected = selectedRouter?.router_id === router.router_id
+
+                            return (
+                                <TooltipProvider key={index}>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <code
+                                                className={`block cursor-pointer select-text rounded px-2 py-1 font-mono text-xs hover:bg-gray-200 ${
+                                                    isSelected
+                                                        ? 'bg-black text-white'
+                                                        : 'bg-gray-100 text-black'
+                                                }`}
+                                                onClick={() => onRouterClick(router)}
+                                            >
+                                                {router.router_id}
+                                            </code>
+                                        </TooltipTrigger>
+                                        <TooltipContent
+                                            side='left'
+                                            className='max-w-xs border border-muted bg-white p-3 text-black shadow-lg'
                                         >
-                                            {router.router_id}
-                                        </code>
-                                    </TooltipTrigger>
-                                    <TooltipContent
-                                        side='left'
-                                        className='max-w-xs border border-muted bg-white p-3 text-black shadow-lg'
-                                    >
-                                        <RouterDetailTooltip router={router}/>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        ))}
+                                            <RouterDetailTooltip router={router}/>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            )
+                        })}
                     </div>
                 </div>
             </PopoverContent>
