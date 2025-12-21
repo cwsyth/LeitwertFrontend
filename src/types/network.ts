@@ -156,13 +156,9 @@ export interface NetworkDetail {
     organization?: string;
     country: string;
     registry: NetworkRegistry;
-    status2: AllocationStatus;
+    status: AllocationStatus;
     ipv4_cidrs: string[];
-    routers: number;
-    anomalies: {
-        bgp: number;
-        ping: number;
-    };
+    anomalies: string[]
 }
 
 export interface NetworkDetailsResponse {

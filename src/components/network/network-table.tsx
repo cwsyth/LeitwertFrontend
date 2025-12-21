@@ -36,14 +36,13 @@ import {
     horizontalListSortingStrategy
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, ChevronUp, ChevronDown, AlertCircle } from 'lucide-react'
+import { GripVertical, ChevronUp, AlertCircle } from 'lucide-react'
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 
-import { columns } from './network-table-columns'
 import type { NetworkDetail } from '@/types/network'
 import {networkApi} from "@/services/networkApi";
 import {
@@ -60,10 +59,13 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import {Country} from "@/types/dashboard";
+import {Country, Router} from "@/types/dashboard";
+import {useTimeRangeStore} from "@/lib/stores/time-range-store";
+import {createColumns} from "@/components/network/network-table-columns";
 
 interface NetworkTableProps {
     selectedCountry: Country
+    routers: Router[];
 }
 
 const COLUMN_TO_API_SORT: Record<string, 'name' | 'cidrs' | 'bgp-anomalies' | 'ping-anomalies'> = {
@@ -162,17 +164,22 @@ const DragAlongCell = ({ cell }: { cell: Cell<NetworkDetail, unknown> }) => {
     )
 }
 
-export function NetworkTable({ selectedCountry }: NetworkTableProps) {
+export function NetworkTable({ selectedCountry, routers }: NetworkTableProps) {
     const [data, setData] = useState<NetworkDetail[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [sorting, setSorting] = useState<SortingState>([])
+
+    const columns = createColumns(routers)
     const [columnOrder, setColumnOrder] = useState<string[]>(columns.map(column => column.id as string))
 
     const [currentPage, setCurrentPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
     const [totalEntries, setTotalEntries] = useState(0)
     const [itemsPerPage, setItemsPerPage] = useState(10)
+
+    const timeRange = useTimeRangeStore(state => state.timeRange)
+    const windowSize = useTimeRangeStore(state => state.windowSize)
 
     const dndContextId = useId()
 
@@ -264,7 +271,9 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
                     cc: selectedCountry.code,
                     limit: itemsPerPage,
                     page: currentPage,
-                    sort: apiSortValue
+                    sort: apiSortValue,
+                    timeRange: timeRange,
+                    windowSize: windowSize
                 })
                 setData(response.details)
                 setTotalPages(Math.ceil(response.meta.total_entries / itemsPerPage))
@@ -278,7 +287,7 @@ export function NetworkTable({ selectedCountry }: NetworkTableProps) {
         }
 
         fetchData()
-    }, [selectedCountry, currentPage, itemsPerPage, sorting])
+    }, [selectedCountry, currentPage, itemsPerPage, sorting, timeRange, windowSize])
 
     if (!selectedCountry || selectedCountry.code === 'world') {
         return (
