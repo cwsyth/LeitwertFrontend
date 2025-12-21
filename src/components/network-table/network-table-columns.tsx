@@ -32,6 +32,7 @@ const allocationStatusConfig: Record<AllocationStatus, {
 export const createColumns = (
     routers: Router[],
     setSelectedRouter: (router: Router | null) => void,
+    selectedAs: number,
     setSelectedAs: (asn: number) => void
 ): ColumnDef<NetworkDetail>[] => {
 
@@ -50,13 +51,26 @@ export const createColumns = (
             id: 'asn',
             header: 'ASN',
             accessorKey: 'asn',
-            cell: ({row}) =>
-                <div
-                    className='font-mono font-medium cursor-pointer hover:text-primary'
-                    onClick={() => setSelectedAs(Number(row.original.asn))}
-                >
-                    AS{row.getValue('asn')}
-                </div>,
+            cell: ({row}) => {
+                const isSelected = Number(row.original.asn) === selectedAs
+
+                return isSelected ? (
+                    <Badge
+                        variant='default'
+                        className='cursor-pointer bg-black text-white hover:bg-black/90'
+                        onClick={() => setSelectedAs(Number(row.original.asn))}
+                    >
+                        AS{row.getValue('asn')}
+                    </Badge>
+                ) : (
+                    <div
+                        className='font-mono font-medium cursor-pointer hover:text-primary'
+                        onClick={() => setSelectedAs(Number(row.original.asn))}
+                    >
+                        AS{row.getValue('asn')}
+                    </div>
+                )
+            },
             sortDescFirst: false,
             enableSorting: false
         },

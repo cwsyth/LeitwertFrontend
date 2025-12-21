@@ -90,7 +90,7 @@ export function NetworkTable({
     const [error, setError] = useState<string | null>(null)
     const [sorting, setSorting] = useState<SortingState>([])
 
-    const columns = createColumns(routers, setSelectedRouter, setSelectedAs)
+    const columns = createColumns(routers, setSelectedRouter, selectedAs, setSelectedAs)
     const [columnOrder, setColumnOrder] = useState<string[]>(columns.map(column => column.id as string))
 
     const [currentPage, setCurrentPage] = useState(1)
