@@ -131,9 +131,9 @@ const CustomBoxPlot = (props: CustomBoxPlotProps) => {
 };
 
 const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
+    const runtimeConfig = useRuntimeConfig();
     if (active && payload && payload.length) {
         const data = payload[0].payload as BoxPlotData;
-        const runtimeConfig = useRuntimeConfig();
         return (
             <div className="bg-background border rounded-lg p-3 shadow-lg text-sm">
                 <p className="font-medium mb-2">
