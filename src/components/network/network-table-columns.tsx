@@ -39,57 +39,58 @@ export const columns: ColumnDef<NetworkDetail>[] = [
         sortDescFirst: false,
         enableSorting: false
     },
-    {
-        id: 'routers',
-        header: 'Routers',
-        accessorKey: 'routers',
-        cell: ({ row }) => {
-            const routers = row.getValue('routers') as string[]
-
-            if (routers.length === 0) {
-                return <div className='text-muted-foreground'>-</div>
-            }
-
-            if (routers.length === 1) {
-                return <code className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{routers[0]}</code>
-            }
-
-            return (
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <div className='cursor-pointer'>
-                                <code className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{routers[0]}</code>
-                                <div className='text-muted-foreground text-xs mt-0.5'>+{routers.length - 1} more</div>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent
-                            side='left'
-                            align='start'
-                            className='max-w-xs border border-muted bg-white p-3 text-black shadow-lg'
-                        >
-                            <div className='flex flex-col'>
-                                <p className='mb-2 text-xs font-semibold text-black'>
-                                    Routers ({routers.length})
-                                </p>
-                                <div className='max-h-[200px] space-y-1.5 overflow-y-auto pr-2'>
-                                    {routers.map((router, index) => (
-                                        <code
-                                            key={index}
-                                            className='block cursor-text select-text rounded bg-gray-100 px-2 py-1 font-mono text-xs text-black hover:bg-gray-200'
-                                        >
-                                            {router}
-                                        </code>
-                                    ))}
-                                </div>
-                            </div>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            )
-        },
-        enableSorting: false
-    },
+    // TODO: Fetch routers from map request
+    // {
+    //     id: 'routers',
+    //     header: 'Routers',
+    //     accessorKey: 'routers',
+    //     cell: ({ row }) => {
+    //         const routers = row.getValue('routers') as string[]
+    //
+    //         if (routers.length === 0) {
+    //             return <div className='text-muted-foreground'>-</div>
+    //         }
+    //
+    //         if (routers.length === 1) {
+    //             return <code className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{routers[0]}</code>
+    //         }
+    //
+    //         return (
+    //             <TooltipProvider>
+    //                 <Tooltip>
+    //                     <TooltipTrigger asChild>
+    //                         <div className='cursor-pointer'>
+    //                             <code className='rounded bg-muted px-1.5 py-0.5 font-mono text-xs'>{routers[0]}</code>
+    //                             <div className='text-muted-foreground text-xs mt-0.5'>+{routers.length - 1} more</div>
+    //                         </div>
+    //                     </TooltipTrigger>
+    //                     <TooltipContent
+    //                         side='left'
+    //                         align='start'
+    //                         className='max-w-xs border border-muted bg-white p-3 text-black shadow-lg'
+    //                     >
+    //                         <div className='flex flex-col'>
+    //                             <p className='mb-2 text-xs font-semibold text-black'>
+    //                                 Routers ({routers.length})
+    //                             </p>
+    //                             <div className='max-h-[200px] space-y-1.5 overflow-y-auto pr-2'>
+    //                                 {routers.map((router, index) => (
+    //                                     <code
+    //                                         key={index}
+    //                                         className='block cursor-text select-text rounded bg-gray-100 px-2 py-1 font-mono text-xs text-black hover:bg-gray-200'
+    //                                     >
+    //                                         {router}
+    //                                     </code>
+    //                                 ))}
+    //                             </div>
+    //                         </div>
+    //                     </TooltipContent>
+    //                 </Tooltip>
+    //             </TooltipProvider>
+    //         )
+    //     },
+    //     enableSorting: false
+    // },
     {
         id: 'ipv4_cidrs',
         header: 'IPv4 CIDRs',
@@ -143,9 +144,9 @@ export const columns: ColumnDef<NetworkDetail>[] = [
     {
         id: 'anomalies_as',
         header: 'Anomalies (AS)',
-        accessorKey: 'anomalies.bgp',
+        accessorFn: (row) => row.anomalies.length,
         cell: ({ row }) => {
-            const anomalies = row.original.anomalies.bgp
+            const anomalies = row.original.anomalies.length
 
             return (
                 <div className='text-center'>
@@ -157,9 +158,9 @@ export const columns: ColumnDef<NetworkDetail>[] = [
     {
         id: 'anomalies_router',
         header: 'Anomalies (Router)',
-        accessorKey: 'anomalies.ping',
+        accessorFn: (row) => 0,
         cell: ({ row }) => {
-            const anomalies = row.original.anomalies.ping
+            const anomalies = 0 // TODO: Replace with real data from map request
 
             return (
                 <div className='text-center'>
@@ -169,11 +170,11 @@ export const columns: ColumnDef<NetworkDetail>[] = [
         }
     },
     {
-        id: 'status2',
+        id: 'status',
         header: 'Allocation',
-        accessorKey: 'status2',
+        accessorKey: 'status',
         cell: ({ row }) => {
-            const status = row.getValue('status2') as AllocationStatus
+            const status = row.getValue('status') as AllocationStatus
             const config = allocationStatusConfig[status] || allocationStatusConfig.allocated
             return <Badge variant={config.variant}>{config.label}</Badge>
         },
