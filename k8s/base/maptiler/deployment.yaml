@@ -12,6 +12,12 @@ spec:
       labels:
         app.kubernetes.io/name: maptiler
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: node106
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
       containers:
         - name: maptiler
           image: maptiler/tileserver-gl:next
@@ -19,18 +25,21 @@ spec:
           ports:
             - name: http
               containerPort: 8080
-          #volumeMounts:
-          #  - name: tile-data
-          #    mountPath: /data
+          args:
+            - "-u"
+            - "https://dev-maptiler.univ.leitwert.net"
+          volumeMounts:
+            - name: maptiler-data
+              mountPath: /data
           resources:
             requests:
-              memory: "512Mi"
-              cpu: "200m"
-            limits:
-              memory: "1Gi"
+              memory: "4Gi"
               cpu: "1"
-      #volumes:
-      #  - name: tile-data
-      #    hostPath:
-      #      path: /mnt/maptiler-data
-      #      type: DirectoryOrCreate
+            limits:
+              memory: "8Gi"
+              cpu: "2"
+      volumes:
+        - name: maptiler-data
+          hostPath:
+            path: /data/store/maptiler-data
+            type: Directory

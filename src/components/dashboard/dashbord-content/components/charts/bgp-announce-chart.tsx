@@ -1,10 +1,19 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect, useMemo, useDeferredValue } from "react";
-import { BoxPlotChart, BoxPlotData } from "./boxplot-chart";
+import {
+    useState,
+    useEffect,
+    useMemo,
+    useDeferredValue,
+    useCallback,
+} from "react";
+import { useTimeRangeStore } from "@/lib/stores/time-range-store";
+import { useLocationStore } from "@/lib/stores/location-store";
+import { BoxPlotData, PingDataResponse, QueryMode } from "@/types/dashboard";
+import { BoxPlotChart } from "./boxplot-chart";
 import { TotalIncrementsChart } from "./total-increments-chart";
-import { Play, Pause, SkipBack, SkipForward } from "lucide-react";
+import { ZoomOut } from "lucide-react";
 
 import {
     Card,
@@ -13,72 +22,137 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { API_BASE_URL } from "@/lib/config";
 
 // Configuration from env
-const CONFIG = {
+export const CONFIG = {
     small: {
-        days: Number(process.env.NEXT_PUBLIC_BGP_ANNOUNCE_SMALL || 1),
         window: Number(process.env.NEXT_PUBLIC_AGG_TIME_WINDOW_SMALL || 60),
     },
     medium: {
-        days: Number(process.env.NEXT_PUBLIC_BGP_ANNOUNCE_MEDIUM || 7),
         window: Number(process.env.NEXT_PUBLIC_AGG_TIME_WINDOW_MEDIUM || 3600),
     },
     large: {
-        days: Number(process.env.NEXT_PUBLIC_BGP_ANNOUNCE_LARGE || 14),
         window: Number(process.env.NEXT_PUBLIC_AGG_TIME_WINDOW_LARGE || 86400),
     },
 };
 
 type TimeRange = keyof typeof CONFIG;
-type QueryMode = "as" | "cc";
+
+// Validation regex patterns
+const AS_REGEX = /^(AS|as)?[0-9]+$/;
+const CC_REGEX = /^[a-zA-Z]{2}$/;
+// Simple IPv4 regex
+const IPV4_REGEX = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+// Comprehensive IPv6 regex
+const IPV6_REGEX = /(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))/;
+
+function isValidInput(mode: QueryMode, value: string): boolean {
+    const trimmed = value.trim();
+    if (trimmed.length === 0) return false;
+
+    switch (mode) {
+        case "as":
+            return AS_REGEX.test(trimmed);
+        case "cc":
+            return CC_REGEX.test(trimmed);
+        case "ip":
+            return IPV4_REGEX.test(trimmed) || IPV6_REGEX.test(trimmed);
+        default:
+            return false;
+    }
+}
 
 async function fetchBoxPlotData(
     range: TimeRange,
     mode: QueryMode,
     identifier: string,
-    endDate: string
+    location: string,
+    from: Date,
+    to: Date
 ): Promise<BoxPlotData[]> {
-    const config = CONFIG[range];
-    // Temporary workaround: Use provided end date until continuous data is available
-    const to = endDate ? new Date(endDate) : new Date();
-    to.setUTCHours(0, 0, 0, 0);
+    if (!isValidInput(mode, identifier)) {
+        return [];
+    }
 
-    const from = new Date(to.getTime() - config.days * 24 * 60 * 60 * 1000);
-
-    const baseUrl = process.env.INTERNAL_FRONTEND_API_URL || "";
     let url = "";
 
     if (mode === "as") {
-        url = `${baseUrl}/api/v1/bgp/announce-as-count-per-as?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&as-path-entry=${identifier}`;
-    } else {
-        url = `${baseUrl}/api/v1/bgp/announce-cc-count-per-cc?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&country-code=${identifier}`;
+        url = `${API_BASE_URL}/v1/bgp/announce-as-count-per-as?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&as-path-entry=${identifier}&location=${location}`;
+    } else if (mode === "cc") {
+        url = `${API_BASE_URL}/v1/bgp/announce-cc-count-per-cc?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&cc=${identifier}&location=${location}`;
+    } else if (mode === "ip") {
+        // Ping data endpoint
+        // http://localhost:5000/api/v1/ping/data
+        url = `${API_BASE_URL}/v1/ping/data?from=${from.toISOString()}&to=${to.toISOString()}&time-window=${range}&target_ip=${identifier}&location=${location}`;
     }
 
     const response = await fetch(url);
     if (!response.ok) throw new Error("Network response was not ok");
-    return response.json();
+    const json = await response.json();
+
+    if (mode === "ip") {
+        // Map Ping data to BoxPlotData structure
+        return json.map((item: PingDataResponse) => {
+            if (range === "small") {
+                // Return item as is, but we might want to ensure it matches parts of BoxPlotData if strictness is required.
+                // However, TotalIncrementsChart uses 'avg_rtt' via dataKey, so we just pass the object through.
+                // We add timestampMs for completeness if done elsewhere, but here just raw mapping.
+                return {
+                    ...item,
+                    timestamp: item.timestamp,
+                    // Map avg_rtt to total_increments as a fallback if not using dataKey, 
+                    // but we ARE using dataKey.
+                    total_increments: item.avg_rtt || 0,
+                    avg_rtt: item.avg_rtt,
+                    avg_ttl: item.avg_ttl,
+                    next_power_of_2: item.next_power_of_2,
+                } as unknown as BoxPlotData;
+            } else {
+                // Map percentiles for boxplot
+                return {
+                    timestamp: item.timestamp,
+                    // Ping data uses p99, p95, p75. BoxPlotChart expects p099, p095, p075.
+                    p01: item.p01,
+                    p05: item.p05,
+                    p25: item.p25,
+                    p50: item.p50,
+                    p075: item.p75,
+                    p095: item.p95,
+                    p099: item.p99,
+
+                    // Fill required fields with dummies if needed, or rely on undefined
+                    total_increments: 0,
+                    as_path_entry: identifier,
+                    avg_ttl: item.avg_ttl,
+                    next_power_of_2: item.next_power_of_2,
+                } as BoxPlotData;
+            }
+        });
+    }
+
+    return json;
 }
 
 function ChartTooltip({
     data,
     type,
+    mode = "as", // 'as' | 'cc' | 'ip'
 }: {
     data: BoxPlotData;
     type: "boxplot" | "line";
+    mode?: QueryMode;
 }) {
+    // Determine labels based on mode
+    const valueLabel = mode === "ip" ? "Ping RTT" : "Anzahl der Inkrementierungen";
+
     if (type === "line") {
         // Line chart
+        const val = mode === "ip" ? (data.avg_rtt ?? 0) : data.total_increments;
+
         return (
             <div className="rounded-lg border bg-background p-2 shadow-sm text-xs w-48">
                 <div className="flex flex-col gap-2">
@@ -91,13 +165,42 @@ function ChartTooltip({
                         </span>
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-[0.70rem] uppercase text-muted-foreground">
-                            Increments
+                        <span
+                            className="text-[0.70rem] uppercase"
+                            style={{ color: "var(--primary)" }}
+                        >
+                            {valueLabel}
                         </span>
                         <span className="font-bold">
-                            {data.total_increments}
+                            {typeof val === 'number' ? val.toFixed(2) : val}
                         </span>
                     </div>
+                    {data.avg_ttl !== undefined && (
+                        <div className="flex flex-col">
+                            <span
+                                className="text-[0.70rem] uppercase"
+                                style={{ color: "#ef4444" }}
+                            >
+                                TTL
+                            </span>
+                            <span className="font-bold">
+                                {data.avg_ttl}
+                            </span>
+                        </div>
+                    )}
+                    {data.next_power_of_2 !== undefined && (
+                        <div className="flex flex-col">
+                            <span
+                                className="text-[0.70rem] uppercase"
+                                style={{ color: "#16a34a" }}
+                            >
+                                Next Power of 2
+                            </span>
+                            <span className="font-bold">
+                                {data.next_power_of_2}
+                            </span>
+                        </div>
+                    )}
                 </div>
             </div>
         );
@@ -144,27 +247,39 @@ function ChartTooltip({
     );
 }
 
-export function BgpAnnounceChart() {
+interface BgpAnnounceChartProps {
+    router: string | undefined;
+}
+
+// Main component
+export function BgpAnnounceChart({ router }: BgpAnnounceChartProps) {
     const DEBOUNCE_TIME = 500;
-    const [range, setRange] = useState<TimeRange>("small");
+
+    // Global Time Store
+    const { timeRange, windowSize, isPlaying, playbackPosition } =
+        useTimeRangeStore();
+
+    // Global Location Store
+    const { selectedLocationId } = useLocationStore();
+
     const [mode, setMode] = useState<QueryMode>("as");
     const [identifier, setIdentifier] = useState("");
     const [debouncedIdentifier, setDebouncedIdentifier] = useState(identifier);
-    // Temporary workaround: Custom end date state
-    const [customEndDate, setCustomEndDate] = useState(
-        new Date().toISOString().split("T")[0]
-    );
-    const [debouncedEndDate, setDebouncedEndDate] = useState(customEndDate);
 
-    // Timeline state
-    const [currentTimePercent, setCurrentTimePercent] = useState(100); // 0-100% of the VIEW range
-    const [viewRange, setViewRange] = useState([0, 100]); // 0-100% of the FETCHED range
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [playbackSpeed, setPlaybackSpeed] = useState(1);
-    const [isInteracting, setIsInteracting] = useState(false);
+    // Timeline state for LOCAL ZOOM only
+    // 0-100% of the FETCHED range (global time range)
+    const [viewRange, setViewRange] = useState([0, 100]);
 
     // Defer state updates for smoother UI
     const deferredViewRange = useDeferredValue(viewRange);
+
+    // Initial router setup
+    useEffect(() => {
+        if (router) {
+            setIdentifier(router);
+            setDebouncedIdentifier(router);
+        }
+    }, [router]);
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -176,73 +291,67 @@ export function BgpAnnounceChart() {
         };
     }, [identifier]);
 
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedEndDate(customEndDate);
-        }, DEBOUNCE_TIME);
+    // Reset view range when global time range changes drastically
+    const startMs = timeRange.start.getTime();
+    const endMs = timeRange.end.getTime();
 
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [customEndDate]);
+    useEffect(() => {
+        setViewRange([0, 100]);
+    }, [startMs, endMs]);
 
     const { data, isLoading, error, isFetching } = useQuery({
         queryKey: [
             "bgp-announce-data",
-            range,
+            windowSize, // Use windowSize as range/resolution key
             mode,
             debouncedIdentifier,
-            debouncedEndDate,
+            selectedLocationId,
+            timeRange.start.toISOString(),
+            timeRange.end.toISOString(),
         ],
         queryFn: () =>
             fetchBoxPlotData(
-                range,
+                windowSize as TimeRange,
                 mode,
                 debouncedIdentifier,
-                debouncedEndDate
+                selectedLocationId || "",
+                timeRange.start,
+                timeRange.end
             ),
-        enabled: debouncedIdentifier.length > 0,
+        enabled: isValidInput(mode, debouncedIdentifier) && !!selectedLocationId,
     });
 
     // Pre-process data to include timestampMs for faster filtering
     const processedData = useMemo(() => {
-        if (!data) return [];
+        if (!data || !Array.isArray(data)) return [];
         return data.map((d) => ({
             ...d,
             timestampMs: new Date(d.timestamp).getTime(),
         }));
     }, [data]);
 
-    // Calculate dates
-    const { from, to } = useMemo(() => {
-        const config = CONFIG[range];
-        // Temporary workaround: Use provided end date until continuous data is available
-        const t = debouncedEndDate ? new Date(debouncedEndDate) : new Date();
-        // t.setUTCFullYear(2025, 9, 7); // Hardcoded as in original
-        t.setUTCHours(0, 0, 0, 0);
-        const f = new Date(t.getTime() - config.days * 24 * 60 * 60 * 1000);
-        return { from: f, to: t };
-    }, [range, debouncedEndDate]);
-
+    const from = timeRange.start;
+    const to = timeRange.end;
     const totalDuration = to.getTime() - from.getTime();
 
     // Calculate view range dates (Immediate for UI)
     const viewStart = useMemo(
-        () =>
-            new Date(from.getTime() + (totalDuration * viewRange[0]) / 100),
+        () => new Date(from.getTime() + (totalDuration * viewRange[0]) / 100),
         [from, totalDuration, viewRange]
     );
     const viewEnd = useMemo(
-        () =>
-            new Date(from.getTime() + (totalDuration * viewRange[1]) / 100),
+        () => new Date(from.getTime() + (totalDuration * viewRange[1]) / 100),
         [from, totalDuration, viewRange]
     );
-    const viewDuration = viewEnd.getTime() - viewStart.getTime();
 
-    // Calculate current time (Immediate for UI)
-    const currentDate = new Date(
-        viewStart.getTime() + (viewDuration * currentTimePercent) / 100
-    );
+    // Determine current time to display logic
+    // If playback is active or we have a specific position, use that.
+    // Otherwise fallback to end of range (or end of view).
+    const currentTimestampMs = playbackPosition
+        ? playbackPosition.getTime()
+        : to.getTime();
+
+    const currentDate = new Date(currentTimestampMs);
 
     // Calculate view range dates (Deferred for Chart)
     const deferredViewStart = new Date(
@@ -269,10 +378,6 @@ export function BgpAnnounceChart() {
     const currentDataPoint = useMemo(() => {
         if (!filteredData || filteredData.length === 0) return null;
 
-        // Calculate current timestamp based on immediate view range (to match slider position)
-        const currentTimestampMs =
-            viewStart.getTime() + (viewDuration * currentTimePercent) / 100;
-
         // Find closest data point
         let closest = filteredData[0];
         let minDiff = Math.abs(closest.timestampMs - currentTimestampMs);
@@ -287,48 +392,61 @@ export function BgpAnnounceChart() {
             }
         }
         return closest;
-    }, [filteredData, viewStart, viewDuration, currentTimePercent]);
+    }, [filteredData, currentTimestampMs]);
 
-    // Playback logic
-    useEffect(() => {
-        let interval: NodeJS.Timeout;
-        if (isPlaying) {
-            interval = setInterval(() => {
-                setCurrentTimePercent((prev) => {
-                    if (prev >= 100) {
-                        setIsPlaying(false);
-                        return 100;
-                    }
-                    return prev + 0.5 * playbackSpeed;
-                });
-            }, 50);
-        }
-        return () => clearInterval(interval);
-    }, [isPlaying, playbackSpeed]);
+    // Handlers for playback control
 
-    const formatLabel = (days: number) => {
-        return days === 1 ? "1 Tag" : `${days} Tage`;
+    // Calculate position for vertical line:
+    // It should be relative to the view range if we are zoomed in?
+    // Actually the line shows the "current global time".
+    // If we are zoomed in, and the current time is outside, we might not see it or we clamp it.
+    // For now, let's render it if it's within the VIEW range.
+
+    // We need to map `currentTimestampMs` to a percentage within the `viewStart` to `viewEnd`.
+    const viewDurationMs = viewEnd.getTime() - viewStart.getTime();
+    const timeInViewMs = currentTimestampMs - viewStart.getTime();
+
+    // This is 0-100 relative to the CURRENT VIEW
+    const currentTimePercentInView =
+        viewDurationMs > 0 ? (timeInViewMs / viewDurationMs) * 100 : 0;
+
+    const isCurrentTimeInView =
+        currentTimestampMs >= viewStart.getTime() &&
+        currentTimestampMs <= viewEnd.getTime();
+
+    const handleZoomCallback = useCallback(
+        (startMs: number, endMs: number) => {
+            const startPercent = Math.max(
+                0,
+                ((startMs - from.getTime()) / totalDuration) * 100
+            );
+            const endPercent = Math.min(
+                100,
+                ((endMs - from.getTime()) / totalDuration) * 100
+            );
+            setViewRange([startPercent, endPercent]);
+        },
+        [from, totalDuration]
+    );
+
+    const getTitle = () => {
+        if (mode === "ip") return <>Ping RTT für <span className="text-blue-500">IP {identifier}</span></>;
+        if (mode === "cc") return <>BGP Announcements (Boxplot) für <span className="text-blue-500">Ländercode {identifier}</span></>;
+        return <>BGP Announcements (Boxplot) für <span className="text-blue-500">AS-{router || identifier}</span></>;
     };
 
-    const handleSkipBack = () => {
-        setCurrentTimePercent(0);
-        setIsPlaying(false);
-    };
-
-    const handleSkipForward = () => {
-        setCurrentTimePercent(100);
-        setIsPlaying(false);
+    const getDescription = () => {
+        if (mode === "ip") return `Ping Latenz-Statistiken für IP ${identifier}`;
+        if (mode === "cc") return `BGP Announcements (Boxplot) für Ländercode ${identifier}`;
+        return `BGP Announcements (Boxplot) für AS-${router || identifier}`;
     };
 
     return (
         <Card className="w-full">
             <CardHeader className="space-y-4 pb-4">
                 <div className="flex flex-col space-y-1.5">
-                    <CardTitle>BGP Announcements (Boxplot)</CardTitle>
-                    <CardDescription>
-                        Verteilung der BGP Announcements für{" "}
-                        {mode === "as" ? "AS" : "Country Code"} {identifier}
-                    </CardDescription>
+                    <CardTitle>{getTitle()}</CardTitle>
+                    <CardDescription>{getDescription()}</CardDescription>
                 </div>
 
                 <div className="flex flex-wrap gap-4 items-center justify-between">
@@ -353,58 +471,30 @@ export function BgpAnnounceChart() {
                             >
                                 CC
                             </ToggleGroupItem>
+                            <ToggleGroupItem
+                                value="ip"
+                                className="px-3 py-1 text-sm"
+                            >
+                                IP
+                            </ToggleGroupItem>
                         </ToggleGroup>
 
                         <input
                             type="text"
                             value={identifier}
                             onChange={(e) => setIdentifier(e.target.value)}
-                            className="flex h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            className={`flex h-10 w-48 rounded-md border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${identifier.length > 0 && !isValidInput(mode, identifier)
+                                ? "border-red-500 focus-visible:ring-red-500"
+                                : "border-input"
+                                }`}
                             placeholder={
-                                mode === "as" ? "AS Number" : "Country Code"
+                                mode === "as"
+                                    ? "AS Number"
+                                    : mode === "cc"
+                                        ? "Country Code"
+                                        : "IP Address"
                             }
                         />
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        {/* Temporary workaround: Date input for end date */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">
-                                End-Datum:
-                            </span>
-                            <input
-                                type="date"
-                                value={customEndDate}
-                                onChange={(e) =>
-                                    setCustomEndDate(e.target.value)
-                                }
-                                className="flex h-10 w-min rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            />
-                        </div>
-
-                        <Select
-                            value={range}
-                            onValueChange={(val) => {
-                                setRange(val as TimeRange);
-                                setViewRange([0, 100]); // Reset view range on range change
-                                setCurrentTimePercent(100); // Reset current time
-                            }}
-                        >
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Zeitraum wählen" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="small">
-                                    {formatLabel(CONFIG.small.days)}
-                                </SelectItem>
-                                <SelectItem value="medium">
-                                    {formatLabel(CONFIG.medium.days)}
-                                </SelectItem>
-                                <SelectItem value="large">
-                                    {formatLabel(CONFIG.large.days)}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
                     </div>
                 </div>
             </CardHeader>
@@ -421,156 +511,152 @@ export function BgpAnnounceChart() {
                         <div className="h-[400px] flex items-center justify-center text-destructive">
                             Fehler beim Laden der Daten.
                         </div>
-                    ) : !data ||
-                      (data.length === 0 && !isLoading && !isFetching) ? (
+                    ) : (!data || !Array.isArray(data) || data.length === 0) &&
+                        !isLoading &&
+                        !isFetching ? (
                         <div className="h-[400px] flex items-center justify-center text-muted-foreground">
                             Keine Daten vorhanden.
                         </div>
-                    ) : range === "small" ? (
-                        <div className="relative w-full h-[400px]">
-                            <TotalIncrementsChart data={filteredData} />
-                            <div
-                                className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
-                                style={{
-                                    left: `calc(50px + (100% - 50px - 20px) * ${
-                                        currentTimePercent / 100
-                                    })`,
-                                }}
-                            >
-                                {(isInteracting || isPlaying) &&
-                                    currentDataPoint && (
-                                        <div
-                                            className="absolute top-0"
-                                            style={{
-                                                left:
-                                                    currentTimePercent > 50
-                                                        ? "auto"
-                                                        : "100%",
-                                                right:
-                                                    currentTimePercent > 50
-                                                        ? "100%"
-                                                        : "auto",
-                                                marginLeft:
-                                                    currentTimePercent > 50
-                                                        ? 0
-                                                        : "8px",
-                                                marginRight:
-                                                    currentTimePercent > 50
-                                                        ? "8px"
-                                                        : 0,
-                                            }}
-                                        >
-                                            <ChartTooltip
-                                                key={currentDataPoint.timestamp}
-                                                data={currentDataPoint}
-                                                type="line"
-                                            />
-                                        </div>
-                                    )}
-                            </div>
-                        </div>
                     ) : (
-                        <div className="relative w-full h-[400px]">
-                            <BoxPlotChart data={filteredData} />
-                            <div
-                                className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
-                                style={{
-                                    left: `calc(50px + (100% - 50px - 20px) * ${
-                                        currentTimePercent / 100
-                                    })`,
-                                }}
-                            >
-                                {(isInteracting || isPlaying) &&
-                                    currentDataPoint && (
-                                        <div
-                                            className="absolute top-0"
-                                            style={{
-                                                left:
-                                                    currentTimePercent > 50
-                                                        ? "auto"
-                                                        : "100%",
-                                                right:
-                                                    currentTimePercent > 50
-                                                        ? "100%"
-                                                        : "auto",
-                                                marginLeft:
-                                                    currentTimePercent > 50
-                                                        ? 0
-                                                        : "8px",
-                                                marginRight:
-                                                    currentTimePercent > 50
-                                                        ? "8px"
-                                                        : 0,
-                                            }}
-                                        >
-                                            <ChartTooltip
-                                                key={currentDataPoint.timestamp}
-                                                data={currentDataPoint}
-                                                type="boxplot"
-                                            />
-                                        </div>
-                                    )}
-                            </div>
-                        </div>
+                        <>
+                            {windowSize === "small" ? (
+                                <div className="relative w-full h-[400px]">
+                                    <TotalIncrementsChart
+                                        data={filteredData}
+                                        onZoom={handleZoomCallback}
+                                        domain={[
+                                            deferredViewStart.getTime(),
+                                            deferredViewEnd.getTime(),
+                                        ]}
+                                        dataKey={mode === "ip" ? "avg_rtt" : "total_increments"}
+                                        valueLabel={mode === "ip" ? "Ping RTT" : "Anzahl der Inkrementierungen"}
+                                        showAvgTtl={mode === "ip"}
+                                        showNextPowerOf2={mode === "ip"}
+                                    />
+                                    <div
+                                        className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
+                                        style={{
+                                            left: `calc(50px + (100% - 50px - 20px) * ${currentTimePercentInView / 100
+                                                })`,
+                                            display: isCurrentTimeInView
+                                                ? "block"
+                                                : "none",
+                                        }}
+                                    >
+                                        {isPlaying && currentDataPoint && (
+                                            <div
+                                                className="absolute top-0"
+                                                style={{
+                                                    left:
+                                                        currentTimePercentInView >
+                                                            50
+                                                            ? "auto"
+                                                            : "100%",
+                                                    right:
+                                                        currentTimePercentInView >
+                                                            50
+                                                            ? "100%"
+                                                            : "auto",
+                                                    marginLeft:
+                                                        currentTimePercentInView >
+                                                            50
+                                                            ? 0
+                                                            : "8px",
+                                                    marginRight:
+                                                        currentTimePercentInView >
+                                                            50
+                                                            ? "8px"
+                                                            : 0,
+                                                }}
+                                            >
+                                                <ChartTooltip
+                                                    key={
+                                                        currentDataPoint.timestamp
+                                                    }
+                                                    data={currentDataPoint}
+                                                    type="line"
+                                                    mode={mode}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="relative w-full h-[400px]">
+                                    <BoxPlotChart
+                                        data={filteredData}
+                                        onZoom={handleZoomCallback}
+                                        domain={[
+                                            deferredViewStart.getTime(),
+                                            deferredViewEnd.getTime(),
+                                        ]}
+                                    />
+                                    <div
+                                        className="absolute top-[20px] bottom-[35px] w-[2px] bg-primary/50 pointer-events-none transition-none z-10"
+                                        style={{
+                                            left: `calc(50px + (100% - 50px - 20px) * ${currentTimePercentInView / 100
+                                                })`,
+                                            display: isCurrentTimeInView
+                                                ? "block"
+                                                : "none",
+                                        }}
+                                    >
+                                        {isPlaying && currentDataPoint && (
+                                            <div
+                                                className="absolute top-0"
+                                                style={{
+                                                    left:
+                                                        currentTimePercentInView >
+                                                            50
+                                                            ? "auto"
+                                                            : "100%",
+                                                    right:
+                                                        currentTimePercentInView >
+                                                            50
+                                                            ? "100%"
+                                                            : "auto",
+                                                    marginLeft:
+                                                        currentTimePercentInView >
+                                                            50
+                                                            ? 0
+                                                            : "8px",
+                                                    marginRight:
+                                                        currentTimePercentInView >
+                                                            50
+                                                            ? "8px"
+                                                            : 0,
+                                                }}
+                                            >
+                                                <ChartTooltip
+                                                    key={
+                                                        currentDataPoint.timestamp
+                                                    }
+                                                    data={currentDataPoint}
+                                                    type="boxplot"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                            {(viewRange[0] > 0 || viewRange[1] < 100) && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="absolute top-2 right-2 z-20 bg-background/80 hover:bg-background"
+                                    onClick={() => setViewRange([0, 100])}
+                                >
+                                    <ZoomOut className="h-4 w-4 mr-2" />
+                                    Zurücksetzen
+                                </Button>
+                            )}
+                        </>
                     )}
                 </div>
 
                 {/* Timeline Controls */}
                 <div className="border-t pt-4 space-y-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={handleSkipBack}
-                            >
-                                <SkipBack className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => setIsPlaying(!isPlaying)}
-                            >
-                                {isPlaying ? (
-                                    <Pause className="h-4 w-4" />
-                                ) : (
-                                    <Play className="h-4 w-4" />
-                                )}
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={handleSkipForward}
-                            >
-                                <SkipForward className="h-4 w-4" />
-                            </Button>
-                            <div className="flex items-center gap-2 ml-2">
-                                <span className="text-xs text-muted-foreground">
-                                    Speed:
-                                </span>
-                                <ToggleGroup
-                                    type="single"
-                                    value={playbackSpeed.toString()}
-                                    onValueChange={(val) =>
-                                        val && setPlaybackSpeed(Number(val))
-                                    }
-                                    size="sm"
-                                >
-                                    <ToggleGroupItem
-                                        value="0.5"
-                                        aria-label="0.5x"
-                                    >
-                                        0.5x
-                                    </ToggleGroupItem>
-                                    <ToggleGroupItem value="1" aria-label="1x">
-                                        1x
-                                    </ToggleGroupItem>
-                                    <ToggleGroupItem value="2" aria-label="2x">
-                                        2x
-                                    </ToggleGroupItem>
-                                </ToggleGroup>
-                            </div>
-                        </div>
                         <div className="text-sm font-medium">
                             {currentDate.toLocaleString("de-DE", {
                                 weekday: "short",
@@ -585,31 +671,25 @@ export function BgpAnnounceChart() {
 
                     <div className="space-y-1">
                         <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>Current Time</span>
-                        </div>
-                        <div
-                            onPointerDown={() => setIsInteracting(true)}
-                            onPointerUp={() => setIsInteracting(false)}
-                            onPointerLeave={() => setIsInteracting(false)}
-                        >
-                            <Slider
-                                value={[currentTimePercent]}
-                                onValueChange={(val) => {
-                                    setCurrentTimePercent(val[0]);
-                                    setIsPlaying(false);
-                                }}
-                                max={100}
-                                step={0.1}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-1">
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                            <span>View Range (Von/Bis)</span>
+                            <span>Angezeigter Zeitraum (Von/Bis)</span>
                             <span>
-                                {viewStart.toLocaleDateString()} -{" "}
-                                {viewEnd.toLocaleDateString()}
+                                {viewStart.toLocaleString("de-DE", {
+                                    weekday: "short",
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                })}{" "}
+                                -{" "}
+                                {viewEnd.toLocaleString("de-DE", {
+                                    weekday: "short",
+                                    day: "2-digit",
+                                    month: "short",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                })}
                             </span>
                         </div>
                         <Slider
@@ -617,7 +697,7 @@ export function BgpAnnounceChart() {
                             onValueChange={setViewRange}
                             max={100}
                             step={1}
-                            minStepsBetweenThumbs={5}
+                            minStepsBetweenThumbs={2.5}
                         />
                     </div>
                 </div>

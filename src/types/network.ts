@@ -6,22 +6,29 @@
  */
 
 import { ReactNode } from "react";
+import { EntityStatus } from "./dashboard";
 
 export interface CountryData {
     code: string;
     name: string;
     asCount: number;
     anomalyCount: number;
-    status: NetworkStatus;
     ipCount: number;
+    anomalies: {
+        bgp: string[];
+        ping: string[];
+    };
 }
 
 export interface AsNetworkData {
     asNumber: number;
     name: string;
     ipCount: number;
-    status: NetworkStatus;
     anomalyCount: number;
+    anomalies: {
+        bgp: string[];
+        ping: string[];
+    };
 }
 
 export interface CountriesSummaryResponse {
@@ -30,9 +37,11 @@ export interface CountriesSummaryResponse {
         countryCount: number;
         totalAsCount: number;
         totalAnomalyCount: number;
-        countries: Array<{ code: string; name: string }>;
+        totalIpCount: number;
+        countries: CountryData[];
         metadata: {
             totalCountries: number;
+            totalAsCount: number;
             lastUpdated: string;
         };
     };
@@ -48,7 +57,7 @@ export interface CountryAsResponse {
         asCount: number;
         totalIpCount: number;
         totalAnomalyCount: number;
-        asNetworks: Array<{ asNumber: number; name: string }>;
+        asNetworks: AsNetworkData[];
         metadata: {
             totalAsCount: number;
             lastUpdated: string;
@@ -56,9 +65,10 @@ export interface CountryAsResponse {
     };
 }
 
-export type NetworkStatus = 'healthy' | 'warning' | 'critical' | 'unknown';
+export type NetworkStatus = EntityStatus;
 
 interface CountryMetadata {
+    asCount: number;
     ipCount: number;
 }
 
@@ -91,54 +101,82 @@ export interface TreeMapDataItem {
 }
 
 export interface TreeMapProps {
-    data: TreeMapDataItem[],
-    others?: TreeMapOthersData,
-    title: string,
-    onStatusFilter?: (status: NetworkStatus | 'all') => void,
-    currentStatus: NetworkStatus | 'all',
-    renderTooltip: (data: TreeMapDataItem | TreeMapOthersData) => ReactNode,
-    othersDisplaySize?: number,
-    onItemClick?: (item: TreeMapDataItem) => void,
-    showLabels?: boolean,
-    useGradient?: boolean,
-    anomalyRanges?: Record<NetworkStatus, {
-        min: number;
-        max: number
-    }>,
+    data: TreeMapDataItem[];
+    others?: TreeMapOthersData;
+    title: string;
+    renderTooltip: (data: TreeMapDataItem | TreeMapOthersData) => ReactNode;
+    othersDisplaySize?: number;
+    onItemClick?: (item: TreeMapDataItem) => void;
+    showLabels?: boolean;
+    useGradient?: boolean;
+    thresholds?: StatusThresholds;
     onBackClick?: () => void;
 }
 
-export interface AsTreeMapProps {
-    countryCode: string,
-    limit?: number,
-    showLabels?: boolean,
-    useGradient?: boolean,
-    sizeMetric?: AsSizeMetric,
-    statusFilter?: NetworkStatus | 'all'
-    onStatusFilterChange?: (status: NetworkStatus | 'all') => void;
+export interface AsViewProps {
+    countryCode: string;
+    limit?: number;
+    showLabels?: boolean;
+    useGradient?: boolean;
+    sizeMetric?: AsSizeMetric;
     onBackClick?: () => void;
+    thresholds: StatusThresholds;
 }
 
-export interface CountriesTreeMapProps {
-    limit?: number,
-    onCountryClick?: (countryCode: string) => void,
-    showLabels?: boolean,
-    useGradient?: boolean,
-    sizeMetric?: CountrySizeMetric,
-    statusFilter?: NetworkStatus | 'all'
-    onStatusFilterChange?: (status: NetworkStatus | 'all') => void;
+export interface CountriesViewProps {
+    limit?: number;
+    onCountryClick?: (countryCode: string) => void;
+    showLabels?: boolean;
+    useGradient?: boolean;
+    sizeMetric?: CountrySizeMetric;
+    thresholds: StatusThresholds;
 }
 
-export type CountrySizeMetric = 'asCount' | 'anomalyCount' | 'ipCount';
-export type AsSizeMetric = 'ipCount' | 'anomalyCount';
+export type CountrySizeMetric = 'as_count' | 'ip_count' | 'anomaly_count';
+export type AsSizeMetric = 'ip_count' | 'anomaly_count';
 
 export const COUNTRY_SIZE_METRIC_LABELS: Record<CountrySizeMetric, string> = {
-    asCount: 'AS Count',
-    anomalyCount: 'Anomalien',
-    ipCount: 'IP Count'
+    as_count: 'AS Count',
+    anomaly_count: 'Anomalien',
+    ip_count: 'IP Count'
 };
 
 export const AS_SIZE_METRIC_LABELS: Record<AsSizeMetric, string> = {
-    ipCount: 'IP Count',
-    anomalyCount: 'Anomalien'
+    ip_count: 'IP Count',
+    anomaly_count: 'Anomalien'
 };
+
+export type NetworkRegistry = 'ripencc' | 'arin' | 'apnic' | 'lacnic' | 'afrinic';
+
+export type AllocationStatus = 'allocated' | 'assigned' | 'reserved' | 'available';
+
+export interface NetworkDetail {
+    asn: string;
+    name?: string;
+    organization?: string;
+    country: string;
+    registry: NetworkRegistry;
+    status2: AllocationStatus;
+    ipv4_cidrs: string[];
+    routers: number;
+    anomalies: {
+        bgp: number;
+        ping: number;
+    };
+}
+
+export interface NetworkDetailsResponse {
+    details: NetworkDetail[];
+    meta: {
+        total_entries: number;
+        page: number;
+        limit: number;
+        has_next: boolean;
+    };
+}
+
+export interface StatusThresholds {
+    healthy: { min: number; max: number };
+    warning: { min: number; max: number };
+    critical: { min: number; max: number };
+}

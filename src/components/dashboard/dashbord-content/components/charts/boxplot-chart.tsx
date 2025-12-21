@@ -6,35 +6,20 @@ import {
     Bar,
     BarChart,
     CartesianGrid,
+    ReferenceArea,
     ResponsiveContainer,
     Tooltip,
     XAxis,
     YAxis,
 } from "recharts";
-import { memo } from "react";
+import { memo, useState } from "react";
+import { BoxPlotData } from "@/types/dashboard";
 
-export interface BoxPlotData {
-    as_path_entry: string;
-    p01: number;
-    p05: number;
-    p075: number;
-    p095: number;
-    p099: number;
-    p25: number;
-    p50: number;
-    timestamp: string;
-    total_increments: number;
-    // Optional analysis fields (integrated from backend)
-    mean?: number;
-    std?: number;
-    is_anomaly?: boolean;
-    anomaly_score?: number;
-    // Computed fields for charting
-    timestampMs?: number;
-    conf_lower?: number;
-    conf_upper?: number;
-    band?: number;
-    anomaly_point?: number | null;
+interface CustomTooltipProps {
+    active?: boolean;
+    payload?: Array<{
+        payload: BoxPlotData;
+    }>;
 }
 
 interface CustomBoxPlotProps {
@@ -144,8 +129,7 @@ const CustomBoxPlot = (props: CustomBoxPlotProps) => {
     );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const CustomTooltip = ({ active, payload }: any) => {
+const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
         const data = payload[0].payload as BoxPlotData;
         return (
@@ -191,17 +175,67 @@ const CustomTooltip = ({ active, payload }: any) => {
     return null;
 };
 
-const BoxPlotChartComponent = ({ data }: { data: BoxPlotData[] }) => {
+const BoxPlotChartComponent = ({
+    data,
+    onZoom,
+    domain,
+}: {
+    data: BoxPlotData[];
+    onZoom?: (startMs: number, endMs: number) => void;
+    domain?: [number, number];
+}) => {
+    const [refAreaLeft, setRefAreaLeft] = useState<number | null>(null);
+    const [refAreaRight, setRefAreaRight] = useState<number | null>(null);
+
+    const handleZoom = () => {
+        if (
+            refAreaLeft === null ||
+            refAreaRight === null ||
+            refAreaLeft === refAreaRight
+        ) {
+            setRefAreaLeft(null);
+            setRefAreaRight(null);
+            return;
+        }
+
+        let startMs = refAreaLeft;
+        let endMs = refAreaRight;
+
+        if (startMs > endMs) {
+            [startMs, endMs] = [endMs, startMs];
+        }
+
+        onZoom?.(startMs, endMs);
+        setRefAreaLeft(null);
+        setRefAreaRight(null);
+    };
+
     return (
-        <div className="w-full h-[400px]">
+        <div className="w-full h-[400px] select-none">
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                     data={data}
                     margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+                    onMouseDown={(e) =>
+                        e?.activeLabel &&
+                        setRefAreaLeft(Number(e.activeLabel))
+                    }
+                    onMouseMove={(e) => {
+                        if (refAreaLeft !== null && e?.activeLabel) {
+                            const newRight = Number(e.activeLabel);
+                            if (newRight !== refAreaRight) {
+                                setRefAreaRight(newRight);
+                            }
+                        }
+                    }}
+                    onMouseUp={handleZoom}
                 >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis
-                        dataKey="timestamp"
+                        dataKey="timestampMs"
+                        type="number"
+                        domain={domain || ["dataMin", "dataMax"]}
+                        allowDataOverflow={true}
                         tickFormatter={(value) =>
                             new Date(value).toLocaleDateString(undefined, {
                                 month: "short",
@@ -216,7 +250,7 @@ const BoxPlotChartComponent = ({ data }: { data: BoxPlotData[] }) => {
                     <YAxis tick={{ fontSize: 12 }} width={50} />
                     <Tooltip
                         content={<CustomTooltip />}
-                        isAnimationActive={false}
+                        isAnimationActive={true}
                     />
                     {/* Using Bar with custom shape, passing array [min, max] to dataKey */}
                     <Bar
@@ -225,8 +259,18 @@ const BoxPlotChartComponent = ({ data }: { data: BoxPlotData[] }) => {
                             entry.p099,
                         ]}
                         shape={<CustomBoxPlot />}
-                        isAnimationActive={false}
+                        isAnimationActive={true}
+                        animationDuration={500}
                     />
+                    {refAreaLeft !== null && refAreaRight !== null && (
+                        <ReferenceArea
+                            x1={refAreaLeft}
+                            x2={refAreaRight}
+                            strokeOpacity={0.4}
+                            fill="#8884d8"
+                            fillOpacity={0.5}
+                        />
+                    )}
                 </BarChart>
             </ResponsiveContainer>
         </div>

@@ -1,28 +1,25 @@
-import DashboardFooterSearch from "./components/search";
-import DashboardFooterStatistics from "./components/statistics";
-import { DashboardViewVisibility } from "@/types/dashboard";
+import { Country, DashboardViewVisibility, Router } from "@/types/dashboard";
+import { NetworkTable } from "@/components/network/network-table";
 
 interface DashboardFooterProps {
     viewVisibility: DashboardViewVisibility;
+    selectedCountry: Country;
+    routers: Router[];
+    setSelectedRouter: React.Dispatch<React.SetStateAction<Router | null>>;
 }
 
-export default function DashboardFooter({ viewVisibility }: DashboardFooterProps) {
-    if (!viewVisibility.searchResults && !viewVisibility.globalStats) {
-        return null;
-    }
-
+export default function DashboardFooter({ viewVisibility, selectedCountry, routers, setSelectedRouter }: DashboardFooterProps) {
     return (
-        <div className="dashboard-footer w-full rounded-[var(--radius)] flex gap-3 h-90">
-            {viewVisibility.searchResults ? (
-                <DashboardFooterSearch />
-            ) : (
-                <div className="flex-7" />
-            )}
-            {viewVisibility.globalStats ? (
-                <DashboardFooterStatistics />
-            ) : (
-                <div className="flex-4" />
-            )}
+        <div className="dashboard-footer w-full rounded-[var(--radius)] flex flex-col gap-3">
+            <NetworkTable selectedCountry={selectedCountry} />
+            { /*(viewVisibility.searchResults || viewVisibility.globalStats) && (
+                <div className="flex gap-3 h-[500px]">
+                    {viewVisibility.searchResults && (
+                        <DashboardFooterSearch selectedCountry={selectedCountry} routers={routers} setSelectedRouter={setSelectedRouter} />
+                    )
+                    }
+                </div>
+            ) */}
         </div>
     );
 }

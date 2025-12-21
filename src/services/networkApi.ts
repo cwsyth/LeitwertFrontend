@@ -5,13 +5,35 @@
  * For a copy, see LICENSE.txt in the project root.
  */
 
-import { CountriesSummaryResponse, CountryAsResponse } from '@/types/network';
+import {
+    CountriesSummaryResponse,
+    CountryAsResponse,
+    NetworkDetailsResponse
+} from '@/types/network';
+import {API_BASE_URL} from "@/lib/config";
 
-const API_BASE_URL = process.env.INTERNAL_FRONTEND_API_URL || "/api";
+export interface GetNetworkDetailsParams {
+    cc: string
+    limit?: number
+    page?: number
+    sort?: 'name' | 'cidrs' | 'bgp-anomalies' | 'ping-anomalies'
+}
 
 export const networkApi = {
-    async getCountriesSummary(limit: number = 50): Promise<CountriesSummaryResponse> {
-        const params = new URLSearchParams({ limit: limit.toString() });
+    async getCountriesSummary(
+        limit: number = 20,
+        timeRange?: { start: Date; end: Date },
+        sizeMetric: string = 'as_count'
+    ): Promise<CountriesSummaryResponse> {
+        const params = new URLSearchParams({
+            limit: limit.toString(),
+            sort: sizeMetric
+        });
+
+        if (timeRange) {
+            params.append('from', timeRange.start.toISOString());
+            params.append('to', timeRange.end.toISOString());
+        }
 
         try {
             const response = await fetch(`${API_BASE_URL}/v1/network/countries/summary?${params}`);
@@ -28,8 +50,21 @@ export const networkApi = {
         }
     },
 
-    async getCountryAs(countryCode: string, limit: number = 50): Promise<CountryAsResponse> {
-        const params = new URLSearchParams({ limit: limit.toString() });
+    async getCountryAs(
+        countryCode: string,
+        limit: number = 50,
+        timeRange?: { start: Date; end: Date },
+        sizeMetric: string = 'ip_count'
+    ): Promise<CountryAsResponse> {
+        const params = new URLSearchParams({
+            limit: limit.toString(),
+            sort: sizeMetric
+        });
+
+        if (timeRange) {
+            params.append('from', timeRange.start.toISOString());
+            params.append('to', timeRange.end.toISOString());
+        }
 
         try {
             const response = await fetch(`${API_BASE_URL}/v1/network/countries/summary/${countryCode}?${params}`);
@@ -44,5 +79,31 @@ export const networkApi = {
             console.error(`Error fetching AS data for ${countryCode}:`, error);
             throw error;
         }
+    },
+
+    async getNetworkDetails(params: GetNetworkDetailsParams): Promise<NetworkDetailsResponse> {
+        const searchParams = new URLSearchParams({
+            cc: params.cc,
+            limit: String(params.limit || 10),
+            page: String(params.page || 1)
+        })
+
+        if (params.sort) {
+            searchParams.append('sort', params.sort)
+        }
+
+        const response = await fetch(`${API_BASE_URL}/v1/networks/get-details?${searchParams}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            cache: 'no-store'
+        })
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch network details: ${response.statusText}`)
+        }
+
+        return response.json()
     }
 };

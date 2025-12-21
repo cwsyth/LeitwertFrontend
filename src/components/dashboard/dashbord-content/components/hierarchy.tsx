@@ -1,208 +1,106 @@
 'use client';
 
-import { CountriesTreeMap } from "@/components/network/CountriesTreeMap";
-import { AsTreeMap } from "@/components/network/AsTreeMap";
-import React, { useState } from "react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
-    AS_SIZE_METRIC_LABELS,
-    AsSizeMetric,
-    COUNTRY_SIZE_METRIC_LABELS,
-    CountrySizeMetric, NetworkStatus
-} from "@/types/network";
+    CountriesView
+} from "@/components/dashboard/dashbord-content/components/network-treemap/countries-view";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
+    AsView
+} from "@/components/dashboard/dashbord-content/components/network-treemap/as-view";
+import React, {useEffect, useState} from "react";
+import {AsSizeMetric, CountrySizeMetric} from "@/types/network";
+import {Country} from "@/types/dashboard";
+import {countries as countriesData} from "countries-list";
+import {
+    TreeMapFilters
+} from "@/components/dashboard/dashbord-content/components/network-treemap/filters/treemap-filters";
 
-export default function DashboardContentHierarchy() {
-    const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-    const [showCountryView, setShowCountryView] = useState(false);
+interface DashboardContentHierarchyProps {
+    selectedCountry: Country;
+    setSelectedCountry: React.Dispatch<React.SetStateAction<Country>>;
+}
+
+export default function DashboardContentHierarchy({ selectedCountry, setSelectedCountry }: DashboardContentHierarchyProps) {
     const [limit, setLimit] = useState(50);
+    const [inputLimit, setInputLimit] = useState("50");
     const [showLabels, setShowLabels] = useState(true);
     const [useGradient, setUseGradient] = useState(true);
-    const [countrySizeMetric, setCountrySizeMetric] = useState<CountrySizeMetric>('asCount');
-    const [asSizeMetric, setAsSizeMetric] = useState<AsSizeMetric>('ipCount');
-    const [statusFilter, setStatusFilter] = useState<NetworkStatus | 'all'>('all');
+    const [countrySizeMetric, setCountrySizeMetric] = useState<CountrySizeMetric>('as_count');
+    const [asSizeMetric, setAsSizeMetric] = useState<AsSizeMetric>('ip_count');
+    const [thresholds, setThresholds] = useState({
+        healthy: { min: 0, max: 2 },
+        warning: { min: 3, max: 5 },
+        critical: { min: 6, max: Infinity }
+    });
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const value = parseInt(inputLimit, 10);
+            if (!isNaN(value) && value > 0) {
+                setLimit(value);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [inputLimit]);
 
     const handleCountryClick = (countryCode: string) => {
-        setSelectedCountry(countryCode);
-        setShowCountryView(true);
+        const upperCode = countryCode.toUpperCase() as keyof typeof countriesData;
+        const countryName = countriesData[upperCode]?.name || countryCode;
+        setSelectedCountry({
+            code: countryCode.toLowerCase(),
+            name: countryName
+        });
     };
 
     const handleBackToWorld = () => {
-        setShowCountryView(false);
+        setSelectedCountry({ code: 'world', name: 'World' });
     };
 
-    const handleLimitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = parseInt(e.target.value);
-        if (!isNaN(value) && value > 0) {
-            setLimit(value);
-        }
+    const handleLimitChange = (value: string) => {
+        setInputLimit(value);
     };
+
+    const isWorldView = !selectedCountry || selectedCountry.code === 'world';
 
     return (
         <div className="dashboard-hierarchy container mx-auto p-6">
             {/* Customization Options */}
-            <div className="mb-6 p-4 border rounded-lg bg-card">
-                <div className="flex items-center gap-6">
-                    {/* View Select */}
-                    <div className="flex items-center gap-2">
-                        <Label htmlFor="view-select" className="whitespace-nowrap">
-                            Ansicht
-                        </Label>
-                        <Select
-                            value={showCountryView ? "country" : "world"}
-                            onValueChange={(value) => {
-                                if (value === "world") {
-                                    setShowCountryView(false);
-                                } else if (selectedCountry) {
-                                    setShowCountryView(true);
-                                }
-                            }}
-                            disabled={!selectedCountry && !showCountryView}
-                        >
-                            <SelectTrigger id="view-select" className="w-[140px]">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="world">World View</SelectItem>
-                                <SelectItem value="country" disabled={!selectedCountry}>
-                                    Country View
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    {/* Limit Input */}
-                    <div className="flex items-center gap-2">
-                        <Label htmlFor="limit-input" className="whitespace-nowrap">
-                            Anzahl
-                        </Label>
-                        <Input
-                            id="limit-input"
-                            type="number"
-                            min="1"
-                            value={limit}
-                            onChange={handleLimitChange}
-                            className="w-18"
-                        />
-                    </div>
-
-                    {/* Label Toggle */}
-                    <div className="flex items-center gap-2">
-                        <Label htmlFor="show-labels" className="whitespace-nowrap">
-                            Labels
-                        </Label>
-                        <Switch
-                            id="show-labels"
-                            checked={showLabels}
-                            onCheckedChange={setShowLabels}
-                        />
-                    </div>
-                    {/* Gradient Toggle */}
-                    <div className="flex items-center gap-2">
-                        <Label htmlFor="use-gradient" className="whitespace-nowrap">
-                            Farbverlauf
-                        </Label>
-                        <Switch
-                            id="use-gradient"
-                            checked={useGradient}
-                            onCheckedChange={setUseGradient}
-                        />
-                    </div>
-                    {/* Size Metric Select */}
-                    <div className="flex items-center gap-2">
-                        <Label htmlFor="size-metric" className="whitespace-nowrap">
-                            Sortierung
-                        </Label>
-                        {!showCountryView ? (
-                            <Select
-                                value={countrySizeMetric}
-                                onValueChange={(value) => setCountrySizeMetric(value as CountrySizeMetric)}
-                            >
-                                <SelectTrigger id="size-metric" className="w-[140px]">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.entries(COUNTRY_SIZE_METRIC_LABELS).map(([value, label]) => (
-                                        <SelectItem key={value} value={value}>
-                                            {label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        ) : (
-                            <Select
-                                value={asSizeMetric}
-                                onValueChange={(value) => setAsSizeMetric(value as AsSizeMetric)}
-                            >
-                                <SelectTrigger id="size-metric" className="w-[140px]">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {Object.entries(AS_SIZE_METRIC_LABELS).map(([value, label]) => (
-                                        <SelectItem key={value} value={value}>
-                                            {label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        )}
-                    </div>
-
-                    {/* Status Filter */}
-                    <div className="flex items-center gap-2">
-                        <Label htmlFor="status-filter" className="whitespace-nowrap">
-                            Status
-                        </Label>
-                        <Select
-                            value={statusFilter}
-                            onValueChange={(value) => setStatusFilter(value as NetworkStatus | 'all')}
-                        >
-                            <SelectTrigger id="status-filter" className="w-[140px]">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Alle</SelectItem>
-                                <SelectItem value="healthy">Healthy</SelectItem>
-                                <SelectItem value="warning">Warning</SelectItem>
-                                <SelectItem value="critical">Critical</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-            </div>
+            <TreeMapFilters
+                limitValue={inputLimit}
+                onLimitChange={handleLimitChange}
+                showLabels={showLabels}
+                onShowLabelsChange={setShowLabels}
+                useGradient={useGradient}
+                onUseGradientChange={setUseGradient}
+                isCountryView={isWorldView}
+                countryMetric={countrySizeMetric}
+                asMetric={asSizeMetric}
+                onCountryMetricChange={setCountrySizeMetric}
+                onAsMetricChange={setAsSizeMetric}
+                thresholds={thresholds}
+                onThresholdsChange={setThresholds}
+            />
 
             {/* TreeMap Content */}
-            {!showCountryView ? (
-                <CountriesTreeMap
+            {isWorldView ? (
+                <CountriesView
                     limit={limit}
                     showLabels={showLabels}
                     useGradient={useGradient}
                     sizeMetric={countrySizeMetric}
-                    statusFilter={statusFilter}
-                    onStatusFilterChange={setStatusFilter}
                     onCountryClick={handleCountryClick}
+                    thresholds={thresholds}
                 />
             ) : (
-                selectedCountry && (
-                    <AsTreeMap
-                        countryCode={selectedCountry}
-                        limit={limit}
-                        showLabels={showLabels}
-                        useGradient={useGradient}
-                        sizeMetric={asSizeMetric}
-                        statusFilter={statusFilter}
-                        onStatusFilterChange={setStatusFilter}
-                        onBackClick={handleBackToWorld}
-                    />
-                )
+                <AsView
+                    countryCode={selectedCountry.code.toUpperCase()}
+                    limit={limit}
+                    showLabels={showLabels}
+                    useGradient={useGradient}
+                    sizeMetric={asSizeMetric}
+                    onBackClick={handleBackToWorld}
+                    thresholds={thresholds}
+                />
             )}
         </div>
     );

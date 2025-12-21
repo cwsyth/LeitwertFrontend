@@ -14,7 +14,7 @@ export default function DashboardNav({ mode, setMode }: DashboardNavProps) {
         <ToggleGroup
             type="single"
             value={mode}
-            onValueChange={(v) => setMode(v as DashboardContentMode)}
+            onValueChange={(v) => v ? setMode(v as DashboardContentMode) : null}
             className="flex w-full items-center rounded-lg border p-1 bg-accent"
         >
             <ToggleGroupItem
@@ -32,14 +32,6 @@ export default function DashboardNav({ mode, setMode }: DashboardNavProps) {
                 <Network className="mr-1 h-4 w-4" />
                 Netzwerkübersicht
             </ToggleGroupItem>
-
-            { /* <ToggleGroupItem
-                value="grid"
-                className="flex-1 px-3 rounded-[var(--radius)] data-[state=on]:bg-background data-[state=on]:shadow"
-            >
-                <Calendar className="mr-1 h-4 w-4" />
-                Zeitleiste
-            </ToggleGroupItem> */ }
 
         </ToggleGroup>
     </div>

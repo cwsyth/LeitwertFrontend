@@ -4,17 +4,18 @@ import { useState } from "react";
 import DashboardHeader from "./dashbord-header/header";
 import DashboardNav from "./dashbord-nav/nav";
 import DashboardContent from "./dashbord-content/content";
-import DashboardTimeline from "./dashbord-timeline/timeline";
 import DashboardFooter from "./dashbord-footer/footer";
 import {
     DashboardContentMode,
     DashboardViewVisibility,
     Country,
+    Router,
 } from "@/types/dashboard";
 import { BgpAnnounceChart } from "./dashbord-content/components/charts/bgp-announce-chart";
 
 export default function Dashboard() {
     const [mode, setMode] = useState<DashboardContentMode>("street");
+
     const [viewVisibility, setViewVisibility] =
         useState<DashboardViewVisibility>({
             timeline: true,
@@ -30,10 +31,14 @@ export default function Dashboard() {
         }));
     };
 
-    const [selectedCountry, setSelectedCountry] = useState<Country | null>({
+    const [selectedCountry, setSelectedCountry] = useState<Country>({
         code: "world",
         name: "World",
     });
+
+    const [routers, setRouters] = useState<Router[]>([]);
+
+    const [selectedRouter, setSelectedRouter] = useState<Router | null>(null);
 
     return (
         <div className="dashboard-wrapper h-full flex flex-col items-center justify-center p8">
@@ -48,10 +53,16 @@ export default function Dashboard() {
                 <DashboardContent
                     mode={mode}
                     selectedCountry={selectedCountry}
+                    setRouters={setRouters}
+                    setSelectedCountry={setSelectedCountry}
                 />
-                {viewVisibility.bgpAnnouncements && <BgpAnnounceChart />}
-                {viewVisibility.timeline && <DashboardTimeline />}
-                <DashboardFooter viewVisibility={viewVisibility} />
+                <DashboardFooter
+                    viewVisibility={viewVisibility}
+                    selectedCountry={selectedCountry}
+                    routers={routers}
+                    setSelectedRouter={setSelectedRouter}
+                />
+                {viewVisibility.bgpAnnouncements && <BgpAnnounceChart router={selectedRouter?.asn} />}
             </div>
         </div>
     );

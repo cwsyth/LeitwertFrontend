@@ -7,16 +7,30 @@
 
 'use client';
 
-import { ResponsiveContainer, Tooltip, Treemap } from 'recharts';
-import { NetworkStatus, TreeMapDataItem, TreeMapProps } from '@/types/network';
+import {ResponsiveContainer, Tooltip, Treemap} from 'recharts';
+import {
+    NetworkStatus,
+    StatusThresholds,
+    TreeMapDataItem,
+    TreeMapProps
+} from '@/types/network';
 import {
     getGradientColor,
     getStatusColor,
     OTHERS_COLOR
 } from '@/lib/statusColors';
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {ArrowLeft} from "lucide-react";
+import {
+    OthersTooltip
+} from "@/components/dashboard/dashbord-content/components/network-treemap/tooltips/others-tooltip";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle
+} from "@/components/ui/dialog";
 
 export function TreeMap({
                             data,
@@ -27,14 +41,13 @@ export function TreeMap({
                             onItemClick,
                             showLabels,
                             useGradient,
-                            anomalyRanges,
+                            thresholds,
                             onBackClick,
                         }: TreeMapProps) {
-    // Berechne den kleinsten Wert aus den Haupt-Daten
-    const minDataValue = data.length > 0 ? Math.min(...data.map(d => d.value)) : 0;
+    const [isOthersDialogOpen, setIsOthersDialogOpen] = React.useState(false);
 
-    // "Others" bekommt einen Anteil des kleinsten Wertes
-    const othersDisplayValue = minDataValue * othersDisplaySize;
+    const minDataValue = data.length > 0 ? Math.min(...data.map(d => d.value)) : 0;
+    const othersDisplayValue = Math.max(minDataValue * othersDisplaySize, 1);
 
     const treeMapData = [
         ...data,
@@ -65,9 +78,8 @@ export function TreeMap({
     }
 
     const CustomizedContent = (props: CustomContentProps) => {
-        const { x, y, width, height, name, id, status, anomalyCount } = props;
+        const {x, y, width, height, name, id, status, anomalyCount} = props;
 
-        // Type guards for required props
         if (x === undefined || y === undefined || width === undefined ||
             height === undefined || !name || !id) {
             return null;
@@ -77,14 +89,9 @@ export function TreeMap({
 
         if (id === 'others') {
             fillColor = OTHERS_COLOR;
-        } else if (useGradient && anomalyRanges && status && anomalyCount !== undefined) {
-            const range = anomalyRanges[status];
-
-            if (range && range.min !== undefined && range.max !== undefined) {
-                fillColor = getGradientColor(status, anomalyCount, range.min, range.max);
-            } else {
-                fillColor = getStatusColor(status); // Fallback
-            }
+        } else if (useGradient && thresholds && status && anomalyCount !== undefined && status in thresholds) {
+            const range = thresholds[status as keyof StatusThresholds];
+            fillColor = getGradientColor(status, anomalyCount, range.min, range.max);
         } else if (status) {
             fillColor = getStatusColor(status);
         } else {
@@ -92,10 +99,13 @@ export function TreeMap({
         }
 
         const handleClick = () => {
-            // Nicht klickbar für "Others"
-            if (id === 'others') return;
+            // Open dialog for "Others"
+            if (id === 'others') {
+                setIsOthersDialogOpen(true);
+                return;
+            }
 
-            // Finde das originale Item
+            // Find original item
             const item = data.find(d => d.id === id);
             if (item && onItemClick) {
                 onItemClick(item);
@@ -105,7 +115,7 @@ export function TreeMap({
         return (
             <g
                 onClick={handleClick}
-                style={{ cursor: id === 'others' ? 'default' : 'pointer' }}
+                style={{cursor: 'pointer'}}
             >
                 <rect
                     x={x}
@@ -119,17 +129,23 @@ export function TreeMap({
                         strokeOpacity: 1,
                     }}
                 />
-                {showLabels && width > 50 && height > 30 && (
-                    <text
-                        x={x + width / 2}
-                        y={y + height / 2}
-                        textAnchor="middle"
-                        fill="#fff"
-                        fontSize={14}
-                    >
-                        {name}
-                    </text>
-                )}
+                {showLabels && width > 50 && height > 30 && (() => {
+                    const estimatedTextWidth = name.length * 8;
+                    const textFitsWidth = estimatedTextWidth < width - 10; // 10px Padding
+
+                    return textFitsWidth ? (
+                        <text
+                            x={x + width / 2}
+                            y={y + height / 2}
+                            textAnchor="middle"
+                            fill="#fff"
+                            fontSize={14}
+                            style={{fontWeight: "lighter"}}
+                        >
+                            {name}
+                        </text>
+                    ) : null;
+                })()}
             </g>
         );
     };
@@ -141,7 +157,7 @@ export function TreeMap({
         }>;
     }
 
-    const CustomTooltip = ({ active, payload }: TooltipProps) => {
+    const CustomTooltip = ({active, payload}: TooltipProps) => {
         if (active && payload && payload.length) {
             const data = payload[0].payload;
             return (
@@ -164,7 +180,7 @@ export function TreeMap({
                         onClick={onBackClick}
                         className="gap-2"
                     >
-                        <ArrowLeft className="h-4 w-4" />
+                        <ArrowLeft className="h-4 w-4"/>
                         Zurück
                     </Button>
                 )}
@@ -177,13 +193,39 @@ export function TreeMap({
                         dataKey="value"
                         stroke="#fff"
                         fill="#8884d8"
-                        content={<CustomizedContent />}
+                        content={<CustomizedContent/>}
                         isAnimationActive={false}
                     >
                         <Tooltip content={<CustomTooltip/>}/>
                     </Treemap>
                 </ResponsiveContainer>
             </div>
+
+            <Dialog open={isOthersDialogOpen} onOpenChange={setIsOthersDialogOpen}>
+                <DialogContent className="max-w-2xl max-h-[80vh]">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {others?.name === 'Others' ? 'Weitere Einträge' : 'Others'}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="overflow-y-auto max-h-[60vh] pr-2">
+                        {others && (
+                            <OthersTooltip
+                                data={{
+                                    isOthers: true,
+                                    actualValue: others.value,
+                                    name: others.name,
+                                    value: others.value,
+                                    count: others.count,
+                                    totalAnomalyCount: others.totalAnomalyCount,
+                                    items: others.items
+                                }}
+                                type={title.includes('Autonome Systeme') ? 'as' : 'country'}
+                            />
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
