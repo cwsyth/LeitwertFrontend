@@ -166,16 +166,16 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
     } satisfies ChartConfig;
 
     return (
-        <Card className={`${className} flex-1 relative overflow-hidden`}>
+        <Card className={`${className} h-full w-full`}>
             <CardHeader>
                 <CardTitle>
                     {title}
                     {description && (
-                        <span className="text-xs text-muted-foreground ml-2">{description}</span>
+                        <div className="text-xs text-muted-foreground">{description}</div>
                     )}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="p-3 pt-1 relative">
+            <CardContent className="">
                 {/* Background chart */}
                 {!isLoading && !error && chartData.length > 0 && (
                     <div className="absolute inset-0 opacity-20 pointer-events-none">
@@ -197,18 +197,18 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
                 {/* Foreground content */}
                 <div className="relative z-10">
                     {isLoading ? (
-                        <div className="flex items-center justify-center gap-3 py-4">
+                        <div className="flex items-center justify-center gap-3">
                             <Skeleton className="h-16 w-24" />
                             <Skeleton className="h-12 w-12" />
                         </div>
                     ) : error ? (
-                        <div className="w-full flex items-center justify-center gap-1.5 text-xs text-destructive py-4">
+                        <div className="w-full flex items-center justify-center gap-1.5 text-xs text-destructive py-2">
                             <AlertCircle className="h-3 w-3" />
                             <span>Fehler beim Datenabruf!</span>
                         </div>
                     ) : (
                         <div
-                            className="flex items-center justify-center gap-3 py-4">
+                            className="flex items-center justify-center gap-3">
                             <div className="text-center">
                                 <div
                                     className="text-5xl font-bold leading-none">
