@@ -17,10 +17,9 @@ interface OthersTooltipProps {
     type: 'country' | 'as';
 }
 
-const runtimeConfig = useRuntimeConfig();
-
 export function OthersTooltip({data, type}: OthersTooltipProps) {
     const isCountry = type === 'country';
+    const runtimeConfig = useRuntimeConfig();
 
     return (
         <div className="space-y-3">

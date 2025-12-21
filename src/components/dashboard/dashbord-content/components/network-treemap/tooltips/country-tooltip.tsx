@@ -17,10 +17,9 @@ interface CountryTooltipProps {
     data: TreeMapDataItem;
 }
 
-const runtimeConfig = useRuntimeConfig();
-
 export function CountryTooltip({data}: CountryTooltipProps) {
     const statusColor = STATUS_COLOR_CLASSES[data.status];
+    const runtimeConfig = useRuntimeConfig();
 
     return (
         <div className="space-y-3">

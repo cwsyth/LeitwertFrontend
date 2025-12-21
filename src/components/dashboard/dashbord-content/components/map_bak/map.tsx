@@ -27,9 +27,8 @@ interface HoverInfo {
     statusCounts: Record<EntityStatus, number>;
 }
 
-const runtimeConfig = useRuntimeConfig();
-
 export default function DashboardContentMap({ selectedCountry, setRouters }: DashboardContentMapProps) {
+    const runtimeConfig = useRuntimeConfig();
     const mapRef = useRef<MapRef>(null);
     const queryClient = useQueryClient();
     const [isClickLoading, setIsClickLoading] = useState(false);

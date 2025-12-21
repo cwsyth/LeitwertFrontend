@@ -12,8 +12,6 @@ import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { useRuntimeConfig } from "@/lib/useRuntimeConfig"
 
-const runtimeConfig = useRuntimeConfig();
-
 function Calendar({
   className,
   classNames,
@@ -27,6 +25,7 @@ function Calendar({
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
 }) {
   const defaultClassNames = getDefaultClassNames()
+  const runtimeConfig = useRuntimeConfig();
 
   return (
     <DayPicker

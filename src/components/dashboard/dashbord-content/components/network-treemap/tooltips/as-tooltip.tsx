@@ -18,10 +18,9 @@ interface AsTooltipProps {
     data: TreeMapDataItem;
 }
 
-const runtimeConfig = useRuntimeConfig();
-
 export function AsTooltip({data}: AsTooltipProps) {
     const statusColor = STATUS_COLOR_CLASSES[data.status];
+    const runtimeConfig = useRuntimeConfig();
 
     return (
         <div className="space-y-3">

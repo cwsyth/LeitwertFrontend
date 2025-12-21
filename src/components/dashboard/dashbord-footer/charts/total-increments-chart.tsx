@@ -33,8 +33,6 @@ interface CustomAnomalyDotProps {
     };
 }
 
-const runtimeConfig = useRuntimeConfig();
-
 const TotalIncrementsChartComponent = ({
     data,
     onZoom,
@@ -108,6 +106,8 @@ const TotalIncrementsChartComponent = ({
             />
         );
     };
+
+    const runtimeConfig = useRuntimeConfig();
 
     return (
         <div className="w-full h-[400px] select-none">
