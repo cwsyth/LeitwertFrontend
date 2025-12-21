@@ -31,8 +31,6 @@ interface CustomBoxPlotProps {
     payload?: BoxPlotData;
 }
 
-const runtimeConfig = useRuntimeConfig();
-
 const CustomBoxPlot = (props: CustomBoxPlotProps) => {
     const { x, y, width, height, payload } = props;
 
@@ -133,6 +131,7 @@ const CustomBoxPlot = (props: CustomBoxPlotProps) => {
 };
 
 const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
+    const runtimeConfig = useRuntimeConfig();
     if (active && payload && payload.length) {
         const data = payload[0].payload as BoxPlotData;
         return (
@@ -189,6 +188,7 @@ const BoxPlotChartComponent = ({
 }) => {
     const [refAreaLeft, setRefAreaLeft] = useState<number | null>(null);
     const [refAreaRight, setRefAreaRight] = useState<number | null>(null);
+    const runtimeConfig = useRuntimeConfig();
 
     const handleZoom = () => {
         if (

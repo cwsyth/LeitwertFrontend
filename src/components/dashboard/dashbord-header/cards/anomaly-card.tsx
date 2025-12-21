@@ -18,8 +18,6 @@ interface TimeSeriesAnomalyResponse {
 
 type Trend = 'increasing' | 'decreasing' | 'stable';
 
-const runtimeConfig = useRuntimeConfig();
-
 export default function AnomalyCard({ title, description, apiEndpoint, className, selectedCountry }: StatusCardProps) {
     const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesAnomalyResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -29,6 +27,7 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
 
     const timeRange = useTimeRangeStore((state) => state.timeRange);
     const playbackPosition = useTimeRangeStore((state) => state.playbackPosition);
+    const runtimeConfig = useRuntimeConfig();
 
     useEffect(() => {
         const fetchStatus = async () => {
