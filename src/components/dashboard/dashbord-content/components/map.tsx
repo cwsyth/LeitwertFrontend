@@ -31,7 +31,6 @@ interface HoverInfo {
 export default function DashboardContentMap({ selectedCountry, setSelectedCountry, setRouters }: DashboardContentMapProps) {
     const runtimeConfig = useRuntimeConfig();
     const mapRef = useRef<MapRef>(null);
-    const queryClient = useQueryClient();
     const [data, setData] = useState<CountryData[] |WorldData[] | null>(null);
     const [isClickLoading, setIsClickLoading] = useState(false);
     const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
@@ -236,36 +235,23 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
 
         setHoverInfo(null);
         setIsClickLoading(true);
+
         try {
             const clusterId = feature?.properties?.cluster_id;
             const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
 
             if (clusterId) {
-                // expand cluster
-                const zoom = await geojsonSource.getClusterExpansionZoom(clusterId);
+                    const zoom = await geojsonSource.getClusterExpansionZoom(clusterId);
 
-                if (feature?.geometry && 'coordinates' in feature.geometry) {
-                    mapRef?.current?.easeTo({
-                        center: feature.geometry.coordinates as [number, number],
-                        zoom,
-                        duration: 500
-                    });
-                }
-
-                // get all points in the cluster & filter out router properties
-                const leaves: Feature[] = await geojsonSource.getClusterLeaves(clusterId, Infinity, 0);
-                const routers = leaves.map((leaf: Feature) => leaf.properties as Router);
-                setRouters(routers);
-                console.log(routers);
-            } else {
-                // handle single point click
-                if (!isWorld) {
-                    const router = feature.properties as Router;
-                    setRouters([router]);
-                    console.log(router);
-                    return;
-                }
-
+                    if (feature?.geometry && 'coordinates' in feature.geometry) {
+                        mapRef?.current?.easeTo({
+                            center: feature.geometry.coordinates as [number, number],
+                            zoom,
+                            duration: 500
+                        });
+                    }
+            }
+            else if (!clusterId && isWorld) {
                 // fetch country feature collection using tanstack query cache
                 const countryCode = feature.properties?.country_code;
                 if (!countryCode) return;
@@ -279,20 +265,6 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                     code: countryCode.toLowerCase(),
                     name: countries.find(c => c.code.toLowerCase() === countryCode.toLowerCase())?.name || ""
                 });
-/*
-                const data = await queryClient.fetchQuery({
-                    queryKey: ['country-feature-collection', countryCode],
-                    queryFn: async () => {
-                        const response = await fetch(`${baseUrl}/map?view=country&country=${countryCode}`);
-                        if (!response.ok) {
-                            throw new Error('Failed to fetch country data');
-                        }
-                        return response.json();
-                    }
-                });
-
-                const routers = data[0]?.routers || [];
-                setRouters(routers); */
             }
         } finally {
             setIsClickLoading(false);
@@ -442,3 +414,63 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
         </div>
     );
 }
+
+/*
+     const onClick = async (event: MapMouseEvent) => {
+        const feature = event?.features?.[0];
+        if (!feature) return;
+
+        setHoverInfo(null);
+        setIsClickLoading(true);
+        try {
+            const clusterId = feature?.properties?.cluster_id;
+            const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
+
+            if (clusterId) {
+                // expand cluster
+                const zoom = await geojsonSource.getClusterExpansionZoom(clusterId);
+
+                if (feature?.geometry && 'coordinates' in feature.geometry) {
+                    mapRef?.current?.easeTo({
+                        center: feature.geometry.coordinates as [number, number],
+                        zoom,
+                        duration: 500
+                    });
+                }
+
+                // get all points in the cluster & filter out router properties
+                const leaves: Feature[] = await geojsonSource.getClusterLeaves(clusterId, Infinity, 0);
+                const routers = leaves.map((leaf: Feature) => leaf.properties as Router);
+                setRouters(routers);
+            } else {
+                // handle single point click
+                if (!isWorld) {
+                    const router = feature.properties as Router;
+                    setRouters([router]);
+                    return;
+                }
+
+                // fetch country feature collection using tanstack query cache
+                const countryCode = feature.properties?.country_code;
+                if (!countryCode) return;
+
+                const data = await queryClient.fetchQuery({
+                    queryKey: ['country-feature-collection', countryCode],
+                    queryFn: async () => {
+                        const response = await fetch(`${baseUrl}/map?view=country&country=${countryCode}`);
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch country data');
+                        }
+                        return response.json();
+                    }
+                });
+
+                const routers = data[0]?.routers || [];
+                setRouters(routers);
+            }
+        } finally {
+            setIsClickLoading(false);
+        }
+    };
+
+    */
