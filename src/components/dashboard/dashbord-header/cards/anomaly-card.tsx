@@ -174,7 +174,7 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
                     )}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="">
+            <CardContent className="p-3 pt-1 relative">
                 {/* Background chart */}
                 {!isLoading && !error && chartData.length > 0 && (
                     <div className="absolute inset-0 opacity-20 pointer-events-none">
