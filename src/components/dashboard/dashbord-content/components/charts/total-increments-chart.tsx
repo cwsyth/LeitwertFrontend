@@ -163,7 +163,7 @@ const TotalIncrementsChartComponent = ({
                     )}
 
                     <Tooltip
-                        isAnimationActive={false}
+                        isAnimationActive={true}
                         content={({ active, payload, label }) => {
                             if (active && payload && payload.length) {
                                 const item = payload[0]
@@ -285,7 +285,8 @@ const TotalIncrementsChartComponent = ({
                         strokeWidth={2}
                         dot={false}
                         activeDot={{ r: 4, strokeWidth: 0 }}
-                        isAnimationActive={false}
+                        isAnimationActive={true}
+                        animationDuration={500}
                     />
 
                     {showNextPowerOf2 && (
@@ -297,7 +298,8 @@ const TotalIncrementsChartComponent = ({
                             strokeDasharray="4 4"
                             dot={false}
                             activeDot={false}
-                            isAnimationActive={false}
+                            isAnimationActive={true}
+                            animationDuration={500}
                             yAxisId="right"
                         />
                     )}
@@ -310,7 +312,8 @@ const TotalIncrementsChartComponent = ({
                             strokeWidth={1}
                             dot={false}
                             activeDot={{ r: 4, strokeWidth: 0 }}
-                            isAnimationActive={false}
+                            isAnimationActive={true}
+                            animationDuration={500}
                             yAxisId="right"
                         />
                     )}
@@ -322,7 +325,8 @@ const TotalIncrementsChartComponent = ({
                         stroke="none"
                         dot={<CustomAnomalyDot />}
                         activeDot={false}
-                        isAnimationActive={false}
+                        isAnimationActive={true}
+                        animationDuration={500}
                     />
                     {refAreaLeft !== null && refAreaRight !== null && (
                         <ReferenceArea

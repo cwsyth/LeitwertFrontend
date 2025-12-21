@@ -250,7 +250,7 @@ const BoxPlotChartComponent = ({
                     <YAxis tick={{ fontSize: 12 }} width={50} />
                     <Tooltip
                         content={<CustomTooltip />}
-                        isAnimationActive={false}
+                        isAnimationActive={true}
                     />
                     {/* Using Bar with custom shape, passing array [min, max] to dataKey */}
                     <Bar
@@ -259,7 +259,8 @@ const BoxPlotChartComponent = ({
                             entry.p099,
                         ]}
                         shape={<CustomBoxPlot />}
-                        isAnimationActive={false}
+                        isAnimationActive={true}
+                        animationDuration={500}
                     />
                     {refAreaLeft !== null && refAreaRight !== null && (
                         <ReferenceArea
