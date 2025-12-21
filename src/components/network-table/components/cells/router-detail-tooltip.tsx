@@ -19,6 +19,10 @@ export function RouterDetailTooltip({router}: RouterDetailTooltipProps) {
                 <code className='text-xs font-mono'>{router.router_id}</code>
             </div>
             <div>
+                <p className='text-xs font-semibold text-gray-500'>IP address</p>
+                <code className='text-xs font-mono'>{router.ip}</code>
+            </div>
+            <div>
                 <p className='text-xs font-semibold text-gray-500'>Geohash</p>
                 <code className='text-xs font-mono'>{router.geohash}</code>
             </div>
