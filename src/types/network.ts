@@ -121,6 +121,7 @@ export interface AsViewProps {
     sizeMetric?: AsSizeMetric;
     onBackClick?: () => void;
     thresholds: StatusThresholds;
+    setSelectedAs: (asNumber: number) => void;
 }
 
 export interface CountriesViewProps {

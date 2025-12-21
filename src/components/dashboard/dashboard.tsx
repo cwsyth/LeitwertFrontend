@@ -59,7 +59,9 @@ export default function Dashboard() {
                         selectedCountry={selectedCountry}
                         setSelectedCountry={setSelectedCountry}
                         setRouters={setRouters}
-                    />
+                        selectedAs={selectedAs}
+                        setSelectedAs={setSelectedAs}
+                />
                 </div>
             </div>
             <div className="w-2/5 h-full flex flex-col gap-3">
