@@ -31,7 +31,8 @@ export function AsView({
                            useGradient,
                            sizeMetric = 'ip_count',
                            onBackClick,
-                           thresholds
+                           thresholds,
+                           setSelectedAs
                        }: AsViewProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
@@ -133,6 +134,11 @@ export function AsView({
             useGradient={useGradient}
             thresholds={thresholds}
             onBackClick={onBackClick}
+            onItemClick={(item) => {
+                if (!isOthersData(item) && item.metadata && 'asNumber' in item.metadata) {
+                    setSelectedAs(item.metadata.asNumber);
+                }
+            }}
         />
     );
 }
