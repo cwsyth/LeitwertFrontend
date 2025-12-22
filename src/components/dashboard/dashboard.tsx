@@ -61,6 +61,7 @@ export default function Dashboard() {
                         setRouters={setRouters}
                         selectedAs={selectedAs}
                         setSelectedAs={setSelectedAs}
+                        setSelectedRouter={setSelectedRouter}
                 />
                 </div>
             </div>

@@ -9,16 +9,17 @@ interface DashboardContentProps {
     selectedCountry: Country,
     setRouters: React.Dispatch<React.SetStateAction<Router[]>>;
     setSelectedCountry: React.Dispatch<React.SetStateAction<Country>>;
-    setSelectedAs: (asNumber: number) => void
+    setSelectedAs: React.Dispatch<React.SetStateAction<number>>;
     selectedAs: number;
+    setSelectedRouter: React.Dispatch<React.SetStateAction<Router | null>>;
 }
 
-export default function DashboardContent({ mode, selectedCountry, setRouters, setSelectedCountry, setSelectedAs }: DashboardContentProps) {
+export default function DashboardContent({ mode, selectedCountry, setRouters, setSelectedCountry, setSelectedAs, setSelectedRouter }: DashboardContentProps) {
     return (
         <div className="w-full h-full">
             <Card className="dashboard-content w-full h-full bg-background">
                 <CardContent className="h-full w-full ">
-                    {mode === "street" && <DashboardContentMap selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} setRouters={setRouters} />}
+                    {mode === "street" && <DashboardContentMap selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} setRouters={setRouters} setSelectedRouter={setSelectedRouter} setSelectedAs={setSelectedAs} />}
                     {mode === "hierarchy" && <DashboardContentHierarchy
                         selectedCountry={selectedCountry}
                         setSelectedCountry={setSelectedCountry}

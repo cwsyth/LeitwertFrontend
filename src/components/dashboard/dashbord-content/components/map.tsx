@@ -5,6 +5,7 @@ import type { MapRef, MapMouseEvent } from 'react-map-gl/maplibre';
 import type { GeoJSONSource } from 'maplibre-gl';
 import geohash from 'ngeohash';
 import { Server, Globe, Hash, Activity, MapPin } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 
 import { countryView, worldView } from './layers';
 import { countryMiddlepoints } from '@/data/country_middlepoints';
@@ -20,6 +21,8 @@ interface DashboardContentMapProps {
     selectedCountry: Country;
     setSelectedCountry: React.Dispatch<React.SetStateAction<Country>>
     setRouters: React.Dispatch<React.SetStateAction<Router[]>>
+    setSelectedRouter: React.Dispatch<React.SetStateAction<Router | null>>
+    setSelectedAs: React.Dispatch<React.SetStateAction<number>>
 }
 
 interface HoverInfo {
@@ -45,7 +48,7 @@ const countriesList: Country[] = Object.entries(countriesData).map(([code, data]
     name: data.name
 }));
 
-export default function DashboardContentMap({ selectedCountry, setSelectedCountry, setRouters }: DashboardContentMapProps) {
+export default function DashboardContentMap({ selectedCountry, setSelectedCountry, setRouters, setSelectedRouter, setSelectedAs }: DashboardContentMapProps) {
     const runtimeConfig = useRuntimeConfig();
     const queryClient = useQueryClient();
     const mapRef = useRef<MapRef>(null);
@@ -412,7 +415,7 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
             {(isLoading || isClickLoading) && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
                     <div className="flex flex-col items-center gap-3">
-                        <div className="w-12 h-12 border-4 border-slate-600 border-t-slate-300 rounded-full animate-spin" />
+                        <Spinner size="xl" className="text-slate-300" />
                         <p className="text-slate-300 text-sm font-medium">Loading map data...</p>
                     </div>
                 </div>
@@ -598,8 +601,24 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                                                 title={`Region: ${router.location?.region || '-'}\nGeohash: ${router.geohash}\nISP: ${router.location?.isp || '-'}`}
                                             >
                                                 <td className="p-2 align-middle font-mono text-xs max-w-[140px] truncate">{router.router_id}</td>
-                                                <td className="p-2 align-middle font-mono text-xs max-w-[110px] truncate">{router.ip}</td>
-                                                <td className="p-2 align-middle">{router.asn}</td>
+                                                <td
+                                                    className="p-2 align-middle font-mono text-xs max-w-[110px] truncate cursor-pointer hover:text-blue-500 hover:underline"
+                                                    onClick={() => {
+                                                        setSelectedRouter(router);
+                                                        setContextMenu(null);
+                                                    }}
+                                                >
+                                                    {router.ip}
+                                                </td>
+                                                <td
+                                                    className="p-2 align-middle cursor-pointer hover:text-blue-500 hover:underline"
+                                                    onClick={() => {
+                                                        setSelectedAs(Number(router.asn));
+                                                        setContextMenu(null);
+                                                    }}
+                                                >
+                                                    {router.asn}
+                                                </td>
                                                 <td className="p-2 align-middle">
                                                     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                                                         router.status === 'healthy' ? 'bg-emerald-100 text-emerald-700' :
