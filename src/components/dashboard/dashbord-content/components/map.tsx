@@ -15,6 +15,7 @@ import type { CountryMiddlepointFeature } from '@/data/country_middlepoints';
 import type { Feature } from 'geojson';
 import { countries as countriesData } from "countries-list";
 import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
+import { useTimeRangeStore } from '@/lib/stores/time-range-store';
 
 interface DashboardContentMapProps {
     selectedCountry: Country;
@@ -47,9 +48,11 @@ const countriesList: Country[] = Object.entries(countriesData).map(([code, data]
     name: data.name
 }));
 
-export default function DashboardContentMap({ selectedCountry, setSelectedCountry, setRouters, setSelectedRouter, setSelectedAs }: DashboardContentMapProps) {
+export default function DashboardContentMap({ selectedCountry, setSelectedCountry, setSelectedRouter, setSelectedAs }: DashboardContentMapProps) {
     const runtimeConfig = useRuntimeConfig();
     const queryClient = useQueryClient();
+    const { timeRange, playbackPosition, isPlaying } = useTimeRangeStore();
+    const [data, setData] = useState<CountryData[] | WorldData[] | null>(null);
     const mapRef = useRef<MapRef>(null);
     const [isClickLoading, setIsClickLoading] = useState(false);
     const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
@@ -61,9 +64,6 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
 
     const isWorld = !selectedCountry || selectedCountry.code === 'world';
     const baseUrl = 'https://dev-api.univ.leitwert.net/api/v1';
-    const geoJsonUrl = baseUrl + (isWorld
-        ? '/map?view=world'
-        : '/map?view=country&country=' + selectedCountry?.code);
 
     // Focus map on selected country
     useEffect(() => {
@@ -94,19 +94,34 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
         }
     }, [selectedCountry]);
 
-    // Fetch map data
-    const { data: mapData, isLoading } = useQuery({
-        queryKey: isWorld ? ['world-feature-collection'] : ['country-feature-collection', selectedCountry.code],
+    const { data: mapData, isLoading: isLoading } = useQuery({
+        queryKey: [
+            isWorld ? 'world-time-series' : 'country-time-series',
+            selectedCountry.code,
+            timeRange.start.toISOString(),
+            timeRange.end.toISOString()
+        ],
         queryFn: async () => {
-            const response = await fetch(geoJsonUrl);
+            // Format dates for API (ISO 8601 format)
+            const fromParam = timeRange.start.toISOString();
+            const toParam = timeRange.end.toISOString();
+
+
+            // Build URL with from/to query parameters
+            const timeSeriesMapDataUrl = isWorld
+                ? `${baseUrl}/map?view=world&from=${fromParam}&to=${toParam}`
+                : `${baseUrl}/map?view=country&country=${selectedCountry?.code}&from=${fromParam}&to=${toParam}`;
+
+            const response = await fetch(timeSeriesMapDataUrl);
             if (!response.ok) {
-                throw new Error('Failed to fetch map data');
+                throw new Error('Failed to fetch time series map data');
             }
 
             if (isWorld) {
                 const data: WorldData[] = await response.json();
+                setData(data);
 
-                const mapData: WorldFeatureCollection = {
+                const timeSeriesData: WorldFeatureCollection = {
                     type: "FeatureCollection",
                     features: data.map((item) => ({
                         type: "Feature",
@@ -115,11 +130,10 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                             coordinates: countryMiddlepoints.features.find(
                                 (feature: CountryMiddlepointFeature) =>
                                     feature.properties.ISO.toLowerCase() === item.country_code.toLowerCase()
-                                )?.geometry.coordinates || [0, 0],
+                            )?.geometry.coordinates || [0, 0],
                         },
                         properties: {
                             ...item,
-                            // Flatten router_count_status for layer expressions
                             router_count_status: {
                                 healthy: item.router_count_status.healthy[0] || 0,
                                 warning: item.router_count_status.warning[0] || 0,
@@ -130,11 +144,12 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                     }))
                 };
 
-                return mapData;
+                return timeSeriesData;
             } else {
                 const data: CountryData[] = await response.json();
+                setData(data);
 
-                const mapData: CountryFeatureCollection = {
+                const timeSeriesData: CountryFeatureCollection = {
                     type: "FeatureCollection",
                     features: data[0].routers?.map((item: CountryCustomProperties) => {
                         const coords = item.location?.lon && item.location?.lat
@@ -155,13 +170,113 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                     }) || []
                 };
 
-                const routers = data[0]?.routers || [];
-                setRouters(routers);
+                return timeSeriesData;
+            }
+        },
+    });
 
-                return mapData;
+    // Transform map data based on playback position (world view only)
+    const displayMapData = useMemo(() => {
+        // For country view, always use the original data
+        if (!isWorld || !mapData || !data || !playbackPosition) {
+            return mapData;
+        }
+
+        // For world view with time series data
+        const worldData = data as WorldData[];
+
+        return {
+            ...mapData,
+            features: mapData.features.map((feature, index) => {
+                const item = worldData[index];
+                if (!item?.router_count_status?.timestamps) return feature;
+
+                // Find the closest timestamp index for playback position
+                const timestamps = item.router_count_status.timestamps;
+                const playbackTime = playbackPosition.getTime();
+
+                let closestIndex = 0;
+                let minDiff = Math.abs(new Date(timestamps[0]).getTime() - playbackTime);
+
+                for (let i = 1; i < timestamps.length; i++) {
+                    const diff = Math.abs(new Date(timestamps[i]).getTime() - playbackTime);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closestIndex = i;
+                    }
+                }
+
+                // Update the router_count_status with values at the playback position
+                return {
+                    ...feature,
+                    properties: {
+                        ...feature.properties,
+                        router_count_status: {
+                            healthy: item.router_count_status.healthy[closestIndex] || 0,
+                            warning: item.router_count_status.warning[closestIndex] || 0,
+                            critical: item.router_count_status.critical[closestIndex] || 0,
+                            unknown: item.router_count_status.unknown[closestIndex] || 0
+                        }
+                    }
+                };
+            })
+        };
+    }, [mapData, data, playbackPosition, isWorld]);
+
+    // Update hover info when playback position changes (world view only)
+    useEffect(() => {
+        if (!isWorld || !hoverInfo || !data || !playbackPosition) {
+            return;
+        }
+
+        const worldData = data as WorldData[];
+
+        // Find the country data by name
+        const countryData = worldData.find(item => {
+            const countryName = countriesList.find(c => c.code === item.country_code.toLowerCase())?.name || "";
+            return countryName === hoverInfo.location;
+        });
+
+        if (!countryData?.router_count_status?.timestamps) {
+            return;
+        }
+
+        // Find the closest timestamp index for playback position
+        const timestamps = countryData.router_count_status.timestamps;
+        const playbackTime = playbackPosition.getTime();
+
+        let closestIndex = 0;
+        let minDiff = Math.abs(new Date(timestamps[0]).getTime() - playbackTime);
+
+        for (let i = 1; i < timestamps.length; i++) {
+            const diff = Math.abs(new Date(timestamps[i]).getTime() - playbackTime);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestIndex = i;
             }
         }
-    });
+
+        // Update hover info with new status counts
+        const newStatusCounts = {
+            healthy: countryData.router_count_status.healthy[closestIndex] || 0,
+            warning: countryData.router_count_status.warning[closestIndex] || 0,
+            critical: countryData.router_count_status.critical[closestIndex] || 0,
+            unknown: countryData.router_count_status.unknown[closestIndex] || 0
+        };
+
+        // Only update if the status counts have changed
+        if (hoverInfo.statusCounts.healthy !== newStatusCounts.healthy ||
+            hoverInfo.statusCounts.warning !== newStatusCounts.warning ||
+            hoverInfo.statusCounts.critical !== newStatusCounts.critical ||
+            hoverInfo.statusCounts.unknown !== newStatusCounts.unknown) {
+
+            setHoverInfo(prev => prev ? {
+                ...prev,
+                statusCounts: newStatusCounts
+            } : null);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [playbackPosition, data, isWorld, hoverInfo?.location, hoverInfo?.statusCounts.healthy, hoverInfo?.statusCounts.warning, hoverInfo?.statusCounts.critical, hoverInfo?.statusCounts.unknown]);
 
     const onMouseMove = useCallback(async (event: MapMouseEvent) => {
         // Throttle mouse move to max 60fps (16ms)
@@ -297,6 +412,12 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
     }, [isWorld, setSelectedCountry]);
 
     const onContextMenu = useCallback(async (event: MapMouseEvent) => {
+        // Disable context menu during playback
+        if (isPlaying) {
+            event.preventDefault();
+            return;
+        }
+
         setHoverInfo(null);
 
         // Prevent default browser context menu
@@ -349,7 +470,7 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
         } finally {
             setIsClickLoading(false);
         }
-    }, [baseUrl, isWorld, queryClient]);
+    }, [baseUrl, isWorld, queryClient, isPlaying]);
 
     const handleSort = useCallback((field: SortField) => {
         if (sortField === field) {
@@ -684,7 +805,7 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                     key={isWorld ? 'world-source' : 'country-source'}
                     id="points"
                     type="geojson"
-                    data={mapData ? mapData : { type: "FeatureCollection", features: [] }}
+                    data={displayMapData ? displayMapData : { type: "FeatureCollection", features: [] }}
                     cluster={!isWorld}
                     clusterMaxZoom={14}
                     clusterRadius={50}
