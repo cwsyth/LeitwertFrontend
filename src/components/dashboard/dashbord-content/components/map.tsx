@@ -441,11 +441,11 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                                 <table className="w-full text-xs">
                                     <thead className="bg-slate-100 sticky top-0">
                                         <tr>
+                                            <th className="px-2 py-1.5 text-left font-semibold text-slate-700">Router ID</th>
                                             <th className="px-2 py-1.5 text-left font-semibold text-slate-700">IP</th>
                                             <th className="px-2 py-1.5 text-left font-semibold text-slate-700">ASN</th>
                                             <th className="px-2 py-1.5 text-left font-semibold text-slate-700">Status</th>
                                             <th className="px-2 py-1.5 text-left font-semibold text-slate-700">City</th>
-                                            <th className="px-2 py-1.5 text-left font-semibold text-slate-700">Region</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -453,9 +453,10 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                                             <tr
                                                 key={`${router.router_id}-${index}`}
                                                 className="border-t border-slate-200 hover:bg-slate-50 transition-colors"
-                                                title={`Router ID: ${router.router_id}\nGeohash: ${router.geohash}\nISP: ${router.location?.isp || '-'}`}
+                                                title={`Region: ${router.location?.region || '-'}\nGeohash: ${router.geohash}\nISP: ${router.location?.isp || '-'}`}
                                             >
-                                                <td className="px-2 py-1.5 text-slate-700 font-mono">{router.ip}</td>
+                                                <td className="px-2 py-1.5 text-slate-700 font-mono text-[10px] max-w-[140px] truncate">{router.router_id}</td>
+                                                <td className="px-2 py-1.5 text-slate-700 font-mono text-[11px] max-w-[110px] truncate">{router.ip}</td>
                                                 <td className="px-2 py-1.5 text-slate-700">{router.asn}</td>
                                                 <td className="px-2 py-1.5">
                                                     <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
@@ -468,7 +469,6 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                                                     </span>
                                                 </td>
                                                 <td className="px-2 py-1.5 text-slate-700 max-w-[120px] truncate">{router.location?.city || '-'}</td>
-                                                <td className="px-2 py-1.5 text-slate-700 max-w-[100px] truncate">{router.location?.region || '-'}</td>
                                             </tr>
                                         ))}
                                     </tbody>
