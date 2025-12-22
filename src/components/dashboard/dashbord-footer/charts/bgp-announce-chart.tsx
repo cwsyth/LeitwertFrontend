@@ -512,6 +512,7 @@ export function BgpAnnounceChart({
     );
 
     const getTitle = () => {
+        if (!identifier) return "BGP Announcements (Boxplot)";
         if (mode === "ip")
             return (
                 <>
@@ -541,7 +542,7 @@ export function BgpAnnounceChart({
             <CardHeader className="space-y-4 flex items-center justify-between">
                 <div className="flex flex-col space-y-1.5">
                     <CardTitle className="flex items-center gap-2">
-                        {mode !== "cc" && (
+                        {mode !== "cc" && identifier && (
                             <Button
                                 variant="outline"
                                 size="sm"
