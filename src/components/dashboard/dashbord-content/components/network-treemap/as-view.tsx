@@ -131,7 +131,7 @@ export function AsView({
         <TreeMap
             data={data}
             others={others}
-            title={`Autonome Systeme - ${countryName}`}
+            title={`Autonomous Systems - ${countryName}`}
             renderTooltip={renderTooltip}
             showLabels={showLabels}
             useGradient={useGradient}

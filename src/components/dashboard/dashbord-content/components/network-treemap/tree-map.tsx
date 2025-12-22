@@ -21,16 +21,14 @@ import {
 } from '@/lib/statusColors';
 import React from "react";
 import {Button} from "@/components/ui/button";
-import {ArrowLeft} from "lucide-react";
-import {
-    OthersTooltip
-} from "@/components/dashboard/dashbord-content/components/network-treemap/tooltips/others-tooltip";
+import {ArrowLeft, Globe, Network} from "lucide-react";
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle
 } from "@/components/ui/dialog";
+import {Input} from "@/components/ui/input";
 
 export function TreeMap({
                             data,
@@ -45,6 +43,7 @@ export function TreeMap({
                             onBackClick,
                         }: TreeMapProps) {
     const [isOthersDialogOpen, setIsOthersDialogOpen] = React.useState(false);
+    const [othersSearchQuery, setOthersSearchQuery] = React.useState('');
 
     const minDataValue = data.length > 0 ? Math.min(...data.map(d => d.value)) : 0;
     const othersDisplayValue = Math.max(minDataValue * othersDisplaySize, 1);
@@ -204,25 +203,83 @@ export function TreeMap({
             <Dialog open={isOthersDialogOpen} onOpenChange={setIsOthersDialogOpen}>
                 <DialogContent className="max-w-2xl max-h-[80vh]">
                     <DialogHeader>
-                        <DialogTitle>
-                            {others?.name === 'Others' ? 'More Entries' : 'Others'}
+                        <DialogTitle className="flex items-center gap-2">
+                            {title.includes('Autonomous Systems') ? (
+                                <>
+                                    <Network className="h-5 w-5 text-muted-foreground"/>
+                                    Other Autonomous Systems
+                                </>
+                            ) : (
+                                <>
+                                    <Globe className="h-5 w-5 text-muted-foreground"/>
+                                    Other Countries
+                                </>
+                            )}
                         </DialogTitle>
                     </DialogHeader>
+
+                    {/* Search input */}
+                    <div className="px-1">
+                        <Input
+                            type="text"
+                            placeholder={title.includes('Autonomous Systems') ? 'Search AS networks...' : 'Search countries...'}
+                            value={othersSearchQuery}
+                            onChange={(e) => setOthersSearchQuery(e.target.value)}
+                            className="w-full"
+                        />
+                    </div>
+
                     <div className="overflow-y-auto max-h-[60vh] pr-2">
-                        {others && (
-                            <OthersTooltip
-                                data={{
-                                    isOthers: true,
-                                    actualValue: others.value,
-                                    name: others.name,
-                                    value: others.value,
-                                    count: others.count,
-                                    totalAnomalyCount: others.totalAnomalyCount,
-                                    items: others.items
-                                }}
-                                type={title.includes('Autonome Systeme') ? 'as' : 'country'}
-                            />
-                        )}
+                        {others && (() => {
+                            const filteredItems = others.items.filter(item => {
+                                const searchLower = othersSearchQuery.toLowerCase();
+                                return item.name.toLowerCase().includes(searchLower) ||
+                                    item.id.toLowerCase().includes(searchLower);
+                            });
+
+                            return filteredItems.length > 0 ? (
+                                <ul className="space-y-2">
+                                    {filteredItems.map(item => (
+                                        <li
+                                            key={item.id}
+                                            className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2 px-3 rounded hover:bg-muted cursor-pointer"
+                                            onClick={() => {
+                                                if (onItemClick) {
+                                                    // Create TreeMapDataItem from others item
+                                                    const clickedItem: TreeMapDataItem = {
+                                                        id: item.id,
+                                                        name: item.name,
+                                                        value: 0, // Not relevant for click
+                                                        status: 'unknown' as NetworkStatus,
+                                                        anomalyCount: 0,
+                                                        metadata: title.includes('Autonomous Systems')
+                                                            ? {
+                                                                asNumber: parseInt(item.id),
+                                                                ipCount: 0
+                                                            }
+                                                            : {
+                                                                asCount: 0,
+                                                                ipCount: 0
+                                                            }
+                                                    };
+                                                    onItemClick(clickedItem);
+                                                    setIsOthersDialogOpen(false); // Close dialog after click
+                                                }
+                                            }}
+                                        >
+                                            {title.includes('Autonomous Systems')
+                                                ? `${item.name} (${item.id})`
+                                                : item.name
+                                            }
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-sm text-muted-foreground text-center py-4">
+                                    No results found
+                                </p>
+                            );
+                        })()}
                     </div>
                 </DialogContent>
             </Dialog>
