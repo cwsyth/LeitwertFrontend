@@ -10,7 +10,7 @@ import {
     CountryAsResponse,
     NetworkDetailsResponse
 } from '@/types/network';
-import {API_BASE_URL} from "@/lib/config";
+import { API_BASE_URL } from "@/lib/config";
 
 export interface GetNetworkDetailsParams {
     cc: string
@@ -19,6 +19,7 @@ export interface GetNetworkDetailsParams {
     sort?: 'name' | 'cidrs' | 'bgp-anomalies' | 'ping-anomalies'
     timeRange?: { start: Date; end: Date }
     windowSize?: string
+    location?: string
 }
 
 export const networkApi = {
@@ -111,6 +112,10 @@ export const networkApi = {
 
         if (params.windowSize) {
             searchParams.append('window', params.windowSize)
+        }
+
+        if (params.location) {
+            searchParams.append('location', params.location)
         }
 
         const response = await fetch(`${API_BASE_URL}/v1/networks/get-details?${searchParams}`, {

@@ -10,6 +10,7 @@ import { API_BASE_URL } from "@/lib/config";
 import { Area, AreaChart } from 'recharts';
 import { ChartContainer, ChartConfig } from '@/components/ui/chart';
 import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
+import { useLocationStore } from '@/lib/stores/location-store';
 
 interface TimeSeriesAnomalyResponse {
     anomalies: number[];
@@ -28,6 +29,7 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
     const timeRange = useTimeRangeStore((state) => state.timeRange);
     const playbackPosition = useTimeRangeStore((state) => state.playbackPosition);
     const runtimeConfig = useRuntimeConfig();
+    const location = useLocationStore((state) => state.selectedLocationId);
 
     useEffect(() => {
         const fetchStatus = async () => {
@@ -41,6 +43,10 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
 
                 if (selectedCountry && selectedCountry.code !== 'world') {
                     params.append('cc', selectedCountry.code);
+                }
+
+                if (location) {
+                    params.append('location', location);
                 }
 
                 const url = `${API_BASE_URL}${apiEndpoint}?${params.toString()}`;
@@ -64,7 +70,7 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
         };
 
         fetchStatus();
-    }, [apiEndpoint, selectedCountry, timeRange]);
+    }, [apiEndpoint, selectedCountry, timeRange, location]);
 
     const getCurrentIndex = (): number => {
         if (!timeSeriesData || timeSeriesData.timestamps.length === 0) return 0;
@@ -219,7 +225,7 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
                             </div>
                             <div
                                 className="text-4xl w-12 flex items-center justify-center">
-                                <TrendIcon trend={trend}/>
+                                <TrendIcon trend={trend} />
                             </div>
                         </div>
                     )}
