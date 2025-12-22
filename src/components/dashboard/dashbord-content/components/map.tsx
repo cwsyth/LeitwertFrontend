@@ -490,7 +490,10 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                     {/* Backdrop to close context menu */}
                     <div
                         className="absolute inset-0 z-30"
-                        onClick={() => setContextMenu(null)}
+                        onMouseDown={(e) => {
+                            e.stopPropagation();
+                            setContextMenu(null);
+                        }}
                     />
                     {/* Context Menu */}
                     <div
@@ -506,7 +509,10 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                                     Router Info ({contextMenu.routers.length})
                                 </h3>
                                 <button
-                                    onClick={() => setContextMenu(null)}
+                                    onMouseDown={(e) => {
+                                        e.stopPropagation();
+                                        setContextMenu(null);
+                                    }}
                                     className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                                 >
                                     ✕
