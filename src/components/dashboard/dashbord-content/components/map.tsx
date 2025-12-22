@@ -13,6 +13,7 @@ import type { CountryMiddlepointFeature } from '@/data/country_middlepoints';
 import type { Feature } from 'geojson';
 import { countries as countriesData } from "countries-list";
 import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
+import { set } from 'date-fns';
 
 interface DashboardContentMapProps {
     selectedCountry: Country;
@@ -28,12 +29,19 @@ interface HoverInfo {
     statusCounts: Record<EntityStatus, number>;
 }
 
+interface ContextMenuInfo {
+    x: number;
+    y: number;
+    routers: Router[];
+}
+
 export default function DashboardContentMap({ selectedCountry, setSelectedCountry, setRouters }: DashboardContentMapProps) {
     const runtimeConfig = useRuntimeConfig();
+    const queryClient = useQueryClient();
     const mapRef = useRef<MapRef>(null);
-    const [data, setData] = useState<CountryData[] |WorldData[] | null>(null);
     const [isClickLoading, setIsClickLoading] = useState(false);
     const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
+    const [contextMenu, setContextMenu] = useState<ContextMenuInfo | null>(null);
     let [longitude, latitude] = [10.426171427430804, 51.08304539800482]; // default to Germany
 
     const isWorld = !selectedCountry || selectedCountry.code === 'world';
@@ -44,6 +52,9 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
 
     // Focus map on selected country
     useEffect(() => {
+        setHoverInfo(null);
+        setContextMenu(null);
+
         if (!selectedCountry) return;
 
         if(selectedCountry.code !== 'world') {
@@ -79,7 +90,6 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
 
             if (isWorld) {
                 const data: WorldData[] = await response.json();
-                setData(data);
 
                 const mapData: WorldFeatureCollection = {
                     type: "FeatureCollection",
@@ -108,7 +118,6 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                 return mapData;
             } else {
                 const data: CountryData[] = await response.json();
-                setData(data);
 
                 const mapData: CountryFeatureCollection = {
                     type: "FeatureCollection",
@@ -271,6 +280,61 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
         }
     };
 
+    const onContextMenu = async (event: MapMouseEvent) => {
+        setHoverInfo(null);
+
+        // Prevent default browser context menu
+        event.preventDefault();
+
+        const feature = event?.features?.[0];
+        if (!feature) return;
+
+        setIsClickLoading(true);
+
+        try {
+             const clusterId = feature?.properties?.cluster_id;
+            const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
+            let routers: Router[] = [];
+
+            if (clusterId) {
+                // get all points in the cluster & filter out router properties
+                const leaves: Feature[] = await geojsonSource.getClusterLeaves(clusterId, Infinity, 0);
+                routers = leaves.map((leaf: Feature) => leaf.properties as Router);
+            } else {
+                // handle single point click
+                if (!isWorld) {
+                    const router = feature.properties as Router;
+                    routers = [router];
+                } else {
+                    // fetch country feature collection using tanstack query cache
+                    const countryCode = feature.properties?.country_code;
+                    if (!countryCode) return;
+
+                    const data = await queryClient.fetchQuery({
+                        queryKey: ['country-feature-collection', countryCode],
+                        queryFn: async () => {
+                            const response = await fetch(`${baseUrl}/map?view=country&country=${countryCode}`);
+                            if (!response.ok) {
+                                throw new Error('Failed to fetch country data');
+                            }
+                            return response.json();
+                        }
+                    });
+
+                    routers = data[0]?.routers || [];
+                }
+            }
+
+            setContextMenu({
+                x: event.point.x,
+                y: event.point.y,
+                routers
+            });
+        } finally {
+            setIsClickLoading(false);
+        }
+    };
+
     return (
         <div className="dashboard-map w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden rounded-[var(--radius)]">
             {(isLoading || isClickLoading) && (
@@ -346,6 +410,74 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                     </div>
                 </div>
             )}
+            {contextMenu && (
+                <>
+                    {/* Backdrop to close context menu */}
+                    <div
+                        className="absolute inset-0 z-30"
+                        onClick={() => setContextMenu(null)}
+                    />
+                    {/* Context Menu */}
+                    <div
+                        className="fixed z-50"
+                        style={{
+                            left: Math.min(contextMenu.x + 10, window.innerWidth - 720),
+                            top: Math.min(contextMenu.y + 10, window.innerHeight - 350),
+                        }}
+                    >
+                        <div className="bg-white rounded-lg shadow-2xl border border-slate-200 overflow-hidden w-[700px]">
+                            <div className="bg-blue-500 px-3 py-2 flex items-center justify-between">
+                                <h3 className="text-white font-semibold text-xs">
+                                    Router Info ({contextMenu.routers.length})
+                                </h3>
+                                <button
+                                    onClick={() => setContextMenu(null)}
+                                    className="text-slate-300 hover:text-white transition-colors text-sm cursor-pointer"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                            <div className="max-h-80 overflow-auto">
+                                <table className="w-full text-xs">
+                                    <thead className="bg-slate-100 sticky top-0">
+                                        <tr>
+                                            <th className="px-2 py-1.5 text-left font-semibold text-slate-700">IP</th>
+                                            <th className="px-2 py-1.5 text-left font-semibold text-slate-700">ASN</th>
+                                            <th className="px-2 py-1.5 text-left font-semibold text-slate-700">Status</th>
+                                            <th className="px-2 py-1.5 text-left font-semibold text-slate-700">City</th>
+                                            <th className="px-2 py-1.5 text-left font-semibold text-slate-700">Region</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {contextMenu.routers.map((router, index) => (
+                                            <tr
+                                                key={`${router.router_id}-${index}`}
+                                                className="border-t border-slate-200 hover:bg-slate-50 transition-colors"
+                                                title={`Router ID: ${router.router_id}\nGeohash: ${router.geohash}\nISP: ${router.location?.isp || '-'}`}
+                                            >
+                                                <td className="px-2 py-1.5 text-slate-700 font-mono">{router.ip}</td>
+                                                <td className="px-2 py-1.5 text-slate-700">{router.asn}</td>
+                                                <td className="px-2 py-1.5">
+                                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
+                                                        router.status === 'healthy' ? 'bg-emerald-100 text-emerald-700' :
+                                                        router.status === 'warning' ? 'bg-orange-100 text-orange-700' :
+                                                        router.status === 'critical' ? 'bg-red-100 text-red-700' :
+                                                        'bg-slate-100 text-slate-700'
+                                                    }`}>
+                                                        {router.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-2 py-1.5 text-slate-700 max-w-[120px] truncate">{router.location?.city || '-'}</td>
+                                                <td className="px-2 py-1.5 text-slate-700 max-w-[100px] truncate">{router.location?.region || '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
            <Map
                 initialViewState={{ // default to Germany
                     latitude,
@@ -371,7 +503,11 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
                         countryView.unclusteredPointLayer.id!
                     ]
                 }
-                onClick={onClick}
+                onClick={(e) => {
+                    setContextMenu(null);
+                    onClick(e);
+                }}
+                onContextMenu={onContextMenu}
                 onMouseMove={onMouseMove}
                 onMouseLeave={onMouseLeave}
                 ref={mapRef}
