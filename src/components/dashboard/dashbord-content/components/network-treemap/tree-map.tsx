@@ -242,7 +242,30 @@ export function TreeMap({
                                     {filteredItems.map(item => (
                                         <li
                                             key={item.id}
-                                            className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2 px-3 rounded hover:bg-muted"
+                                            className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2 px-3 rounded hover:bg-muted cursor-pointer"
+                                            onClick={() => {
+                                                if (onItemClick) {
+                                                    // Create TreeMapDataItem from others item
+                                                    const clickedItem: TreeMapDataItem = {
+                                                        id: item.id,
+                                                        name: item.name,
+                                                        value: 0, // Not relevant for click
+                                                        status: 'unknown' as NetworkStatus,
+                                                        anomalyCount: 0,
+                                                        metadata: title.includes('Autonome Systeme')
+                                                            ? {
+                                                                asNumber: parseInt(item.id),
+                                                                ipCount: 0
+                                                            }
+                                                            : {
+                                                                asCount: 0,
+                                                                ipCount: 0
+                                                            }
+                                                    };
+                                                    onItemClick(clickedItem);
+                                                    setIsOthersDialogOpen(false); // Close dialog after click
+                                                }
+                                            }}
                                         >
                                             {title.includes('Autonome Systeme')
                                                 ? `${item.name} (${item.id})`
