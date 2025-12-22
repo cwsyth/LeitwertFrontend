@@ -7,7 +7,7 @@
 
 'use client'
 
-import {useEffect, useId, useState} from 'react'
+import { useEffect, useId, useState } from 'react'
 import {
     getCoreRowModel,
     getSortedRowModel,
@@ -24,13 +24,13 @@ import {
     useSensor,
     useSensors
 } from '@dnd-kit/core'
-import {restrictToHorizontalAxis} from '@dnd-kit/modifiers'
+import { restrictToHorizontalAxis } from '@dnd-kit/modifiers'
 import {
     arrayMove,
     horizontalListSortingStrategy,
     SortableContext
 } from '@dnd-kit/sortable'
-import {AlertCircle} from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 
 import {
     Table,
@@ -39,13 +39,14 @@ import {
     TableHeader,
     TableRow
 } from '@/components/ui/table'
-import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
-import type {NetworkDetail} from '@/types/network'
-import {networkApi} from "@/services/networkApi";
-import {Country, Router} from "@/types/dashboard";
-import {useTimeRangeStore} from "@/lib/stores/time-range-store";
-import {createColumns} from "@/components/network-table/network-table-columns";
+import type { NetworkDetail } from '@/types/network'
+import { networkApi } from "@/services/networkApi";
+import { Country, Router } from "@/types/dashboard";
+import { useTimeRangeStore } from "@/lib/stores/time-range-store";
+import { useLocationStore } from '@/lib/stores/location-store'
+import { createColumns } from "@/components/network-table/network-table-columns";
 import {
     TableSkeleton
 } from "@/components/network-table/components/table-skeleton";
@@ -80,13 +81,13 @@ const COLUMN_TO_API_SORT: Record<string, 'name' | 'cidrs' | 'bgp-anomalies' | 'p
 
 
 export function NetworkTable({
-                                 selectedCountry,
-                                 routers,
-                                 selectedRouter,
-                                 setSelectedRouter,
-                                 selectedAs,
-                                 setSelectedAs
-                             }: NetworkTableProps) {
+    selectedCountry,
+    routers,
+    selectedRouter,
+    setSelectedRouter,
+    selectedAs,
+    setSelectedAs
+}: NetworkTableProps) {
     const [data, setData] = useState<NetworkDetail[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -102,6 +103,7 @@ export function NetworkTable({
 
     const timeRange = useTimeRangeStore(state => state.timeRange)
     const windowSize = useTimeRangeStore(state => state.windowSize)
+    const location = useLocationStore(state => state.selectedLocationId)
 
     const dndContextId = useId()
 
@@ -126,7 +128,7 @@ export function NetworkTable({
     )
 
     function handleDragEnd(event: DragEndEvent) {
-        const {active, over} = event
+        const { active, over } = event
 
         if (active && over && active.id !== over.id) {
             setColumnOrder(columnOrder => {
@@ -160,7 +162,8 @@ export function NetworkTable({
                     page: currentPage,
                     sort: apiSortValue,
                     timeRange: timeRange,
-                    windowSize: windowSize
+                    windowSize: windowSize,
+                    location: location ?? undefined
                 })
                 setData(response.details)
                 setTotalPages(Math.ceil(response.meta.total_entries / itemsPerPage))
@@ -177,13 +180,13 @@ export function NetworkTable({
     }, [selectedCountry, currentPage, itemsPerPage, sorting, timeRange, windowSize])
 
     if (!selectedCountry || selectedCountry.code === 'world') {
-        return <TablePreview columns={columns}/>
+        return <TablePreview columns={columns} />
     }
 
     if (error) {
         return (
             <Alert variant='destructive'>
-                <AlertCircle className='h-4 w-4'/>
+                <AlertCircle className='h-4 w-4' />
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -197,7 +200,7 @@ export function NetworkTable({
                 <div className='rounded-md border bg-white flex-1 min-h-0 overflow-auto'>
                     {loading ? (
                         <TableSkeleton columns={columns}
-                                       itemsPerPage={itemsPerPage}/>
+                            itemsPerPage={itemsPerPage} />
                     ) : (
                         <DndContext
                             id={dndContextId}
@@ -210,13 +213,13 @@ export function NetworkTable({
                                 <TableHeader>
                                     {table.getHeaderGroups().map(headerGroup => (
                                         <TableRow key={headerGroup.id}
-                                                  className='bg-muted/50 [&>th]:border-t-0'>
+                                            className='bg-muted/50 [&>th]:border-t-0'>
                                             <SortableContext items={columnOrder}
-                                                             strategy={horizontalListSortingStrategy}>
+                                                strategy={horizontalListSortingStrategy}>
                                                 {headerGroup.headers.map(header => (
                                                     <DraggableTableHeader
                                                         key={header.id}
-                                                        header={header}/>
+                                                        header={header} />
                                                 ))}
                                             </SortableContext>
                                         </TableRow>
@@ -233,7 +236,7 @@ export function NetworkTable({
                                                         strategy={horizontalListSortingStrategy}>
                                                         <DragAlongCell
                                                             key={cell.id}
-                                                            cell={cell}/>
+                                                            cell={cell} />
                                                     </SortableContext>
                                                 ))}
                                             </TableRow>
@@ -241,7 +244,7 @@ export function NetworkTable({
                                     ) : (
                                         <TableRow>
                                             <TableCell colSpan={columns.length}
-                                                       className='h-24 text-center'>
+                                                className='h-24 text-center'>
                                                 No network data available
                                                 for {selectedCountry.code}
                                             </TableCell>
