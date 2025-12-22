@@ -75,11 +75,9 @@ export default function Dashboard() {
                         setSelectedAs={setSelectedAs}
                     />
                 </div>
-                {viewVisibility.bgpAnnouncements &&
-                    <div className="flex-1 min-h-0 overflow-y-scroll rounded-lg">
-                        <BgpAnnounceChart selectedRouter={selectedRouter} asn={selectedAs} selectedCountry={selectedCountry} />
-                    </div>
-                }
+                <div className={`flex-1 min-h-0 overflow-y-scroll rounded-lg ${!viewVisibility.bgpAnnouncements ? 'hidden' : ''}`}>
+                    <BgpAnnounceChart selectedRouter={selectedRouter} asn={selectedAs} selectedCountry={selectedCountry} />
+                </div>
             </div>
         </div>
     );

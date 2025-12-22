@@ -155,6 +155,10 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
             return;
         }
 
+        // Get map container position for fixed positioning
+        const mapContainer = mapRef.current?.getContainer();
+        const rect = mapContainer?.getBoundingClientRect();
+
         const clusterId = feature?.properties?.cluster_id;
         const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
         let statusCounts: Record<EntityStatus, number> = {
@@ -183,8 +187,8 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
 
             setHoverInfo({
                 location: countries.find(c => c.code === properties.country_code.toLowerCase())?.name || "",
-                x: event.point.x,
-                y: event.point.y,
+                x: (rect?.left || 0) + event.point.x,
+                y: (rect?.top || 0) + event.point.y,
                 totalRouters: properties.router_count_total,
                 statusCounts: statusCounts
             });
@@ -206,8 +210,8 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
 
                 setHoverInfo({
                     location: leaves[0]?.properties?.geohash || "",
-                    x: event.point.x,
-                    y: event.point.y,
+                    x: (rect?.left || 0) + event.point.x,
+                    y: (rect?.top || 0) + event.point.y,
                     totalRouters: leaves.length,
                     statusCounts: statusCounts
                 });
@@ -223,8 +227,8 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
 
             setHoverInfo({
                 location: router.geohash || "",
-                x: event.point.x,
-                y: event.point.y,
+                x: (rect?.left || 0) + event.point.x,
+                y: (rect?.top || 0) + event.point.y,
                 totalRouters: 1,
                 statusCounts: statusCounts
             });
@@ -347,7 +351,7 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
             )}
             {hoverInfo && (
                 <div
-                    className="absolute z-20 pointer-events-none"
+                    className="fixed z-20 pointer-events-none"
                     style={{
                         left: hoverInfo.x + 15,
                         top: hoverInfo.y + 15,
