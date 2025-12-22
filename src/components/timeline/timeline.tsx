@@ -38,7 +38,6 @@ import {
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { TimeRangePreset, WindowConfig, WindowSize } from "@/types/time-range";
 import { API_BASE_URL } from "@/lib/config";
-import { useRuntimeConfig } from "@/lib/useRuntimeConfig";
 
 // Date range boundaries for calendar picker
 const MIN_DATE = new Date(new Date().getFullYear(), 9, 1); // Oct 1st

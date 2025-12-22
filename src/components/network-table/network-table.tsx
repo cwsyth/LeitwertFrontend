@@ -177,6 +177,7 @@ export function NetworkTable({
         }
 
         fetchData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCountry, currentPage, itemsPerPage, sorting, timeRange, windowSize])
 
     if (!selectedCountry || selectedCountry.code === 'world') {

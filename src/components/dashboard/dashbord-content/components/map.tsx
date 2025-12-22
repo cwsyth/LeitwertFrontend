@@ -15,7 +15,6 @@ import type { CountryMiddlepointFeature } from '@/data/country_middlepoints';
 import type { Feature } from 'geojson';
 import { countries as countriesData } from "countries-list";
 import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
-import { set } from 'date-fns';
 
 interface DashboardContentMapProps {
     selectedCountry: Country;
