@@ -204,7 +204,7 @@ export function TreeMap({
                 <DialogContent className="max-w-2xl max-h-[80vh]">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            {title.includes('Autonome Systeme') ? (
+                            {title.includes('Autonomous Systems') ? (
                                 <>
                                     <Network className="h-5 w-5 text-muted-foreground"/>
                                     Other Autonomous Systems
@@ -222,7 +222,7 @@ export function TreeMap({
                     <div className="px-1">
                         <Input
                             type="text"
-                            placeholder={title.includes('Autonome Systeme') ? 'Search AS networks...' : 'Search countries...'}
+                            placeholder={title.includes('Autonomous Systems') ? 'Search AS networks...' : 'Search countries...'}
                             value={othersSearchQuery}
                             onChange={(e) => setOthersSearchQuery(e.target.value)}
                             className="w-full"
@@ -252,7 +252,7 @@ export function TreeMap({
                                                         value: 0, // Not relevant for click
                                                         status: 'unknown' as NetworkStatus,
                                                         anomalyCount: 0,
-                                                        metadata: title.includes('Autonome Systeme')
+                                                        metadata: title.includes('Autonomous Systems')
                                                             ? {
                                                                 asNumber: parseInt(item.id),
                                                                 ipCount: 0
@@ -267,7 +267,7 @@ export function TreeMap({
                                                 }
                                             }}
                                         >
-                                            {title.includes('Autonome Systeme')
+                                            {title.includes('Autonomous Systems')
                                                 ? `${item.name} (${item.id})`
                                                 : item.name
                                             }
