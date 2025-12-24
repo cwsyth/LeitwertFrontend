@@ -43,6 +43,6 @@ export interface CustomRangePickerProps {
     onCancel: () => void;
     availableRangeLabel?: string;
     onLoadAvailableRange?: () => void;
-    currentPreset: TimeRangePreset | null; // ADD THIS
-    onPresetClick: (preset: TimeRangePreset) => void; // ADD THIS
+    currentPreset: TimeRangePreset | null;
+    onPresetClick: (preset: TimeRangePreset) => void;
 }
