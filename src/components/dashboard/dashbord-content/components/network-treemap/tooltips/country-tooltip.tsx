@@ -11,6 +11,7 @@ import React from 'react';
 import {AlertTriangle, Building2, Globe} from "lucide-react";
 import {TreeMapDataItem} from '@/types/network';
 import {STATUS_COLOR_CLASSES} from "@/lib/anomaly-status";
+import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
 
 interface CountryTooltipProps {
     data: TreeMapDataItem;
@@ -18,6 +19,7 @@ interface CountryTooltipProps {
 
 export function CountryTooltip({data}: CountryTooltipProps) {
     const statusColor = STATUS_COLOR_CLASSES[data.status];
+    const runtimeConfig = useRuntimeConfig();
 
     return (
         <div className="space-y-3">
@@ -36,7 +38,7 @@ export function CountryTooltip({data}: CountryTooltipProps) {
                     <span className="text-muted-foreground">AS Count:</span>
                     <span className="font-semibold ml-auto">
             {data.metadata && 'asCount' in data.metadata
-                ? data.metadata.asCount.toLocaleString()
+                ? data.metadata.asCount.toLocaleString(runtimeConfig.locale)
                 : 'N/A'}
           </span>
                 </div>
@@ -47,7 +49,7 @@ export function CountryTooltip({data}: CountryTooltipProps) {
                         <span
                             className="text-muted-foreground">Anomalies:</span>
                         <span className="font-semibold ml-auto">
-              {data.anomalyCount.toLocaleString()}
+              {data.anomalyCount.toLocaleString(runtimeConfig.locale)}
             </span>
                     </div>
                 )}
@@ -57,7 +59,7 @@ export function CountryTooltip({data}: CountryTooltipProps) {
                         <Globe className="h-3.5 w-3.5 text-blue-500"/>
                         <span className="text-muted-foreground">IP Count:</span>
                         <span className="font-semibold ml-auto">
-              {data.metadata.ipCount.toLocaleString()}
+              {data.metadata.ipCount.toLocaleString(runtimeConfig.locale)}
             </span>
                     </div>
                 )}

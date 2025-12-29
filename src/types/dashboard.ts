@@ -2,8 +2,6 @@ export type DashboardContentMode = "street" | "hierarchy";
 
 export interface DashboardViewVisibility {
     timeline: boolean;
-    searchResults: boolean;
-    globalStats: boolean;
     bgpAnnouncements: boolean;
 }
 
@@ -35,6 +33,7 @@ export type EntityStatus = 'healthy' | 'warning' | 'critical' | 'unknown';
 
 export interface Router {
     router_id: string;
+    ip: string;
     asn: string;
     geohash: string;
     location: {

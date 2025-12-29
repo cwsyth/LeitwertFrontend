@@ -11,6 +11,7 @@ import React from 'react';
 import {AlertTriangle, Globe} from "lucide-react";
 import {TreeMapDataItem} from '@/types/network';
 import {STATUS_COLOR_CLASSES} from "@/lib/anomaly-status";
+import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
 
 interface AsTooltipProps {
     data: TreeMapDataItem;
@@ -18,6 +19,7 @@ interface AsTooltipProps {
 
 export function AsTooltip({data}: AsTooltipProps) {
     const statusColor = STATUS_COLOR_CLASSES[data.status];
+    const runtimeConfig = useRuntimeConfig();
 
     return (
         <div className="space-y-3">
@@ -42,7 +44,7 @@ export function AsTooltip({data}: AsTooltipProps) {
                     <span className="text-muted-foreground">IP Count:</span>
                     <span className="font-semibold ml-auto">
             {data.metadata && 'ipCount' in data.metadata
-                ? data.metadata.ipCount.toLocaleString()
+                ? data.metadata.ipCount.toLocaleString(runtimeConfig.locale)
                 : 'N/A'}
           </span>
                 </div>
@@ -53,7 +55,7 @@ export function AsTooltip({data}: AsTooltipProps) {
                         <span
                             className="text-muted-foreground">Anomalies:</span>
                         <span className="font-semibold ml-auto">
-              {data.anomalyCount.toLocaleString()}
+              {data.anomalyCount.toLocaleString(runtimeConfig.locale)}
             </span>
                     </div>
                 )}

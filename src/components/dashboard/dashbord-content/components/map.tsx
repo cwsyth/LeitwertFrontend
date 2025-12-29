@@ -1,9 +1,11 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Map, Source, Layer } from 'react-map-gl/maplibre';
 import type { MapRef, MapMouseEvent } from 'react-map-gl/maplibre';
 import type { GeoJSONSource } from 'maplibre-gl';
 import geohash from 'ngeohash';
+import { Server, Globe, Hash, Activity, MapPin } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 
 import { countryView, worldView } from './layers';
 import { countryMiddlepoints } from '@/data/country_middlepoints';
@@ -12,10 +14,15 @@ import type { CountryCustomProperties, CountryData, CountryFeatureCollection, Wo
 import type { CountryMiddlepointFeature } from '@/data/country_middlepoints';
 import type { Feature } from 'geojson';
 import { countries as countriesData } from "countries-list";
+import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
+import { useTimeRangeStore } from '@/lib/stores/time-range-store';
 
 interface DashboardContentMapProps {
     selectedCountry: Country;
+    setSelectedCountry: React.Dispatch<React.SetStateAction<Country>>
     setRouters: React.Dispatch<React.SetStateAction<Router[]>>
+    setSelectedRouter: React.Dispatch<React.SetStateAction<Router | null>>
+    setSelectedAs: React.Dispatch<React.SetStateAction<number>>
 }
 
 interface HoverInfo {
@@ -26,22 +33,43 @@ interface HoverInfo {
     statusCounts: Record<EntityStatus, number>;
 }
 
-export default function DashboardContentMap({ selectedCountry, setRouters }: DashboardContentMapProps) {
-    const mapRef = useRef<MapRef>(null);
+interface ContextMenuInfo {
+    x: number;
+    y: number;
+    routers: Router[];
+}
+
+type SortField = 'router_id' | 'ip' | 'asn' | 'status' | 'city';
+type SortDirection = 'asc' | 'desc' | null;
+
+// Cache countries list outside component to avoid recreation
+const countriesList: Country[] = Object.entries(countriesData).map(([code, data]) => ({
+    code: code.toLowerCase(),
+    name: data.name
+}));
+
+export default function DashboardContentMap({ selectedCountry, setSelectedCountry, setSelectedRouter, setSelectedAs }: DashboardContentMapProps) {
+    const runtimeConfig = useRuntimeConfig();
     const queryClient = useQueryClient();
-    const [data, setData] = useState<CountryData[] |WorldData[] | null>(null);
+    const { timeRange, playbackPosition, isPlaying } = useTimeRangeStore();
+    const [data, setData] = useState<CountryData[] | WorldData[] | null>(null);
+    const mapRef = useRef<MapRef>(null);
     const [isClickLoading, setIsClickLoading] = useState(false);
     const [hoverInfo, setHoverInfo] = useState<HoverInfo | null>(null);
+    const [contextMenu, setContextMenu] = useState<ContextMenuInfo | null>(null);
+    const [sortField, setSortField] = useState<SortField | null>(null);
+    const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+    const lastMouseMoveTime = useRef<number>(0);
     let [longitude, latitude] = [10.426171427430804, 51.08304539800482]; // default to Germany
 
     const isWorld = !selectedCountry || selectedCountry.code === 'world';
     const baseUrl = 'https://dev-api.univ.leitwert.net/api/v1';
-    const geoJsonUrl = baseUrl + (isWorld
-        ? '/map?view=world'
-        : '/map?view=country&country=' + selectedCountry?.code);
 
     // Focus map on selected country
     useEffect(() => {
+        setHoverInfo(null);
+        setContextMenu(null);
+
         if (!selectedCountry) return;
 
         if(selectedCountry.code !== 'world') {
@@ -66,20 +94,34 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
         }
     }, [selectedCountry]);
 
-    // Fetch map data
-    const { data: mapData, isLoading } = useQuery({
-        queryKey: isWorld ? ['world-feature-collection'] : ['country-feature-collection', selectedCountry.code],
+    const { data: mapData, isLoading: isLoading } = useQuery({
+        queryKey: [
+            isWorld ? 'world-time-series' : 'country-time-series',
+            selectedCountry.code,
+            timeRange.start.toISOString(),
+            timeRange.end.toISOString()
+        ],
         queryFn: async () => {
-            const response = await fetch(geoJsonUrl);
+            // Format dates for API (ISO 8601 format)
+            const fromParam = timeRange.start.toISOString();
+            const toParam = timeRange.end.toISOString();
+
+
+            // Build URL with from/to query parameters
+            const timeSeriesMapDataUrl = isWorld
+                ? `${baseUrl}/map?view=world&from=${fromParam}&to=${toParam}`
+                : `${baseUrl}/map?view=country&country=${selectedCountry?.code}&from=${fromParam}&to=${toParam}`;
+
+            const response = await fetch(timeSeriesMapDataUrl);
             if (!response.ok) {
-                throw new Error('Failed to fetch map data');
+                throw new Error('Failed to fetch time series map data');
             }
 
             if (isWorld) {
                 const data: WorldData[] = await response.json();
                 setData(data);
 
-                const mapData: WorldFeatureCollection = {
+                const timeSeriesData: WorldFeatureCollection = {
                     type: "FeatureCollection",
                     features: data.map((item) => ({
                         type: "Feature",
@@ -88,11 +130,10 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                             coordinates: countryMiddlepoints.features.find(
                                 (feature: CountryMiddlepointFeature) =>
                                     feature.properties.ISO.toLowerCase() === item.country_code.toLowerCase()
-                                )?.geometry.coordinates || [0, 0],
+                            )?.geometry.coordinates || [0, 0],
                         },
                         properties: {
                             ...item,
-                            // Flatten router_count_status for layer expressions
                             router_count_status: {
                                 healthy: item.router_count_status.healthy[0] || 0,
                                 warning: item.router_count_status.warning[0] || 0,
@@ -103,12 +144,12 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                     }))
                 };
 
-                return mapData;
+                return timeSeriesData;
             } else {
                 const data: CountryData[] = await response.json();
                 setData(data);
 
-                const mapData: CountryFeatureCollection = {
+                const timeSeriesData: CountryFeatureCollection = {
                     type: "FeatureCollection",
                     features: data[0].routers?.map((item: CountryCustomProperties) => {
                         const coords = item.location?.lon && item.location?.lat
@@ -129,17 +170,131 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                     }) || []
                 };
 
-                return mapData;
+                return timeSeriesData;
             }
-        }
+        },
     });
 
-    const onMouseMove = async (event: MapMouseEvent) => {
+    // Transform map data based on playback position (world view only)
+    const displayMapData = useMemo(() => {
+        // For country view, always use the original data
+        if (!isWorld || !mapData || !data || !playbackPosition) {
+            return mapData;
+        }
+
+        // For world view with time series data
+        const worldData = data as WorldData[];
+
+        return {
+            ...mapData,
+            features: mapData.features.map((feature, index) => {
+                const item = worldData[index];
+                if (!item?.router_count_status?.timestamps) return feature;
+
+                // Find the closest timestamp index for playback position
+                const timestamps = item.router_count_status.timestamps;
+                const playbackTime = playbackPosition.getTime();
+
+                let closestIndex = 0;
+                let minDiff = Math.abs(new Date(timestamps[0]).getTime() - playbackTime);
+
+                for (let i = 1; i < timestamps.length; i++) {
+                    const diff = Math.abs(new Date(timestamps[i]).getTime() - playbackTime);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        closestIndex = i;
+                    }
+                }
+
+                // Update the router_count_status with values at the playback position
+                return {
+                    ...feature,
+                    properties: {
+                        ...feature.properties,
+                        router_count_status: {
+                            healthy: item.router_count_status.healthy[closestIndex] || 0,
+                            warning: item.router_count_status.warning[closestIndex] || 0,
+                            critical: item.router_count_status.critical[closestIndex] || 0,
+                            unknown: item.router_count_status.unknown[closestIndex] || 0
+                        }
+                    }
+                };
+            })
+        };
+    }, [mapData, data, playbackPosition, isWorld]);
+
+    // Update hover info when playback position changes (world view only)
+    useEffect(() => {
+        if (!isWorld || !hoverInfo || !data || !playbackPosition) {
+            return;
+        }
+
+        const worldData = data as WorldData[];
+
+        // Find the country data by name
+        const countryData = worldData.find(item => {
+            const countryName = countriesList.find(c => c.code === item.country_code.toLowerCase())?.name || "";
+            return countryName === hoverInfo.location;
+        });
+
+        if (!countryData?.router_count_status?.timestamps) {
+            return;
+        }
+
+        // Find the closest timestamp index for playback position
+        const timestamps = countryData.router_count_status.timestamps;
+        const playbackTime = playbackPosition.getTime();
+
+        let closestIndex = 0;
+        let minDiff = Math.abs(new Date(timestamps[0]).getTime() - playbackTime);
+
+        for (let i = 1; i < timestamps.length; i++) {
+            const diff = Math.abs(new Date(timestamps[i]).getTime() - playbackTime);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestIndex = i;
+            }
+        }
+
+        // Update hover info with new status counts
+        const newStatusCounts = {
+            healthy: countryData.router_count_status.healthy[closestIndex] || 0,
+            warning: countryData.router_count_status.warning[closestIndex] || 0,
+            critical: countryData.router_count_status.critical[closestIndex] || 0,
+            unknown: countryData.router_count_status.unknown[closestIndex] || 0
+        };
+
+        // Only update if the status counts have changed
+        if (hoverInfo.statusCounts.healthy !== newStatusCounts.healthy ||
+            hoverInfo.statusCounts.warning !== newStatusCounts.warning ||
+            hoverInfo.statusCounts.critical !== newStatusCounts.critical ||
+            hoverInfo.statusCounts.unknown !== newStatusCounts.unknown) {
+
+            setHoverInfo(prev => prev ? {
+                ...prev,
+                statusCounts: newStatusCounts
+            } : null);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [playbackPosition, data, isWorld, hoverInfo?.location, hoverInfo?.statusCounts.healthy, hoverInfo?.statusCounts.warning, hoverInfo?.statusCounts.critical, hoverInfo?.statusCounts.unknown]);
+
+    const onMouseMove = useCallback(async (event: MapMouseEvent) => {
+        // Throttle mouse move to max 60fps (16ms)
+        const now = Date.now();
+        if (now - lastMouseMoveTime.current < 16) {
+            return;
+        }
+        lastMouseMoveTime.current = now;
+
         const feature = event?.features?.[0];
         if (!feature) {
             setHoverInfo(null);
             return;
         }
+
+        // Get map container position for fixed positioning
+        const mapContainer = mapRef.current?.getContainer();
+        const rect = mapContainer?.getBoundingClientRect();
 
         const clusterId = feature?.properties?.cluster_id;
         const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
@@ -162,15 +317,10 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                 ...parsedRouterCountStatus
             };
 
-            const countries: Country[] = Object.entries(countriesData).map(([code, data]) => ({
-                code: code.toLowerCase(),
-                name: data.name
-            }));
-
             setHoverInfo({
-                location: countries.find(c => c.code === properties.country_code.toLowerCase())?.name || "",
-                x: event.point.x,
-                y: event.point.y,
+                location: countriesList.find(c => c.code === properties.country_code.toLowerCase())?.name || "",
+                x: (rect?.left || 0) + event.point.x,
+                y: (rect?.top || 0) + event.point.y,
                 totalRouters: properties.router_count_total,
                 statusCounts: statusCounts
             });
@@ -192,8 +342,8 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
 
                 setHoverInfo({
                     location: leaves[0]?.properties?.geohash || "",
-                    x: event.point.x,
-                    y: event.point.y,
+                    x: (rect?.left || 0) + event.point.x,
+                    y: (rect?.top || 0) + event.point.y,
                     totalRouters: leaves.length,
                     statusCounts: statusCounts
                 });
@@ -209,8 +359,8 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
 
             setHoverInfo({
                 location: router.geohash || "",
-                x: event.point.x,
-                y: event.point.y,
+                x: (rect?.left || 0) + event.point.x,
+                y: (rect?.top || 0) + event.point.y,
                 totalRouters: 1,
                 statusCounts: statusCounts
             });
@@ -218,82 +368,181 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
             // single unclustered point in world view (already handled above)
             setHoverInfo(null);
         }
-    };
+    }, [isWorld]);
 
-    const onMouseLeave = () => {
+    const onMouseLeave = useCallback(() => {
         setHoverInfo(null);
-    };
+    }, []);
 
-    const onClick = async (event: MapMouseEvent) => {
+    const onClick = useCallback(async (event: MapMouseEvent) => {
         const feature = event?.features?.[0];
         if (!feature) return;
 
         setHoverInfo(null);
         setIsClickLoading(true);
+
         try {
             const clusterId = feature?.properties?.cluster_id;
             const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
 
             if (clusterId) {
-                // expand cluster
-                const zoom = await geojsonSource.getClusterExpansionZoom(clusterId);
+                    const zoom = await geojsonSource.getClusterExpansionZoom(clusterId);
 
-                if (feature?.geometry && 'coordinates' in feature.geometry) {
-                    mapRef?.current?.easeTo({
-                        center: feature.geometry.coordinates as [number, number],
-                        zoom,
-                        duration: 500
-                    });
-                }
-
-                // get all points in the cluster & filter out router properties
-                const leaves: Feature[] = await geojsonSource.getClusterLeaves(clusterId, Infinity, 0);
-                const routers = leaves.map((leaf: Feature) => leaf.properties as Router);
-                setRouters(routers);
-            } else {
-                // handle single point click
-                if (!isWorld) {
-                    const router = feature.properties as Router;
-                    setRouters([router]);
-                    return;
-                }
-
+                    if (feature?.geometry && 'coordinates' in feature.geometry) {
+                        mapRef?.current?.easeTo({
+                            center: feature.geometry.coordinates as [number, number],
+                            zoom,
+                            duration: 500
+                        });
+                    }
+            }
+            else if (!clusterId && isWorld) {
                 // fetch country feature collection using tanstack query cache
                 const countryCode = feature.properties?.country_code;
                 if (!countryCode) return;
 
-                const data = await queryClient.fetchQuery({
-                    queryKey: ['country-feature-collection', countryCode],
-                    queryFn: async () => {
-                        const response = await fetch(`${baseUrl}/map?view=country&country=${countryCode}`);
-                        if (!response.ok) {
-                            throw new Error('Failed to fetch country data');
-                        }
-                        return response.json();
-                    }
+                setSelectedCountry({
+                    code: countryCode.toLowerCase(),
+                    name: countriesList.find(c => c.code.toLowerCase() === countryCode.toLowerCase())?.name || ""
                 });
-
-                const routers = data[0]?.routers || [];
-                setRouters(routers);
             }
         } finally {
             setIsClickLoading(false);
         }
-    };
+    }, [isWorld, setSelectedCountry]);
+
+    const onContextMenu = useCallback(async (event: MapMouseEvent) => {
+        // Disable context menu during playback
+        if (isPlaying) {
+            event.preventDefault();
+            return;
+        }
+
+        setHoverInfo(null);
+
+        // Prevent default browser context menu
+        event.preventDefault();
+
+        const feature = event?.features?.[0];
+        if (!feature) return;
+
+        setIsClickLoading(true);
+
+        try {
+             const clusterId = feature?.properties?.cluster_id;
+            const geojsonSource = mapRef?.current?.getSource('points') as GeoJSONSource;
+            let routers: Router[] = [];
+
+            if (clusterId) {
+                // get all points in the cluster & filter out router properties
+                const leaves: Feature[] = await geojsonSource.getClusterLeaves(clusterId, Infinity, 0);
+                routers = leaves.map((leaf: Feature) => leaf.properties as Router);
+            } else {
+                // handle single point click
+                if (!isWorld) {
+                    const router = feature.properties as Router;
+                    routers = [router];
+                } else {
+                    // fetch country feature collection using tanstack query cache
+                    const countryCode = feature.properties?.country_code;
+                    if (!countryCode) return;
+
+                    const data = await queryClient.fetchQuery({
+                        queryKey: ['country-feature-collection', countryCode],
+                        queryFn: async () => {
+                            const response = await fetch(`${baseUrl}/map?view=country&country=${countryCode}`);
+                            if (!response.ok) {
+                                throw new Error('Failed to fetch country data');
+                            }
+                            return response.json();
+                        }
+                    });
+
+                    routers = data[0]?.routers || [];
+                }
+            }
+
+            setContextMenu({
+                x: event.point.x,
+                y: event.point.y,
+                routers
+            });
+        } finally {
+            setIsClickLoading(false);
+        }
+    }, [baseUrl, isWorld, queryClient, isPlaying]);
+
+    const handleSort = useCallback((field: SortField) => {
+        if (sortField === field) {
+            // Cycle through: asc -> desc -> null (unsorted)
+            if (sortDirection === 'asc') {
+                setSortDirection('desc');
+            } else if (sortDirection === 'desc') {
+                setSortDirection(null);
+                setSortField(null);
+            }
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    }, [sortField, sortDirection]);
+
+    const getSortedRouters = useMemo(() => {
+        if (!contextMenu) return [];
+
+        // Return original order if no sorting is applied
+        if (!sortField || !sortDirection) {
+            return contextMenu.routers;
+        }
+
+        const statusOrder = { critical: 0, warning: 1, unknown: 2, healthy: 3 };
+
+        return [...contextMenu.routers].sort((a, b) => {
+            let aValue: string | number = '';
+            let bValue: string | number = '';
+
+            switch (sortField) {
+                case 'router_id':
+                    aValue = a.router_id;
+                    bValue = b.router_id;
+                    break;
+                case 'ip':
+                    aValue = a.ip;
+                    bValue = b.ip;
+                    break;
+                case 'asn':
+                    aValue = a.asn;
+                    bValue = b.asn;
+                    break;
+                case 'status':
+                    aValue = statusOrder[a.status];
+                    bValue = statusOrder[b.status];
+                    break;
+                case 'city':
+                    aValue = a.location?.city || '';
+                    bValue = b.location?.city || '';
+                    break;
+            }
+
+            if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+            if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+    }, [contextMenu, sortField, sortDirection]);
 
     return (
         <div className="dashboard-map w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 relative overflow-hidden rounded-[var(--radius)]">
             {(isLoading || isClickLoading) && (
                 <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
                     <div className="flex flex-col items-center gap-3">
-                        <div className="w-12 h-12 border-4 border-slate-600 border-t-slate-300 rounded-full animate-spin" />
+                        <Spinner size="xl" className="text-slate-300" />
                         <p className="text-slate-300 text-sm font-medium">Loading map data...</p>
                     </div>
                 </div>
             )}
             {hoverInfo && (
                 <div
-                    className="absolute z-20 pointer-events-none"
+                    className="fixed z-20 pointer-events-none"
                     style={{
                         left: hoverInfo.x + 15,
                         top: hoverInfo.y + 15,
@@ -308,8 +557,8 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                             </div>
                         </div>
                         <div className="text-2xl font-bold text-slate-900 mb-3">
-                            {hoverInfo.totalRouters.toLocaleString('de-DE')}
-                            <span className="text-xs font-normal text-slate-500 ml-1">Gesamt</span>
+                            {hoverInfo.totalRouters.toLocaleString(runtimeConfig.locale)}
+                            <span className="text-xs font-normal text-slate-500 ml-1">Total</span>
                         </div>
                         <div className="space-y-1.5">
                             <div className="flex items-center justify-between gap-3">
@@ -319,7 +568,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.healthy.toLocaleString('de-DE')}
+                                    {hoverInfo.statusCounts.healthy.toLocaleString(runtimeConfig.locale)}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between gap-3">
@@ -329,7 +578,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.warning.toLocaleString('de-DE')}
+                                    {hoverInfo.statusCounts.warning.toLocaleString(runtimeConfig.locale)}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between gap-3">
@@ -339,7 +588,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.critical.toLocaleString('de-DE')}
+                                    {hoverInfo.statusCounts.critical.toLocaleString(runtimeConfig.locale)}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between gap-3">
@@ -349,18 +598,178 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                                     </div>
                                 </div>
                                 <span className="text-sm font-semibold text-slate-700">
-                                    {hoverInfo.statusCounts.unknown.toLocaleString('de-DE')}
+                                    {hoverInfo.statusCounts.unknown.toLocaleString(runtimeConfig.locale)}
                                 </span>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
+            {contextMenu && (
+                <>
+                    {/* Backdrop to close context menu */}
+                    <div
+                        className="absolute inset-0 z-30"
+                        onMouseDown={(e) => {
+                            e.stopPropagation();
+                            setContextMenu(null);
+                        }}
+                    />
+                    {/* Context Menu */}
+                    <div
+                        className="fixed z-50"
+                        style={{
+                            left: Math.min(contextMenu.x + 10, window.innerWidth - 720),
+                            top: Math.min(contextMenu.y + 10, window.innerHeight - 350),
+                        }}
+                    >
+                        <div className="bg-card rounded-lg shadow-2xl border overflow-hidden w-[700px]">
+                            <div className="bg-muted/50 px-4 py-3 flex items-center justify-between border-b">
+                                <h3 className="text-foreground font-semibold text-m">
+                                    Router Info ({contextMenu.routers.length})
+                                </h3>
+                                <button
+                                    onMouseDown={(e) => {
+                                        e.stopPropagation();
+                                        setContextMenu(null);
+                                    }}
+                                    className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                            <div className="max-h-80 overflow-auto bg-white">
+                                <table className="w-full text-sm">
+                                    <thead className="bg-muted sticky top-0">
+                                        <tr className="border-b font-bold">
+                                            <th
+                                                className="h-10 px-2 text-left align-middle font-medium text-foreground whitespace-nowrap cursor-pointer hover:bg-muted/70"
+                                                onClick={() => handleSort('router_id')}
+                                            >
+                                                <div className="flex items-center gap-1">
+                                                    <Server className="h-3 w-3" />
+                                                    Router ID
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {sortField === 'router_id'
+                                                            ? (sortDirection === 'asc' ? '↑' : '↓')
+                                                            : '↕'
+                                                        }
+                                                    </span>
+                                                </div>
+                                            </th>
+                                            <th
+                                                className="h-10 px-2 text-left align-middle font-medium text-foreground whitespace-nowrap cursor-pointer hover:bg-muted/70"
+                                                onClick={() => handleSort('ip')}
+                                            >
+                                                <div className="flex items-center gap-1">
+                                                    <Globe className="h-3 w-3" />
+                                                    IP
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {sortField === 'ip'
+                                                            ? (sortDirection === 'asc' ? '↑' : '↓')
+                                                            : '↕'
+                                                        }
+                                                    </span>
+                                                </div>
+                                            </th>
+                                            <th
+                                                className="h-10 px-2 text-left align-middle font-medium text-foreground whitespace-nowrap cursor-pointer hover:bg-muted/70"
+                                                onClick={() => handleSort('asn')}
+                                            >
+                                                <div className="flex items-center gap-1">
+                                                    <Hash className="h-3 w-3" />
+                                                    ASN
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {sortField === 'asn'
+                                                            ? (sortDirection === 'asc' ? '↑' : '↓')
+                                                            : '↕'
+                                                        }
+                                                    </span>
+                                                </div>
+                                            </th>
+                                            <th
+                                                className="h-10 px-2 text-left align-middle font-medium text-foreground whitespace-nowrap cursor-pointer hover:bg-muted/70"
+                                                onClick={() => handleSort('status')}
+                                            >
+                                                <div className="flex items-center gap-1">
+                                                    <Activity className="h-3 w-3" />
+                                                    Status
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {sortField === 'status'
+                                                            ? (sortDirection === 'asc' ? '↑' : '↓')
+                                                            : '↕'
+                                                        }
+                                                    </span>
+                                                </div>
+                                            </th>
+                                            <th
+                                                className="h-10 px-2 text-left align-middle font-medium text-foreground whitespace-nowrap cursor-pointer hover:bg-muted/70"
+                                                onClick={() => handleSort('city')}
+                                            >
+                                                <div className="flex items-center gap-1">
+                                                    <MapPin className="h-3 w-3" />
+                                                    City
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {sortField === 'city'
+                                                            ? (sortDirection === 'asc' ? '↑' : '↓')
+                                                            : '↕'
+                                                        }
+                                                    </span>
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {getSortedRouters.map((router, index) => (
+                                            <tr
+                                                key={`${router.router_id}-${index}`}
+                                                className="hover:bg-muted/50 border-b transition-colors"
+                                                title={`Region: ${router.location?.region || '-'}\nGeohash: ${router.geohash}\nISP: ${router.location?.isp || '-'}`}
+                                            >
+                                                <td className="p-2 align-middle font-mono text-xs max-w-[140px] truncate">{router.router_id}</td>
+                                                <td
+                                                    className="p-2 align-middle font-mono text-xs max-w-[110px] truncate cursor-pointer hover:text-blue-500 hover:underline"
+                                                    onClick={() => {
+                                                        setSelectedRouter(router);
+                                                        setContextMenu(null);
+                                                    }}
+                                                >
+                                                    {router.ip}
+                                                </td>
+                                                <td
+                                                    className="p-2 align-middle cursor-pointer hover:text-blue-500 hover:underline"
+                                                    onClick={() => {
+                                                        setSelectedAs(Number(router.asn));
+                                                        setContextMenu(null);
+                                                    }}
+                                                >
+                                                    {router.asn}
+                                                </td>
+                                                <td className="p-2 align-middle">
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                                        router.status === 'healthy' ? 'bg-emerald-100 text-emerald-700' :
+                                                        router.status === 'warning' ? 'bg-orange-100 text-orange-700' :
+                                                        router.status === 'critical' ? 'bg-red-100 text-red-700' :
+                                                        'bg-slate-100 text-slate-700'
+                                                    }`}>
+                                                        {router.status}
+                                                    </span>
+                                                </td>
+                                                <td className="p-2 align-middle max-w-[120px] truncate">{router.location?.city || '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
            <Map
                 initialViewState={{ // default to Germany
                     latitude,
                     longitude,
-                    zoom: 4.5
+                    zoom: 4
                 }}
                 mapStyle="https://dev-maptiler.univ.leitwert.net/styles/dark-basic/style.json"
                 interactiveLayerIds={isWorld
@@ -381,7 +790,11 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                         countryView.unclusteredPointLayer.id!
                     ]
                 }
-                onClick={onClick}
+                onClick={(e) => {
+                    setContextMenu(null);
+                    onClick(e);
+                }}
+                onContextMenu={onContextMenu}
                 onMouseMove={onMouseMove}
                 onMouseLeave={onMouseLeave}
                 ref={mapRef}
@@ -392,7 +805,7 @@ export default function DashboardContentMap({ selectedCountry, setRouters }: Das
                     key={isWorld ? 'world-source' : 'country-source'}
                     id="points"
                     type="geojson"
-                    data={mapData ? mapData : { type: "FeatureCollection", features: [] }}
+                    data={displayMapData ? displayMapData : { type: "FeatureCollection", features: [] }}
                     cluster={!isWorld}
                     clusterMaxZoom={14}
                     clusterRadius={50}

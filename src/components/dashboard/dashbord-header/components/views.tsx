@@ -19,8 +19,6 @@ interface ComponentItem {
 
 const componentItems: ComponentItem[] = [
     { key: "bgpAnnouncements", label: "BGP Announcements" },
-    { key: "searchResults", label: "Suchergebnisse" },
-    { key: "globalStats", label: "Globale Statistiken" },
 ];
 
 export default function DashboardHeaderViews({
@@ -28,22 +26,22 @@ export default function DashboardHeaderViews({
     toggleView,
 }: DashboardHeaderResultsProps) {
     return (
-        <Card className="flex-1">
+        <Card className="w-full h-full">
             <CardHeader>
-                <CardTitle>Ansichten</CardTitle>
+                <CardTitle>Views</CardTitle>
                 <CardDescription>
                     <div className="flex flex-wrap gap-2 mt-2">
                         <Badge
                             variant="outline"
                             className="cursor-not-allowed bg-muted text-muted-foreground border-primary"
                         >
-                            Straßenkarte
+                            Router Map
                         </Badge>
                         <Badge
                             variant="outline"
                             className="cursor-not-allowed bg-muted text-muted-foreground border-primary"
                         >
-                            Netzwerkübersicht
+                            Network Overview
                         </Badge>
                         {componentItems.map((item) => (
                             <Badge

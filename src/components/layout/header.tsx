@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 
 const TimeRangeSelector = dynamic(
-    () => import('@/components/dashboard/dashbord-timeline/timeline'),
+    () => import('@/components/timeline/timeline'),
     { ssr: false }
 );
 

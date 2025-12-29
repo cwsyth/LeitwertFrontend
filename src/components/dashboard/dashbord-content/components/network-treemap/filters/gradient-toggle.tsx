@@ -20,7 +20,7 @@ export function GradientToggle({ checked, onChange }: GradientToggleProps) {
     return (
         <div className="flex items-center gap-2">
             <Label htmlFor="use-gradient" className="whitespace-nowrap">
-                Farbverlauf
+                Gradient
             </Label>
             <Switch
                 id="use-gradient"

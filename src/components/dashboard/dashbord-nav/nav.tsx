@@ -22,7 +22,7 @@ export default function DashboardNav({ mode, setMode }: DashboardNavProps) {
                 className="flex-1 px-3 rounded-[var(--radius)] data-[state=on]:bg-background data-[state=on]:shadow"
             >
                 <Map className="mr-1 h-4 w-4" />
-                Straßenkarte
+                Router Map
             </ToggleGroupItem>
 
             <ToggleGroupItem
@@ -30,7 +30,7 @@ export default function DashboardNav({ mode, setMode }: DashboardNavProps) {
                 className="flex-1 px-3 rounded-[var(--radius)] data-[state=on]:bg-background data-[state=on]:shadow"
             >
                 <Network className="mr-1 h-4 w-4" />
-                Netzwerkübersicht
+                Network Overview
             </ToggleGroupItem>
 
         </ToggleGroup>

@@ -4,14 +4,14 @@ import { useState } from "react";
 import DashboardHeader from "./dashbord-header/header";
 import DashboardNav from "./dashbord-nav/nav";
 import DashboardContent from "./dashbord-content/content";
-import DashboardFooter from "./dashbord-footer/footer";
 import {
+    Country,
     DashboardContentMode,
     DashboardViewVisibility,
-    Country,
     Router,
 } from "@/types/dashboard";
-import { BgpAnnounceChart } from "./dashbord-content/components/charts/bgp-announce-chart";
+import { NetworkTable } from "@/components/network-table/network-table";
+import { BgpAnnounceChart } from "./dashbord-footer/charts/bgp-announce-chart";
 
 export default function Dashboard() {
     const [mode, setMode] = useState<DashboardContentMode>("street");
@@ -19,8 +19,6 @@ export default function Dashboard() {
     const [viewVisibility, setViewVisibility] =
         useState<DashboardViewVisibility>({
             timeline: true,
-            searchResults: true,
-            globalStats: true,
             bgpAnnouncements: true,
         });
 
@@ -38,31 +36,49 @@ export default function Dashboard() {
 
     const [routers, setRouters] = useState<Router[]>([]);
 
+    const [selectedAs, setSelectedAs] = useState<number>(0);
     const [selectedRouter, setSelectedRouter] = useState<Router | null>(null);
 
     return (
-        <div className="dashboard-wrapper h-full flex flex-col items-center justify-center p8">
-            <div className="dashboard w-full h-full flex flex-col items-center gap-3">
-                <DashboardHeader
-                    viewVisibility={viewVisibility}
-                    toggleView={toggleView}
-                    selectedCountry={selectedCountry}
-                    setSelectedCountry={setSelectedCountry}
+        <div className="dashboard-wrapper h-full flex gap-3">
+            <div className="dashboard w-3/5 h-full flex flex-col gap-3">
+                <div className="w-full flex-shrink-0">
+                    <DashboardHeader
+                        viewVisibility={viewVisibility}
+                        toggleView={toggleView}
+                        selectedCountry={selectedCountry}
+                        setSelectedCountry={setSelectedCountry}
+                    />
+                </div>
+                <div className="w-full flex-shrink-0">
+                    <DashboardNav mode={mode} setMode={setMode} />
+                </div>
+                <div className="w-full flex-grow">
+                    <DashboardContent
+                        mode={mode}
+                        selectedCountry={selectedCountry}
+                        setSelectedCountry={setSelectedCountry}
+                        setRouters={setRouters}
+                        selectedAs={selectedAs}
+                        setSelectedAs={setSelectedAs}
+                        setSelectedRouter={setSelectedRouter}
                 />
-                <DashboardNav mode={mode} setMode={setMode} />
-                <DashboardContent
-                    mode={mode}
-                    selectedCountry={selectedCountry}
-                    setRouters={setRouters}
-                    setSelectedCountry={setSelectedCountry}
-                />
-                <DashboardFooter
-                    viewVisibility={viewVisibility}
-                    selectedCountry={selectedCountry}
-                    routers={routers}
-                    setSelectedRouter={setSelectedRouter}
-                />
-                {viewVisibility.bgpAnnouncements && <BgpAnnounceChart router={selectedRouter?.asn} />}
+                </div>
+            </div>
+            <div className="w-2/5 h-full flex flex-col gap-3">
+                <div className="flex-1 min-h-0">
+                    <NetworkTable
+                        selectedCountry={selectedCountry}
+                        routers={routers}
+                        selectedRouter={selectedRouter}
+                        setSelectedRouter={setSelectedRouter}
+                        selectedAs={selectedAs}
+                        setSelectedAs={setSelectedAs}
+                    />
+                </div>
+                <div className={`flex-1 min-h-0 overflow-y-scroll rounded-lg ${!viewVisibility.bgpAnnouncements ? 'hidden' : ''}`}>
+                    <BgpAnnounceChart selectedRouter={selectedRouter} asn={selectedAs} selectedCountry={selectedCountry} />
+                </div>
             </div>
         </div>
     );

@@ -23,6 +23,7 @@ import {
 import {
     AsTooltip
 } from "@/components/dashboard/dashbord-content/components/network-treemap/tooltips/as-tooltip";
+import {useLocationStore} from "@/lib/stores/location-store";
 
 export function AsView({
                            countryCode,
@@ -31,7 +32,8 @@ export function AsView({
                            useGradient,
                            sizeMetric = 'ip_count',
                            onBackClick,
-                           thresholds
+                           thresholds,
+                           setSelectedAs
                        }: AsViewProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);
     const [others, setOthers] = useState<TreeMapOthersData | undefined>();
@@ -39,6 +41,7 @@ export function AsView({
     const [isLoading, setIsLoading] = useState(true);
 
     const timeRange = useTimeRangeStore((state) => state.timeRange);
+    const selectedLocationId = useLocationStore((state) => state.selectedLocationId);
 
     const loadData = useCallback(async () => {
         setIsLoading(true);
@@ -47,7 +50,8 @@ export function AsView({
                 countryCode,
                 limit,
                 timeRange,
-                sizeMetric
+                sizeMetric,
+                selectedLocationId
             );
 
             setCountryName(response.country.name);
@@ -99,7 +103,7 @@ export function AsView({
         } finally {
             setIsLoading(false);
         }
-    }, [countryCode, limit, sizeMetric, timeRange, thresholds]);
+    }, [countryCode, limit, sizeMetric, timeRange, thresholds, selectedLocationId]);
 
     useEffect(() => {
         loadData();
@@ -127,12 +131,17 @@ export function AsView({
         <TreeMap
             data={data}
             others={others}
-            title={`${countryName} - Autonome Systeme`}
+            title={`Autonomous Systems - ${countryName}`}
             renderTooltip={renderTooltip}
             showLabels={showLabels}
             useGradient={useGradient}
             thresholds={thresholds}
             onBackClick={onBackClick}
+            onItemClick={(item) => {
+                if (!isOthersData(item) && item.metadata && 'asNumber' in item.metadata) {
+                    setSelectedAs(item.metadata.asNumber);
+                }
+            }}
         />
     );
 }

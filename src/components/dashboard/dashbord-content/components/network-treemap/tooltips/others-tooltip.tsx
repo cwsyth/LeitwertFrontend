@@ -10,6 +10,7 @@
 import React from 'react';
 import {AlertTriangle, Building2, Globe, Hash, Network} from "lucide-react";
 import {OthersMetadata} from '@/types/network';
+import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
 
 interface OthersTooltipProps {
     data: OthersMetadata;
@@ -18,6 +19,7 @@ interface OthersTooltipProps {
 
 export function OthersTooltip({data, type}: OthersTooltipProps) {
     const isCountry = type === 'country';
+    const runtimeConfig = useRuntimeConfig();
 
     return (
         <div className="space-y-3">
@@ -35,40 +37,32 @@ export function OthersTooltip({data, type}: OthersTooltipProps) {
             <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
                     {isCountry ? (
-                        <Building2
-                            className="h-3.5 w-3.5 text-muted-foreground"/>
+                        <Building2 className="h-3.5 w-3.5 text-muted-foreground"/>
                     ) : (
                         <Hash className="h-3.5 w-3.5 text-muted-foreground"/>
                     )}
                     <span className="text-muted-foreground">
-            {isCountry ? 'Countries:' : 'AS Count:'}
-          </span>
+                        {isCountry ? 'Countries:' : 'AS Count:'}
+                    </span>
                     <span className="font-semibold ml-auto">
-            {data.count.toLocaleString()}
-          </span>
+                        {data.count.toLocaleString(runtimeConfig.locale)}
+                    </span>
                 </div>
                 <div className="flex items-center gap-2">
                     <AlertTriangle className="h-3.5 w-3.5 text-amber-500"/>
-                    <span
-                        className="text-muted-foreground">Total Anomalies:</span>
+                    <span className="text-muted-foreground">Total Anomalies:</span>
                     <span className="font-semibold ml-auto">
-            {data.totalAnomalyCount.toLocaleString()}
-          </span>
+                        {data.totalAnomalyCount.toLocaleString(runtimeConfig.locale)}
+                    </span>
                 </div>
             </div>
 
-            <div className="mt-3 pt-2 border-t max-h-40 overflow-y-auto">
-                <p className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wide">
-                    {isCountry ? 'Included Countries' : 'Included AS Networks'}
+            <div className="mt-3 pt-2 border-t">
+                <p className="text-xs text-muted-foreground text-center">
+                    Click to view all {isCountry ? 'countries' : 'AS networks'}
                 </p>
-                <ul className="text-sm space-y-1">
-                    {data.items.map(item => (
-                        <li key={item.id} className="text-muted-foreground">
-                            {isCountry ? item.name : `${item.name} (${item.id})`}
-                        </li>
-                    ))}
-                </ul>
             </div>
         </div>
     );
 }
+

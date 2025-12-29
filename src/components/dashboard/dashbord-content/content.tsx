@@ -9,15 +9,22 @@ interface DashboardContentProps {
     selectedCountry: Country,
     setRouters: React.Dispatch<React.SetStateAction<Router[]>>;
     setSelectedCountry: React.Dispatch<React.SetStateAction<Country>>;
+    setSelectedAs: React.Dispatch<React.SetStateAction<number>>;
+    selectedAs: number;
+    setSelectedRouter: React.Dispatch<React.SetStateAction<Router | null>>;
 }
 
-export default function DashboardContent({ mode, selectedCountry, setRouters, setSelectedCountry }: DashboardContentProps) {
+export default function DashboardContent({ mode, selectedCountry, setRouters, setSelectedCountry, setSelectedAs, setSelectedRouter }: DashboardContentProps) {
     return (
-        <div className={mode === "street" ? "h-180 w-full" : "w-full"}>
-            <Card className="dashboard-content w-full h-full flex-1 bg-background">
-                <CardContent className="h-full w-full">
-                    {mode === "street" && <DashboardContentMap selectedCountry={selectedCountry} setRouters={setRouters} />}
-                    {mode === "hierarchy" && <DashboardContentHierarchy selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} />}
+        <div className="w-full h-full">
+            <Card className="dashboard-content w-full h-full bg-background">
+                <CardContent className="h-full w-full ">
+                    {mode === "street" && <DashboardContentMap selectedCountry={selectedCountry} setSelectedCountry={setSelectedCountry} setRouters={setRouters} setSelectedRouter={setSelectedRouter} setSelectedAs={setSelectedAs} />}
+                    {mode === "hierarchy" && <DashboardContentHierarchy
+                        selectedCountry={selectedCountry}
+                        setSelectedCountry={setSelectedCountry}
+                        setSelectedAs={setSelectedAs}
+                    />}
                 </CardContent>
             </Card>
         </div>

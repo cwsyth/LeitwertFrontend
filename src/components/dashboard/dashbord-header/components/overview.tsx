@@ -9,9 +9,9 @@ interface StatusItem {
 }
 
 const statusItems: StatusItem[] = [
-    { label: "gesund", count: 1400, variant: "default", color: "bg-green-500" },
-    { label: "Warnung", count: 240, variant: "secondary", color: "bg-yellow-500" },
-    { label: "kritisch", count: 60, variant: "destructive" },
+    { label: "Healthy", count: 1400, variant: "default", color: "bg-green-500" },
+    { label: "Warning", count: 240, variant: "secondary", color: "bg-yellow-500" },
+    { label: "Critical", count: 60, variant: "destructive" },
 ];
 
 export default function DashboardHeaderOverview() {
@@ -22,14 +22,14 @@ export default function DashboardHeaderOverview() {
         <Card className="flex-1">
             <CardHeader className="pb-2">
                 <CardTitle className="text-base">
-                    Gesamtüberblick
+                    Global Overview
                 </CardTitle>
                 <CardDescription className="text-foreground">
                     <div className="flex items-center">
                         {/* Status List */}
                         <div>
                             <div className="text-x mb-2">
-                                Router gesamt: <span className="font-semibold text-sm">{totalCount}</span>
+                                Total routers: <span className="font-semibold text-sm">{totalCount}</span>
                             </div>
                             <div className="flex flex-col gap-1">
                                 {statusItems.map((item) => (

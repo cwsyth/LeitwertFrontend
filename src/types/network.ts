@@ -121,6 +121,7 @@ export interface AsViewProps {
     sizeMetric?: AsSizeMetric;
     onBackClick?: () => void;
     thresholds: StatusThresholds;
+    setSelectedAs: (asNumber: number) => void;
 }
 
 export interface CountriesViewProps {
@@ -137,13 +138,13 @@ export type AsSizeMetric = 'ip_count' | 'anomaly_count';
 
 export const COUNTRY_SIZE_METRIC_LABELS: Record<CountrySizeMetric, string> = {
     as_count: 'AS Count',
-    anomaly_count: 'Anomalien',
+    anomaly_count: 'Anomalies',
     ip_count: 'IP Count'
 };
 
 export const AS_SIZE_METRIC_LABELS: Record<AsSizeMetric, string> = {
     ip_count: 'IP Count',
-    anomaly_count: 'Anomalien'
+    anomaly_count: 'Anomalies'
 };
 
 export type NetworkRegistry = 'ripencc' | 'arin' | 'apnic' | 'lacnic' | 'afrinic';
@@ -156,13 +157,9 @@ export interface NetworkDetail {
     organization?: string;
     country: string;
     registry: NetworkRegistry;
-    status2: AllocationStatus;
+    status: AllocationStatus;
     ipv4_cidrs: string[];
-    routers: number;
-    anomalies: {
-        bgp: number;
-        ping: number;
-    };
+    anomalies: string[]
 }
 
 export interface NetworkDetailsResponse {
