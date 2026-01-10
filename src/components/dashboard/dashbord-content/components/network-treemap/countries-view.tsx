@@ -34,7 +34,7 @@ export function CountriesView({
                                   onCountryClick,
                                   showLabels,
                                   useGradient,
-                                  sizeMetric = 'as_count',
+                                  sizeMetric = 'anomaly_count',
                                   thresholds
                               }: CountriesViewProps) {
     const [data, setData] = useState<TreeMapDataItem[]>([]);

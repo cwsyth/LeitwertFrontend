@@ -30,7 +30,7 @@ export function AsView({
                            limit = 10,
                            showLabels,
                            useGradient,
-                           sizeMetric = 'ip_count',
+                           sizeMetric = 'anomaly_count',
                            onBackClick,
                            thresholds,
                            setSelectedAs
