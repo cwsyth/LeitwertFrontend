@@ -58,8 +58,8 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
 
                 const result: TimeSeriesAnomalyResponse = await response.json();
                 setTimeSeriesData(result);
-                setCurrentAnomaly(0);
-                setTrend('stable');
+                const total = result.anomalies.reduce((sum, val) => sum + val, 0);
+                setCurrentAnomaly(total);
             } catch (err) {
                 console.error('Error fetching anomaly data:', err);
                 setError(true);
