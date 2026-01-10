@@ -24,3 +24,9 @@ export interface WindowConfig {
     defaultSize: WindowSize;
     disabledSizes: WindowSize[];
 }
+
+// API response for available time range
+export interface AvailableTimeRange {
+    from: string;
+    to: string;
+}
