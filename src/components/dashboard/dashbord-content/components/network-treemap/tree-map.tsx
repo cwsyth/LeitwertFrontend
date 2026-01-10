@@ -268,7 +268,9 @@ export function TreeMap({
                                             }}
                                         >
                                             <div className="flex items-center gap-2">
-                                                {!title.includes('Autonomous Systems') && (
+                                                {title.includes('Autonomous Systems') ? (
+                                                    <Network className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                                ) : (
                                                     <div className="flex items-center justify-center w-4 h-4">
                                                         <CircleFlag countryCode={item.id.toLowerCase()} height={16} />
                                                     </div>
