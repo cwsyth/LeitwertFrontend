@@ -64,7 +64,7 @@ export default function DashboardContentHierarchy({ selectedCountry, setSelected
     const isWorldView = !selectedCountry || selectedCountry.code === 'world';
 
     return (
-        <div className="dashboard-hierarchy container mx-auto p-6">
+        <div className="dashboard-hierarchy container mx-auto">
             {/* Customization Options */}
             <TreeMapFilters
                 limitValue={inputLimit}
@@ -82,28 +82,30 @@ export default function DashboardContentHierarchy({ selectedCountry, setSelected
                 onThresholdsChange={setThresholds}
             />
 
-            {/* TreeMap Content */}
-            {isWorldView ? (
-                <CountriesView
-                    limit={limit}
-                    showLabels={showLabels}
-                    useGradient={useGradient}
-                    sizeMetric={countrySizeMetric}
-                    onCountryClick={handleCountryClick}
-                    thresholds={thresholds}
-                />
-            ) : (
-                <AsView
-                    countryCode={selectedCountry.code.toUpperCase()}
-                    limit={limit}
-                    showLabels={showLabels}
-                    useGradient={useGradient}
-                    sizeMetric={asSizeMetric}
-                    onBackClick={handleBackToWorld}
-                    thresholds={thresholds}
-                    setSelectedAs={setSelectedAs}
-                />
-            )}
+            <div className="overflow-hidden">
+                {/* TreeMap Content */}
+                {isWorldView ? (
+                    <CountriesView
+                        limit={limit}
+                        showLabels={showLabels}
+                        useGradient={useGradient}
+                        sizeMetric={countrySizeMetric}
+                        onCountryClick={handleCountryClick}
+                        thresholds={thresholds}
+                    />
+                ) : (
+                    <AsView
+                        countryCode={selectedCountry.code.toUpperCase()}
+                        limit={limit}
+                        showLabels={showLabels}
+                        useGradient={useGradient}
+                        sizeMetric={asSizeMetric}
+                        onBackClick={handleBackToWorld}
+                        thresholds={thresholds}
+                        setSelectedAs={setSelectedAs}
+                    />
+                )}
+            </div>
         </div>
     );
 }
