@@ -73,11 +73,16 @@ export function AsView({
                 };
             });
 
-            const allValuesZero = transformedData.every(item => item.value === 0);
+            // Ensure minimum visibility for all items
+            const values = transformedData.map(item => item.value);
+            const maxValue = Math.max(...values);
+            const avgValue = values.reduce((sum, val) => sum + val, 0) / values.length;
+            const MIN_DISPLAY_VALUE = 1;
 
-            if (allValuesZero) {
+            // Normalize if distribution is too skewed (max >> average)
+            if (maxValue > avgValue * 3) {
                 transformedData.forEach(item => {
-                    item.value = 1;
+                    item.value = item.value + MIN_DISPLAY_VALUE;
                 });
             }
 
