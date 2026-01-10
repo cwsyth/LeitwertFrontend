@@ -4,30 +4,31 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusCardProps } from '@/types/card';
-import { AlertCircle } from "lucide-react";
+import {AlertCircle, Info} from "lucide-react";
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { API_BASE_URL } from "@/lib/config";
 import { Area, AreaChart } from 'recharts';
 import { ChartContainer, ChartConfig } from '@/components/ui/chart';
 import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
 import { useLocationStore } from '@/lib/stores/location-store';
+import {
+    Tooltip, TooltipContent,
+    TooltipProvider,
+    TooltipTrigger
+} from "@/components/ui/tooltip";
 
 interface TimeSeriesAnomalyResponse {
     anomalies: number[];
     timestamps: string[];
 }
 
-type Trend = 'increasing' | 'decreasing' | 'stable';
-
 export default function AnomalyCard({ title, description, apiEndpoint, className, selectedCountry }: StatusCardProps) {
     const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesAnomalyResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(false);
-    const [currentAnomaly, setCurrentAnomaly] = useState(0);
-    const [trend, setTrend] = useState<Trend>('stable');
+    const [totalAnomalies, setTotalAnomalies] = useState(0);
 
     const timeRange = useTimeRangeStore((state) => state.timeRange);
-    const playbackPosition = useTimeRangeStore((state) => state.playbackPosition);
     const runtimeConfig = useRuntimeConfig();
     const location = useLocationStore((state) => state.selectedLocationId);
 
@@ -59,8 +60,8 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
 
                 const result: TimeSeriesAnomalyResponse = await response.json();
                 setTimeSeriesData(result);
-                setCurrentAnomaly(0);
-                setTrend('stable');
+                const total = result.anomalies.reduce((sum, val) => sum + val, 0);
+                setTotalAnomalies(total);
             } catch (err) {
                 console.error('Error fetching anomaly data:', err);
                 setError(true);
@@ -71,55 +72,6 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
 
         fetchStatus();
     }, [apiEndpoint, selectedCountry, timeRange, location]);
-
-    const getCurrentIndex = (): number => {
-        if (!timeSeriesData || timeSeriesData.timestamps.length === 0) return 0;
-        if (!playbackPosition) return timeSeriesData.timestamps.length - 1;
-
-        // Show latest value if no playback position is set
-        if (!playbackPosition) {
-            return timeSeriesData.timestamps.length - 1;
-        }
-
-        // Binary search for closest older or equal timestamp
-        const playbackTime = playbackPosition.getTime();
-        let left = 0;
-        let right = timeSeriesData.timestamps.length - 1;
-        let result = 0;
-
-        while (left <= right) {
-            const mid = Math.floor((left + right) / 2);
-            const midTime = new Date(timeSeriesData.timestamps[mid]).getTime();
-
-            if (midTime <= playbackTime) {
-                result = mid;
-                left = mid + 1;
-            } else {
-                right = mid - 1;
-            }
-        }
-
-        return result;
-    };
-
-    useEffect(() => {
-        if (!timeSeriesData) return;
-
-        const index = getCurrentIndex();
-        const newValue = timeSeriesData.anomalies[index];
-
-        if (newValue !== currentAnomaly) {
-            const newTrend: Trend = newValue > currentAnomaly ? 'increasing'
-                : newValue < currentAnomaly ? 'decreasing'
-                    : 'stable';
-
-            setTrend(newTrend);
-            setCurrentAnomaly(newValue);
-        } else {
-            setTrend('stable');
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [playbackPosition, timeSeriesData]);
 
     const getAggregatedChartData = () => {
         if (!timeSeriesData) return [];
@@ -151,16 +103,6 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
         return aggregated;
     };
 
-    const TrendIcon = ({ trend }: { trend: 'increasing' | 'decreasing' | 'stable' }) => {
-        if (trend === 'increasing') {
-            return <span className="text-red-500">↗</span>;
-        }
-        if (trend === 'decreasing') {
-            return <span className="text-green-500">↙</span>;
-        }
-        return <span className="text-muted-foreground">—</span>;
-    };
-
     const chartData = getAggregatedChartData();
 
     const chartConfig = {
@@ -173,15 +115,20 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
     return (
         <Card className={`${className} h-full w-full gap-0`}>
             <CardHeader>
-                <CardTitle>
-                    <div>
-                        {title}
-                    </div>
-                    <div>
-                        {description && (
-                            <span className="text-xs text-muted-foreground">{description}</span>
-                        )}
-                    </div>
+                <CardTitle className="flex items-center gap-2">
+                    {title}
+                    {description && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{description}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
                 </CardTitle>
             </CardHeader>
             <CardContent className="relative">
@@ -206,9 +153,8 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
                 {/* Foreground content */}
                 <div className="relative z-10">
                     {isLoading ? (
-                        <div className="flex items-center justify-center gap-3">
+                        <div className="flex items-center justify-center">
                             <Skeleton className="h-16 w-24" />
-                            <Skeleton className="h-12 w-12" />
                         </div>
                     ) : error ? (
                         <div className="w-full flex items-center justify-center gap-1.5 text-xs text-destructive py-2">
@@ -217,19 +163,15 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
                         </div>
                     ) : (
                         <div
-                            className="flex items-center justify-center gap-3">
+                            className="flex items-center justify-center">
                             <div className="text-center">
                                 <div
                                     className="text-5xl font-bold leading-none">
-                                    {currentAnomaly.toLocaleString(runtimeConfig.locale)}
+                                    {totalAnomalies.toLocaleString(runtimeConfig.locale)}
                                 </div>
                                 <div
                                     className="text-xs mt-1">Anomalies
                                 </div>
-                            </div>
-                            <div
-                                className="text-4xl w-12 flex items-center justify-center">
-                                <TrendIcon trend={trend} />
                             </div>
                         </div>
                     )}
