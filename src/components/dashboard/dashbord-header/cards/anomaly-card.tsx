@@ -4,13 +4,18 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusCardProps } from '@/types/card';
-import { AlertCircle } from "lucide-react";
+import {AlertCircle, Info} from "lucide-react";
 import { useTimeRangeStore } from "@/lib/stores/time-range-store";
 import { API_BASE_URL } from "@/lib/config";
 import { Area, AreaChart } from 'recharts';
 import { ChartContainer, ChartConfig } from '@/components/ui/chart';
 import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
 import { useLocationStore } from '@/lib/stores/location-store';
+import {
+    Tooltip, TooltipContent,
+    TooltipProvider,
+    TooltipTrigger
+} from "@/components/ui/tooltip";
 
 interface TimeSeriesAnomalyResponse {
     anomalies: number[];
@@ -113,10 +118,19 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
     return (
         <Card className={`${className} h-full w-full`}>
             <CardHeader>
-                <CardTitle>
+                <CardTitle className="flex items-center gap-2">
                     {title}
                     {description && (
-                        <span className="text-xs text-muted-foreground ml-2">{description}</span>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{description}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     )}
                 </CardTitle>
             </CardHeader>
