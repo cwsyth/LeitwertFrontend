@@ -151,16 +151,6 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
         return aggregated;
     };
 
-    const TrendIcon = ({ trend }: { trend: 'increasing' | 'decreasing' | 'stable' }) => {
-        if (trend === 'increasing') {
-            return <span className="text-red-500">↗</span>;
-        }
-        if (trend === 'decreasing') {
-            return <span className="text-green-500">↙</span>;
-        }
-        return <span className="text-muted-foreground">—</span>;
-    };
-
     const chartData = getAggregatedChartData();
 
     const chartConfig = {
@@ -213,7 +203,7 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
                         </div>
                     ) : (
                         <div
-                            className="flex items-center justify-center gap-3">
+                            className="flex items-center justify-center">
                             <div className="text-center">
                                 <div
                                     className="text-5xl font-bold leading-none">
@@ -222,10 +212,6 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
                                 <div
                                     className="text-xs mt-1">Anomalies
                                 </div>
-                            </div>
-                            <div
-                                className="text-4xl w-12 flex items-center justify-center">
-                                <TrendIcon trend={trend} />
                             </div>
                         </div>
                     )}
