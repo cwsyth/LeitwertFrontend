@@ -174,13 +174,17 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
         <Card className={`${className} h-full w-full`}>
             <CardHeader>
                 <CardTitle>
-                    {title}
-                    {description && (
-                        <span className="text-xs text-muted-foreground ml-2">{description}</span>
-                    )}
+                    <div>
+                        {title}
+                    </div>
+                    <div>
+                        {description && (
+                            <span className="text-xs text-muted-foreground">{description}</span>
+                        )}
+                    </div>
                 </CardTitle>
             </CardHeader>
-            <CardContent className="p-3 pt-1 relative">
+            <CardContent className="relative">
                 {/* Background chart */}
                 {!isLoading && !error && chartData.length > 0 && (
                     <div className="absolute inset-0 opacity-20 pointer-events-none">

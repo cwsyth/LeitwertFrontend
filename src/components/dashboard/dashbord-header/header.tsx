@@ -15,7 +15,7 @@ export default function DashboardHeader({ viewVisibility, toggleView, selectedCo
     return (
         <div className="dashboard-header w-full rounded-[var(--radius)] overflow-hidden flex gap-3 items-stretch">
             <div className="flex-1">
-                <AnomalyCard title={"Autonomous Systems (AS)"} description={"(Country)"} apiEndpoint={"/v1/networks/health"} selectedCountry={selectedCountry} />
+                <AnomalyCard title={"Autonomous Systems"} description={"(Country)"} apiEndpoint={"/v1/networks/health"} selectedCountry={selectedCountry} />
             </div>
             <div className="flex-1">
                 <AnomalyCard title={"Routers"} description={"(Country)"} apiEndpoint={"/v1/router/health"} selectedCountry={selectedCountry} />

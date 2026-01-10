@@ -148,6 +148,7 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
             } else {
                 const data: CountryData[] = await response.json();
                 setData(data);
+                console.log(data);
 
                 const timeSeriesData: CountryFeatureCollection = {
                     type: "FeatureCollection",
