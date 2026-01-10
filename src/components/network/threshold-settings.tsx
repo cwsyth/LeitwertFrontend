@@ -14,8 +14,6 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import {Button} from "@/components/ui/button";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
 import {Settings2} from "lucide-react";
 import {Slider} from "@/components/ui/slider";
 
@@ -47,14 +45,6 @@ export function ThresholdSettings({
             // Apply changes when closing
             onChange(localThresholds);
         }
-    };
-
-    const handleChange = (status: 'healthy' | 'warning' | 'critical', field: 'min' | 'max', value: string) => {
-        const numValue = value === '' ? 0 : Math.min(Math.max(parseInt(value) || 0, 0), 999);
-        setLocalThresholds({
-            ...localThresholds,
-            [status]: {...localThresholds[status], [field]: numValue}
-        });
     };
 
     return (
