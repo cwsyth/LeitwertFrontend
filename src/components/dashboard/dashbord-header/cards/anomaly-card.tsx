@@ -22,14 +22,11 @@ interface TimeSeriesAnomalyResponse {
     timestamps: string[];
 }
 
-type Trend = 'increasing' | 'decreasing' | 'stable';
-
 export default function AnomalyCard({ title, description, apiEndpoint, className, selectedCountry }: StatusCardProps) {
     const [timeSeriesData, setTimeSeriesData] = useState<TimeSeriesAnomalyResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(false);
-    const [currentAnomaly, setCurrentAnomaly] = useState(0);
-    const [trend, setTrend] = useState<Trend>('stable');
+    const [totalAnomalies, setTotalAnomalies] = useState(0);
 
     const timeRange = useTimeRangeStore((state) => state.timeRange);
     const runtimeConfig = useRuntimeConfig();
@@ -64,7 +61,7 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
                 const result: TimeSeriesAnomalyResponse = await response.json();
                 setTimeSeriesData(result);
                 const total = result.anomalies.reduce((sum, val) => sum + val, 0);
-                setCurrentAnomaly(total);
+                setTotalAnomalies(total);
             } catch (err) {
                 console.error('Error fetching anomaly data:', err);
                 setError(true);
@@ -156,9 +153,8 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
                 {/* Foreground content */}
                 <div className="relative z-10">
                     {isLoading ? (
-                        <div className="flex items-center justify-center gap-3">
+                        <div className="flex items-center justify-center">
                             <Skeleton className="h-16 w-24" />
-                            <Skeleton className="h-12 w-12" />
                         </div>
                     ) : error ? (
                         <div className="w-full flex items-center justify-center gap-1.5 text-xs text-destructive py-2">
@@ -171,7 +167,7 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
                             <div className="text-center">
                                 <div
                                     className="text-5xl font-bold leading-none">
-                                    {currentAnomaly.toLocaleString(runtimeConfig.locale)}
+                                    {totalAnomalies.toLocaleString(runtimeConfig.locale)}
                                 </div>
                                 <div
                                     className="text-xs mt-1">Anomalies
