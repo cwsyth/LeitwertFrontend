@@ -17,7 +17,7 @@ export default function DashboardHeader({ viewVisibility, toggleView, selectedCo
             <div className="flex-1">
                 <AnomalyCard
                     title={"Autonomous Systems (AS)"}
-                    description={"Total number of detected AS anomalies within the selected country and time range."}
+                    description={"Total number of detected AS anomalies within the selected region and time range."}
                     apiEndpoint={"/v1/networks/health"}
                     selectedCountry={selectedCountry}
                 />
@@ -25,7 +25,7 @@ export default function DashboardHeader({ viewVisibility, toggleView, selectedCo
             <div className="flex-1">
                 <AnomalyCard
                     title={"Routers"}
-                    description={"Total number of detected router anomalies within the selected country and time range."}
+                    description={"Total number of detected router anomalies within the selected region and time range."}
                     apiEndpoint={"/v1/router/health"}
                     selectedCountry={selectedCountry}
                 />
