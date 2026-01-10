@@ -12,6 +12,7 @@ import {AlertTriangle, Building2, Globe} from "lucide-react";
 import {TreeMapDataItem} from '@/types/network';
 import {STATUS_COLOR_CLASSES} from "@/lib/anomaly-status";
 import { useRuntimeConfig } from '@/lib/useRuntimeConfig';
+import {CircleFlag} from "react-circle-flags";
 
 interface CountryTooltipProps {
     data: TreeMapDataItem;
@@ -25,11 +26,16 @@ export function CountryTooltip({data}: CountryTooltipProps) {
         <div className="space-y-3">
             <div
                 className="flex items-center justify-between gap-3 border-b pb-2">
-                <p className="font-bold text-base">{data.name}</p>
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-center w-5 h-5">
+                        <CircleFlag countryCode={data.id.toLowerCase()} height={20} />
+                    </div>
+                    <p className="font-bold text-base">{data.name}</p>
+                </div>
                 <span
                     className={`px-2 py-0.5 rounded text-xs font-medium border ${statusColor}`}>
-          {data.status}
-        </span>
+                    {data.status}
+                </span>
             </div>
 
             <div className="space-y-2 text-sm">
