@@ -60,17 +60,21 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
     const [sortField, setSortField] = useState<SortField | null>(null);
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
     const lastMouseMoveTime = useRef<number>(0);
-    let [longitude, latitude] = [10.426171427430804, 51.08304539800482]; // default to Germany
+    const [isMapReady, setIsMapReady] = useState(false);
 
     const isWorld = !selectedCountry || selectedCountry.code === 'world';
     const baseUrl = 'https://dev-api.univ.leitwert.net/api/v1';
+
 
     // Focus map on selected country
     useEffect(() => {
         setHoverInfo(null);
         setContextMenu(null);
 
-        if (!selectedCountry) return;
+        if (!selectedCountry || !mapRef.current || !isMapReady) return;
+
+        let longitude = 10.426171427430804; // default to Germany
+        let latitude = 51.08304539800482;
 
         if(selectedCountry.code !== 'world') {
             // find the selected country in the middlepoints data
@@ -80,19 +84,16 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
             );
 
             if (countryWithMiddlepoint && countryWithMiddlepoint.geometry.coordinates) {
-                // eslint-disable-next-line react-hooks/exhaustive-deps
                 [longitude, latitude] = countryWithMiddlepoint.geometry.coordinates;
             }
         }
         // transition to the new position
-        if (mapRef.current) {
-            mapRef.current.flyTo({
-                center: [longitude, latitude],
-                zoom: 5,
-                duration: 1000
-            });
-        }
-    }, [selectedCountry]);
+        mapRef.current.flyTo({
+            center: [longitude, latitude],
+            zoom: 3.5,
+            duration: 1000
+        });
+    }, [selectedCountry, isMapReady]);
 
     const { data: mapData, isLoading: isLoading } = useQuery({
         queryKey: [
@@ -148,6 +149,7 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
             } else {
                 const data: CountryData[] = await response.json();
                 setData(data);
+                console.log(data);
 
                 const timeSeriesData: CountryFeatureCollection = {
                     type: "FeatureCollection",
@@ -767,11 +769,12 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
             )}
            <Map
                 initialViewState={{ // default to Germany
-                    latitude,
-                    longitude,
+                    latitude: 51.08304539800482,
+                    longitude: 10.426171427430804,
                     zoom: 4
                 }}
                 mapStyle="https://dev-maptiler.univ.leitwert.net/styles/dark-basic/style.json"
+                onLoad={() => setIsMapReady(true)}
                 interactiveLayerIds={isWorld
                     ? [
                         worldView.baseLayer.id!,

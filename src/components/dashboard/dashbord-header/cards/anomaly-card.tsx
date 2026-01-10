@@ -113,7 +113,7 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
     } satisfies ChartConfig;
 
     return (
-        <Card className={`${className} h-full w-full`}>
+        <Card className={`${className} h-full w-full gap-0`}>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     {title}
@@ -131,7 +131,7 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
                     )}
                 </CardTitle>
             </CardHeader>
-            <CardContent className="p-3 pt-1 relative">
+            <CardContent className="relative">
                 {/* Background chart */}
                 {!isLoading && !error && chartData.length > 0 && (
                     <div className="absolute inset-0 opacity-20 pointer-events-none">

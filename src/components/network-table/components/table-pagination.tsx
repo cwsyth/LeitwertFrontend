@@ -112,7 +112,7 @@ export function TablePagination({
 
             <div className='flex items-center gap-2'>
                 <span
-                    className='text-muted-foreground whitespace-nowrap text-sm'>Anzahl pro Seite:</span>
+                    className='text-muted-foreground whitespace-nowrap text-sm'>per page:</span>
                 <Select
                     value={String(itemsPerPage)}
                     onValueChange={(value) => onItemsPerPageChange(Number(value))}
