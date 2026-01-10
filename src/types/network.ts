@@ -137,14 +137,14 @@ export type CountrySizeMetric = 'as_count' | 'ip_count' | 'anomaly_count';
 export type AsSizeMetric = 'ip_count' | 'anomaly_count';
 
 export const COUNTRY_SIZE_METRIC_LABELS: Record<CountrySizeMetric, string> = {
-    as_count: 'AS Count',
     anomaly_count: 'Anomalies',
+    as_count: 'AS Count',
     ip_count: 'IP Count'
 };
 
 export const AS_SIZE_METRIC_LABELS: Record<AsSizeMetric, string> = {
-    ip_count: 'IP Count',
-    anomaly_count: 'Anomalies'
+    anomaly_count: 'Anomalies',
+    ip_count: 'IP Count'
 };
 
 export type NetworkRegistry = 'ripencc' | 'arin' | 'apnic' | 'lacnic' | 'afrinic';
