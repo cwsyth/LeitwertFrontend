@@ -171,7 +171,7 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
     } satisfies ChartConfig;
 
     return (
-        <Card className={`${className} h-full w-full`}>
+        <Card className={`${className} h-full w-full gap-0`}>
             <CardHeader>
                 <CardTitle>
                     <div>
