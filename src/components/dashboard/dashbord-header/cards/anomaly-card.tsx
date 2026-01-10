@@ -27,7 +27,6 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
     const [trend, setTrend] = useState<Trend>('stable');
 
     const timeRange = useTimeRangeStore((state) => state.timeRange);
-    const playbackPosition = useTimeRangeStore((state) => state.playbackPosition);
     const runtimeConfig = useRuntimeConfig();
     const location = useLocationStore((state) => state.selectedLocationId);
 
@@ -71,55 +70,6 @@ export default function AnomalyCard({ title, description, apiEndpoint, className
 
         fetchStatus();
     }, [apiEndpoint, selectedCountry, timeRange, location]);
-
-    const getCurrentIndex = (): number => {
-        if (!timeSeriesData || timeSeriesData.timestamps.length === 0) return 0;
-        if (!playbackPosition) return timeSeriesData.timestamps.length - 1;
-
-        // Show latest value if no playback position is set
-        if (!playbackPosition) {
-            return timeSeriesData.timestamps.length - 1;
-        }
-
-        // Binary search for closest older or equal timestamp
-        const playbackTime = playbackPosition.getTime();
-        let left = 0;
-        let right = timeSeriesData.timestamps.length - 1;
-        let result = 0;
-
-        while (left <= right) {
-            const mid = Math.floor((left + right) / 2);
-            const midTime = new Date(timeSeriesData.timestamps[mid]).getTime();
-
-            if (midTime <= playbackTime) {
-                result = mid;
-                left = mid + 1;
-            } else {
-                right = mid - 1;
-            }
-        }
-
-        return result;
-    };
-
-    useEffect(() => {
-        if (!timeSeriesData) return;
-
-        const index = getCurrentIndex();
-        const newValue = timeSeriesData.anomalies[index];
-
-        if (newValue !== currentAnomaly) {
-            const newTrend: Trend = newValue > currentAnomaly ? 'increasing'
-                : newValue < currentAnomaly ? 'decreasing'
-                    : 'stable';
-
-            setTrend(newTrend);
-            setCurrentAnomaly(newValue);
-        } else {
-            setTrend('stable');
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [playbackPosition, timeSeriesData]);
 
     const getAggregatedChartData = () => {
         if (!timeSeriesData) return [];
