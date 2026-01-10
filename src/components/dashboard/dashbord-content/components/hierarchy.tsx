@@ -25,8 +25,8 @@ export default function DashboardContentHierarchy({ selectedCountry, setSelected
     const [inputLimit, setInputLimit] = useState("50");
     const [showLabels, setShowLabels] = useState(true);
     const [useGradient, setUseGradient] = useState(true);
-    const [countrySizeMetric, setCountrySizeMetric] = useState<CountrySizeMetric>('as_count');
-    const [asSizeMetric, setAsSizeMetric] = useState<AsSizeMetric>('ip_count');
+    const [countrySizeMetric, setCountrySizeMetric] = useState<CountrySizeMetric>('anomaly_count');
+    const [asSizeMetric, setAsSizeMetric] = useState<AsSizeMetric>('anomaly_count');
     const [thresholds, setThresholds] = useState({
         healthy: { min: 0, max: 2 },
         warning: { min: 3, max: 5 },

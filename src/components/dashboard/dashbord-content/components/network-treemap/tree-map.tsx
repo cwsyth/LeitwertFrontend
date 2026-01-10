@@ -29,6 +29,7 @@ import {
     DialogTitle
 } from "@/components/ui/dialog";
 import {Input} from "@/components/ui/input";
+import {CircleFlag} from "react-circle-flags";
 
 export function TreeMap({
                             data,
@@ -245,11 +246,10 @@ export function TreeMap({
                                             className="text-sm text-muted-foreground hover:text-foreground transition-colors py-2 px-3 rounded hover:bg-muted cursor-pointer"
                                             onClick={() => {
                                                 if (onItemClick) {
-                                                    // Create TreeMapDataItem from others item
                                                     const clickedItem: TreeMapDataItem = {
                                                         id: item.id,
                                                         name: item.name,
-                                                        value: 0, // Not relevant for click
+                                                        value: 0,
                                                         status: 'unknown' as NetworkStatus,
                                                         anomalyCount: 0,
                                                         metadata: title.includes('Autonomous Systems')
@@ -263,14 +263,25 @@ export function TreeMap({
                                                             }
                                                     };
                                                     onItemClick(clickedItem);
-                                                    setIsOthersDialogOpen(false); // Close dialog after click
+                                                    setIsOthersDialogOpen(false);
                                                 }
                                             }}
                                         >
-                                            {title.includes('Autonomous Systems')
-                                                ? `${item.name} (${item.id})`
-                                                : item.name
-                                            }
+                                            <div className="flex items-center gap-2">
+                                                {title.includes('Autonomous Systems') ? (
+                                                    <Network className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                                ) : (
+                                                    <div className="flex items-center justify-center w-4 h-4">
+                                                        <CircleFlag countryCode={item.id.toLowerCase()} height={16} />
+                                                    </div>
+                                                )}
+                                                <span>
+                                                    {title.includes('Autonomous Systems')
+                                                        ? `${item.name} (${item.id})`
+                                                        : item.name
+                                                    }
+                                                </span>
+                                            </div>
                                         </li>
                                     ))}
                                 </ul>
