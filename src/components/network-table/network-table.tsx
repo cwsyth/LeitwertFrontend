@@ -72,11 +72,10 @@ interface NetworkTableProps {
     setSelectedAs: (asNumber: number) => void
 }
 
-const COLUMN_TO_API_SORT: Record<string, 'name' | 'cidrs' | 'bgp-anomalies' | 'ping-anomalies'> = {
+const COLUMN_TO_API_SORT: Record<string, 'name' | 'cidrs' | 'bgp-anomalies'> = {
     name: 'name',
     ipv4_cidrs: 'cidrs',
-    anomalies_as: 'bgp-anomalies',
-    anomalies_router: 'ping-anomalies'
+    anomalies_as: 'bgp-anomalies'
 }
 
 
@@ -91,7 +90,9 @@ export function NetworkTable({
     const [data, setData] = useState<NetworkDetail[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [sorting, setSorting] = useState<SortingState>([])
+    const [sorting, setSorting] = useState<SortingState>([
+        { id: 'anomalies_as', desc: true }
+    ])
 
     const columns = createColumns(routers, selectedRouter, setSelectedRouter, selectedAs, setSelectedAs)
     const [columnOrder, setColumnOrder] = useState<string[]>(columns.map(column => column.id as string))
@@ -153,8 +154,8 @@ export function NetworkTable({
             setError(null)
 
             try {
-                const sortColumn = sorting.length > 0 ? sorting[0].id : 'name'
-                const apiSortValue = COLUMN_TO_API_SORT[sortColumn] || 'name'
+                const sortColumn = sorting.length > 0 ? sorting[0].id : 'bgp-anomalies'
+                const apiSortValue = COLUMN_TO_API_SORT[sortColumn] || 'bgp-anomalies'
 
                 const response = await networkApi.getNetworkDetails({
                     cc: selectedCountry.code,
