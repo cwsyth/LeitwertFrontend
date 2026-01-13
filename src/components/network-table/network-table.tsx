@@ -113,13 +113,18 @@ export function NetworkTable({
         columns,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
-        onSortingChange: setSorting,
+        onSortingChange: (updater) => {
+            const newSorting = typeof updater === 'function' ? updater(sorting) : updater
+            // Only allow desc sorting or no sorting
+            const validSorting = newSorting.filter(sort => sort.desc)
+            setSorting(validSorting)
+        },
         onColumnOrderChange: setColumnOrder,
         state: {
             sorting,
             columnOrder
         },
-        sortDescFirst: false
+        sortDescFirst: true
     })
 
     const sensors = useSensors(
@@ -154,8 +159,16 @@ export function NetworkTable({
             setError(null)
 
             try {
-                const sortColumn = sorting.length > 0 ? sorting[0].id : 'bgp-anomalies'
+                const sortColumn = sorting.length > 0 ? sorting[0].id : 'anomalies_as'
                 const apiSortValue = COLUMN_TO_API_SORT[sortColumn] || 'bgp-anomalies'
+
+                // Determine actual sort direction based on API behavior
+                const isDescending = apiSortValue === 'bgp-anomalies' || apiSortValue === 'cidrs'
+
+                // Update sorting state to match API
+                if (sorting.length === 0 || sorting[0].desc !== isDescending) {
+                    setSorting([{ id: sortColumn, desc: isDescending }])
+                }
 
                 const response = await networkApi.getNetworkDetails({
                     cc: selectedCountry.code,
@@ -166,6 +179,7 @@ export function NetworkTable({
                     windowSize: windowSize,
                     location: location ?? undefined
                 })
+
                 setData(response.details)
                 setTotalPages(Math.ceil(response.meta.total_entries / itemsPerPage))
                 setTotalEntries(response.meta.total_entries)
