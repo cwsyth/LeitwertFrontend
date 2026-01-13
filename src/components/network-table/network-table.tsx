@@ -192,8 +192,7 @@ export function NetworkTable({
         }
 
         fetchData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedCountry, currentPage, itemsPerPage, sorting, timeRange, windowSize])
+    }, [selectedCountry, currentPage, itemsPerPage, sorting, timeRange, windowSize, location])
 
     if (!selectedCountry || selectedCountry.code === 'world') {
         return <TablePreview columns={columns} />
