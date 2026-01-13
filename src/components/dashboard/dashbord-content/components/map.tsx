@@ -48,7 +48,7 @@ const countriesList: Country[] = Object.entries(countriesData).map(([code, data]
     name: data.name
 }));
 
-export default function DashboardContentMap({ selectedCountry, setSelectedCountry, setSelectedRouter, setSelectedAs }: DashboardContentMapProps) {
+export default function DashboardContentMap({ selectedCountry, setSelectedCountry, setRouters, setSelectedRouter, setSelectedAs }: DashboardContentMapProps) {
     const runtimeConfig = useRuntimeConfig();
     const queryClient = useQueryClient();
     const { timeRange, playbackPosition, isPlaying } = useTimeRangeStore();
@@ -224,6 +224,20 @@ export default function DashboardContentMap({ selectedCountry, setSelectedCountr
             })
         };
     }, [mapData, data, playbackPosition, isWorld]);
+
+    // Update routers list for NetworkTable
+    useEffect(() => {
+        if (isWorld || !data) {
+            setRouters([]);
+            return;
+        }
+
+        const countryData = data as CountryData[];
+        const latestData = countryData[countryData.length - 1];
+        const routers = latestData?.routers || [];
+
+        setRouters(routers);
+    }, [data, isWorld, setRouters]);
 
     // Update hover info when playback position changes (world view only)
     useEffect(() => {
